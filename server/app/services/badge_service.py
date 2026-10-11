@@ -50,7 +50,7 @@ async def _grant(db: AsyncSession, user_id: int, badge_id: int) -> bool:
         return False
     db.add(
         UserBadge(
-            user_id=user_id, badge_id=badge_id, earned_at=datetime.now(timezone.utc)
+            user_id=user_id, badge_id=badge_id, earned_at=datetime.now(timezone.utc).replace(tzinfo=None)
         )
     )
     return True
@@ -67,7 +67,7 @@ async def _notify_badge(db: AsyncSession, user_id: int, badge_name: str) -> None
             title="解锁新勋章",
             content=f"恭喜获得勋章「{badge_name}」！",
             ref_type="badge",
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc).replace(tzinfo=None),
         )
     )
 
@@ -164,7 +164,7 @@ async def _vote_streak(db: AsyncSession, user_id: int) -> int:
         if r:
             days.add(r.date())
     streak = 0
-    cur = datetime.now(timezone.utc).date()
+    cur = datetime.now(timezone.utc).replace(tzinfo=None).date()
     while cur in days:
         streak += 1
         cur -= timedelta(days=1)

@@ -15,7 +15,7 @@ from app.models.user import User
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def detect_device(user_agent: str) -> DeviceType:

@@ -21,7 +21,7 @@ from app.models.user import User
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 # ── 频道可见性（L-001 ~ L-003）──

@@ -43,7 +43,7 @@ async def send_code(
     return ApiResponse.ok(data, "验证码已发送")
 
 
-@router.post("/register", response_model=ApiResponse[UserOut])
+@router.post("/register")
 async def register(payload: RegisterIn, db: Db) -> ApiResponse:
     user, access, refresh = await auth_service.register(db, payload)
     return ApiResponse.ok(

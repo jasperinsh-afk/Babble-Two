@@ -82,6 +82,9 @@ class Settings(BaseSettings):
     # ── 内容安全 ──
     MODERATION_AUTO_APPROVE: bool = False
 
+    # ── 限流开关（开发/测试环境建议关闭）──
+    RATE_LIMIT_ENABLED: bool = False
+
     # ── 分页 ──
     DEFAULT_PAGE_SIZE: int = 20
     MAX_PAGE_SIZE: int = 50

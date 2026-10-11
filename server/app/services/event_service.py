@@ -23,11 +23,16 @@ from app.models.user import User
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 async def create_event(db: AsyncSession, payload, user: User) -> Event:
-    if payload.end_at <= payload.start_at:
+    from app.core.timeutil import to_naive_utc
+
+    start_at = to_naive_utc(payload.start_at)
+    end_at = to_naive_utc(payload.end_at)
+    deadline = to_naive_utc(payload.signup_deadline)
+    if end_at <= start_at:
         raise AppError(1001, "结束时间必须晚于开始时间")
     ev = Event(
         title=payload.title,
@@ -36,9 +41,9 @@ async def create_event(db: AsyncSession, payload, user: User) -> Event:
         location=payload.location,
         organizer_type=payload.organizer_type,
         organizer_id=payload.organizer_id,
-        start_at=payload.start_at,
-        end_at=payload.end_at,
-        signup_deadline=payload.signup_deadline,
+        start_at=start_at,
+        end_at=end_at,
+        signup_deadline=deadline,
         max_participants=payload.max_participants,
         status=EventStatus.ACTIVE,
         review_status=ReviewStatus.PENDING,
@@ -104,11 +109,13 @@ async def list_events(
     offset: int = 0,
     limit: int = 20,
 ) -> Tuple[List[dict], int]:
+    from app.core.timeutil import to_naive_utc
+
     conds = [Event.is_deleted.is_(False), Event.review_status == ReviewStatus.APPROVED]
     if start:
-        conds.append(Event.start_at >= start)
+        conds.append(Event.start_at >= to_naive_utc(start))
     if end:
-        conds.append(Event.start_at <= end)
+        conds.append(Event.start_at <= to_naive_utc(end))
     if club_id:
         conds.append(Event.organizer_id == club_id)
 

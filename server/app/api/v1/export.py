@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
 from app.api.deps import Db, require_operator_dep
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/admin/export", tags=["墨麟书院·导出"])
 
 
 @router.post("/votes")
-async def export_votes(payload: ExportIn, db: Db, _=require_operator_dep) -> Response:
+async def export_votes(payload: ExportIn, db: Db, _=Depends(require_operator_dep)) -> Response:
     start = datetime.fromisoformat(payload.start_date)
     end = datetime.fromisoformat(payload.end_date)
     body, media_type, suffix = await export_service.export_votes(
@@ -37,7 +37,7 @@ async def export_votes(payload: ExportIn, db: Db, _=require_operator_dep) -> Res
 @router.get("/preview")
 async def preview(
     db: Db,
-    _=require_operator_dep,
+    _=Depends(require_operator_dep),
     start_date: str = "",
     end_date: str = "",
     category: str | None = None,

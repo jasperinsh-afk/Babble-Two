@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 async def _existing_fingerprints(db: AsyncSession, hours: int = 24) -> set:

@@ -42,7 +42,7 @@ def validate_password_strength(password: str) -> bool:
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def create_access_token(

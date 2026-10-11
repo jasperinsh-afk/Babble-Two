@@ -46,7 +46,7 @@ from app.models.user import User  # noqa: E402
 from app.models.vote import Ballot, Poll, PollOption  # noqa: E402
 from app.services import badge_service  # noqa: E402
 
-NOW = datetime.now(timezone.utc)
+NOW = datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def h(hours: int = 0) -> datetime:

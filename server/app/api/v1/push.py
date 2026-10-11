@@ -43,7 +43,7 @@ async def bind_device(payload: DeviceIn, db: Db, user: CurrentUser) -> ApiRespon
                 platform=payload.platform,
                 registration_id=payload.registration_id,
                 is_active=True,
-                created_at=datetime.now(timezone.utc),
+                created_at=datetime.now(timezone.utc).replace(tzinfo=None),
             )
         )
     await db.flush()

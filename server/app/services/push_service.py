@@ -29,7 +29,7 @@ _PREF_FIELD = {
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def in_quiet_hours(dt: Optional[datetime] = None) -> bool:

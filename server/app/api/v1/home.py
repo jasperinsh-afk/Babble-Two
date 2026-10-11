@@ -52,7 +52,7 @@ async def home_feed(db: Db, user: OptionalUser) -> ApiResponse:
 
     hot_polls, _ = await vote_service.list_polls(db, user=user, offset=0, limit=8)
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc).replace(tzinfo=None)
     events, _ = await event_service.list_events(db, user, start=now, offset=0, limit=5)
 
     clubs = (

@@ -36,7 +36,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy import desc, select
 
@@ -55,6 +55,7 @@ from app.models.vote import Poll
 from app.schemas.common import ApiResponse, Page
 from app.schemas.crawler import (
     CandidateReviewIn,
+    CrawlerItemOut,
     DraftGenerateIn,
     PollReviewIn,
     SensitiveWordIn,
@@ -79,7 +80,7 @@ router = APIRouter(prefix="/admin", tags=["管理后台"])
 @router.get("/polls")
 async def admin_polls(
     db: Db,
-    _=require_operator_dep,
+    _=Depends(require_operator_dep),
     status: str | None = None,
     offset: int = 0,
     limit: int = 20,
@@ -116,26 +117,26 @@ async def admin_polls(
 
 
 @router.post("/polls")
-async def create_poll(payload: PollCreateIn, db: Db, user=require_operator_dep) -> ApiResponse:
+async def create_poll(payload: PollCreateIn, db: Db, user=Depends(require_operator_dep)) -> ApiResponse:
     poll = await vote_service.create_poll(db, payload, user)
     return ApiResponse.ok({"id": poll.id, "status": poll.status.value}, "投票已创建")
 
 
 @router.post("/polls/{poll_id}/approve")
-async def approve_poll(poll_id: int, payload: PollReviewIn | None, db: Db, _=require_operator_dep) -> ApiResponse:
+async def approve_poll(poll_id: int, payload: PollReviewIn | None, db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     """人工终审通过（风控红线：AI 生成内容不可免审）。"""
     poll = await db.get(Poll, poll_id)
     if poll is None:
         raise not_found("投票不存在")
     poll.review_status = ReviewStatus.APPROVED
     poll.review_note = payload.note if payload else ""
-    poll.updated_at = datetime.now(timezone.utc)
+    poll.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
     await db.flush()
     return ApiResponse.ok({"id": poll.id}, "审核通过")
 
 
 @router.post("/polls/{poll_id}/reject")
-async def reject_poll(poll_id: int, payload: PollReviewIn | None, db: Db, _=require_operator_dep) -> ApiResponse:
+async def reject_poll(poll_id: int, payload: PollReviewIn | None, db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     poll = await db.get(Poll, poll_id)
     if poll is None:
         raise not_found("投票不存在")
@@ -147,7 +148,7 @@ async def reject_poll(poll_id: int, payload: PollReviewIn | None, db: Db, _=requ
 
 
 @router.post("/polls/{poll_id}/publish")
-async def publish_poll(poll_id: int, db: Db, _=require_operator_dep) -> ApiResponse:
+async def publish_poll(poll_id: int, db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     poll = await vote_service.publish_poll(db, poll_id)
     from app.services import push_service
 
@@ -156,7 +157,7 @@ async def publish_poll(poll_id: int, db: Db, _=require_operator_dep) -> ApiRespo
 
 
 @router.post("/polls/{poll_id}/archive")
-async def archive_poll(poll_id: int, db: Db, _=require_operator_dep) -> ApiResponse:
+async def archive_poll(poll_id: int, db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     poll = await db.get(Poll, poll_id)
     if poll is None:
         raise not_found("投票不存在")
@@ -171,7 +172,7 @@ async def archive_poll(poll_id: int, db: Db, _=require_operator_dep) -> ApiRespo
 @router.get("/candidates")
 async def candidates(
     db: Db,
-    _=require_operator_dep,
+    _=Depends(require_operator_dep),
     status: str = "pending",
     offset: int = 0,
     limit: int = 20,
@@ -194,12 +195,14 @@ async def candidates(
         )
     ).scalars().all()
     total = (await db.execute(select(func.count(CrawlerItem.id)).where(*conds))).scalar() or 0
-    return ApiResponse.ok(Page.build(rows, total, offset, limit))
+    return ApiResponse.ok(
+        Page.build([CrawlerItemOut.model_validate(r) for r in rows], total, offset, limit)
+    )
 
 
 @router.post("/candidates/{item_id}/review")
 async def review_candidate(
-    item_id: int, payload: CandidateReviewIn, db: Db, user=require_operator_dep
+    item_id: int, payload: CandidateReviewIn, db: Db, user=Depends(require_operator_dep)
 ) -> ApiResponse:
     item = await db.get(CrawlerItem, item_id)
     if item is None:
@@ -209,7 +212,7 @@ async def review_candidate(
         if payload.status == "approved"
         else CrawlerItemStatus.REJECTED
     )
-    item.reviewed_at = datetime.now(timezone.utc)
+    item.reviewed_at = datetime.now(timezone.utc).replace(tzinfo=None)
     item.reviewed_by = user.id
     item.filter_reason = payload.note
     await db.flush()
@@ -218,7 +221,7 @@ async def review_candidate(
 
 @router.post("/candidates/{item_id}/draft")
 async def generate_draft(
-    item_id: int, payload: DraftGenerateIn, db: Db, _=require_operator_dep
+    item_id: int, payload: DraftGenerateIn, db: Db, _=Depends(require_operator_dep)
 ) -> ApiResponse:
     """ML-I-004：LLM 生成投票草稿（运营可修改，必须人工终审）。"""
     from app.crawler import draft_generator
@@ -233,7 +236,7 @@ async def generate_draft(
 
 
 @router.post("/crawler/run")
-async def run_crawler(db: Db, _=require_operator_dep) -> ApiResponse:
+async def run_crawler(db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     """ML-I-006 手动触发抓取（默认关闭）。"""
     from app.services import crawler_service
 
@@ -242,7 +245,7 @@ async def run_crawler(db: Db, _=require_operator_dep) -> ApiResponse:
 
 
 @router.get("/crawler/status")
-async def crawler_status(db: Db, _=require_operator_dep) -> ApiResponse:
+async def crawler_status(db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     from sqlalchemy import func
 
     from app.config import settings
@@ -269,7 +272,7 @@ async def crawler_status(db: Db, _=require_operator_dep) -> ApiResponse:
 
 
 @router.get("/review")
-async def review_queue(db: Db, _=require_operator_dep) -> ApiResponse:
+async def review_queue(db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     polls = (
         await db.execute(
             select(Poll).where(Poll.review_status == ReviewStatus.PENDING).order_by(desc(Poll.created_at)).limit(50)
@@ -323,7 +326,11 @@ async def review_queue(db: Db, _=require_operator_dep) -> ApiResponse:
 
 @router.post("/review/club/{club_id}")
 async def review_club(
-    club_id: int, approved: bool = True, note: str = "", db: Db = None, _=require_operator_dep
+    db: Db,
+    _=Depends(require_operator_dep),
+    club_id: int = 0,
+    approved: bool = True,
+    note: str = "",
 ) -> ApiResponse:
     club = await club_service.review_club(db, club_id, approved, note)
     return ApiResponse.ok({"id": club.id, "is_verified": club.is_verified}, "已审核")
@@ -331,7 +338,10 @@ async def review_club(
 
 @router.post("/review/event/{event_id}")
 async def review_event(
-    event_id: int, approved: bool = True, db: Db = None, _=require_operator_dep
+    db: Db,
+    _=Depends(require_operator_dep),
+    event_id: int = 0,
+    approved: bool = True,
 ) -> ApiResponse:
     ev = await event_service.review_event(db, event_id, approved)
     return ApiResponse.ok({"id": ev.id}, "已审核")
@@ -341,13 +351,13 @@ async def review_event(
 
 
 @router.get("/sensitive-words")
-async def list_words(db: Db, _=require_operator_dep) -> ApiResponse:
+async def list_words(db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     rows = (await db.execute(select(SensitiveWord).order_by(desc(SensitiveWord.id)))).scalars().all()
     return ApiResponse.ok(rows)
 
 
 @router.post("/sensitive-words")
-async def add_word(payload: SensitiveWordIn, db: Db, _=require_operator_dep) -> ApiResponse:
+async def add_word(payload: SensitiveWordIn, db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     from datetime import datetime
 
     db.add(
@@ -356,7 +366,7 @@ async def add_word(payload: SensitiveWordIn, db: Db, _=require_operator_dep) -> 
             category=payload.category,
             severity=payload.severity,
             is_active=True,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(timezone.utc).replace(tzinfo=None),
         )
     )
     await db.flush()
@@ -365,7 +375,7 @@ async def add_word(payload: SensitiveWordIn, db: Db, _=require_operator_dep) -> 
 
 
 @router.delete("/sensitive-words/{word_id}")
-async def delete_word(word_id: int, db: Db, _=require_operator_dep) -> ApiResponse:
+async def delete_word(word_id: int, db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     w = await db.get(SensitiveWord, word_id)
     if w is None:
         raise not_found("词条不存在")
@@ -379,19 +389,19 @@ async def delete_word(word_id: int, db: Db, _=require_operator_dep) -> ApiRespon
 
 
 @router.get("/nfc/cards")
-async def admin_nfc_cards(db: Db, _=require_operator_dep, offset: int = 0, limit: int = 100) -> ApiResponse:
+async def admin_nfc_cards(db: Db, _=Depends(require_operator_dep), offset: int = 0, limit: int = 100) -> ApiResponse:
     return ApiResponse.ok(await nfc_service.list_cards(db, offset, limit))
 
 
 @router.post("/nfc/cards")
-async def register_card(payload: NfcCardRegisterIn, db: Db, _=require_operator_dep) -> ApiResponse:
+async def register_card(payload: NfcCardRegisterIn, db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     card = await nfc_service.register_card(db, payload)
     return ApiResponse.ok({"card_id": card.card_id}, "卡片已注册")
 
 
 @router.put("/nfc/cards/{card_id}")
 async def update_card(
-    card_id: str, payload: NfcCardRegisterIn, db: Db, _=require_operator_dep
+    card_id: str, payload: NfcCardRegisterIn, db: Db, _=Depends(require_operator_dep)
 ) -> ApiResponse:
     payload.card_id = card_id
     card = await nfc_service.register_card(db, payload)
@@ -399,7 +409,7 @@ async def update_card(
 
 
 @router.delete("/nfc/cards/{card_id}")
-async def retire_card(card_id: str, db: Db, _=require_operator_dep) -> ApiResponse:
+async def retire_card(card_id: str, db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     from sqlalchemy import select as _select
 
     from app.models.nfc import NfcCard
@@ -413,7 +423,7 @@ async def retire_card(card_id: str, db: Db, _=require_operator_dep) -> ApiRespon
 
 
 @router.get("/nfc/stats")
-async def nfc_stats(db: Db, _=require_operator_dep) -> ApiResponse:
+async def nfc_stats(db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     return ApiResponse.ok(await nfc_service.card_stats(db))
 
 
@@ -421,7 +431,7 @@ async def nfc_stats(db: Db, _=require_operator_dep) -> ApiResponse:
 
 
 @router.get("/dashboard")
-async def dashboard(db: Db, _=require_operator_dep) -> ApiResponse:
+async def dashboard(db: Db, _=Depends(require_operator_dep)) -> ApiResponse:
     from sqlalchemy import func
 
     from app.models.user import User

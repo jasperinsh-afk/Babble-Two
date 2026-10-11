@@ -25,6 +25,7 @@ from app.core.exceptions import (
     not_found,
 )
 from app.core.redis import bump_vote_count, clear_vote_counts, read_vote_counts
+from app.core.timeutil import to_naive_utc
 from app.models.club import Club
 from app.models.common import (
     POLL_OPTION_RANGE,
@@ -43,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 # ── 创建 ──
@@ -65,13 +66,14 @@ async def create_poll(db: AsyncSession, payload: PollCreateIn, user: User) -> Po
         raise AppError(ERR_OPTION_COUNT_INVALID, "排序题至少 3 个选项")
 
     status = PollStatus.DRAFT
-    start_at = payload.start_at
+    start_at = to_naive_utc(payload.start_at)
+    end_at = to_naive_utc(payload.end_at)
     if payload.publish_mode == "active":
         status = PollStatus.ACTIVE
         start_at = start_at or _now()
     elif payload.publish_mode == "scheduled":
         status = PollStatus.SCHEDULED
-        start_at = payload.scheduled_at or payload.start_at
+        start_at = to_naive_utc(payload.scheduled_at) or start_at
 
     poll = Poll(
         title=payload.title,
@@ -83,7 +85,7 @@ async def create_poll(db: AsyncSession, payload: PollCreateIn, user: User) -> Po
         tag=payload.tag,
         topic_tags=payload.topic_tags,
         start_at=start_at,
-        end_at=payload.end_at or (start_at + timedelta(hours=24) if start_at else None),
+        end_at=end_at or (start_at + timedelta(hours=24) if start_at else None),
         allow_change=payload.allow_change,
         anonymous=payload.anonymous,
         max_choices=payload.max_choices,

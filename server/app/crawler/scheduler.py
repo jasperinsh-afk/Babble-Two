@@ -19,7 +19,7 @@ scheduler = AsyncIOScheduler(timezone="Asia/Shanghai")
 
 
 def _now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 async def job_crawl() -> None:

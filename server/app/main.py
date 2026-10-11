@@ -50,7 +50,7 @@ def _payload(code: int, message: str, data=None) -> dict:
         "code": code,
         "message": message,
         "data": data,
-        "timestamp": int(datetime.now(timezone.utc).timestamp()),
+        "timestamp": int(datetime.now(timezone.utc).replace(tzinfo=None).timestamp()),
     }
 
 
@@ -85,7 +85,7 @@ app.include_router(api_v1_router, prefix=settings.API_V1_PREFIX)
 
 @app.get("/healthz", tags=["系统"])
 async def healthz() -> dict:
-    return _payload(OK, "ok", {"env": settings.APP_ENV, "time": datetime.now(timezone.utc).isoformat()})
+    return _payload(OK, "ok", {"env": settings.APP_ENV, "time": datetime.now(timezone.utc).replace(tzinfo=None).isoformat()})
 
 
 # ── OMEGA：NFC 碰触中间页（未装 App 时）──

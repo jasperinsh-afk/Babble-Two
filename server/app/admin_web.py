@@ -26,7 +26,7 @@ templates = Jinja2Templates(directory="admin-web/templates")
 
 
 def _now():
-    return datetime.now(timezone.utc)
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 @router.get("", response_class=HTMLResponse)
