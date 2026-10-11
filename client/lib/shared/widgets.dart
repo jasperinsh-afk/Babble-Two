@@ -102,18 +102,21 @@ class PollCard extends StatelessWidget {
         : null;
 
     return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   TagChip(text: poll.type.label),
-                  if (poll.tag != null) ...[
+                  // 类型与标签同名时不重复展示
+                  if (poll.tag != null && poll.tag!.label != poll.type.label) ...[
                     const SizedBox(width: 6),
                     TagChip(text: poll.tag!.label, color: GoQDColors.accent),
                   ],
@@ -127,18 +130,21 @@ class PollCard extends StatelessWidget {
                   ],
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               Text(poll.title,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w600, height: 1.25)),
               if (poll.description != null && poll.description!.isNotEmpty) ...[
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(poll.description!,
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 13, color: GoQDColors.textSecondary)),
+                    style: const TextStyle(fontSize: 12, color: GoQDColors.textSecondary)),
               ],
               if (top != null) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
@@ -148,11 +154,13 @@ class PollCard extends StatelessWidget {
                     valueColor: const AlwaysStoppedAnimation(GoQDColors.primary),
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text('领先：${top.label} · ${top.percent.toStringAsFixed(1)}%',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 12, color: GoQDColors.textSecondary)),
               ],
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text('${poll.totalVotes} 人已参与',
                   style: const TextStyle(fontSize: 12, color: GoQDColors.textSecondary)),
             ],

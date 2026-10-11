@@ -112,3 +112,61 @@
 - **限流**：开发与测试环境请保持 `RATE_LIMIT_ENABLED=false`，否则批量注册会被 429 拦截。
 - **爬虫**：默认 `CRAWLER_ENABLED=false`。开启前需配置通义千问 Key，且**必须由运营人工终审**，禁止全自动无人审核上线。
 - **Deep Link**：Android `assetlinks.json` 与 iOS AASA 中的 TEAM_ID / SHA256 指纹需在正式发包前替换。
+
+---
+
+## 七、真机安装踩坑（Windows + 路径含空格）
+
+本机 Flutter SDK 装在 `F:\Zima Institute\WeaveFit\flutter`、工程在 `F:\Zima Institute\Project Y\...`，**两处路径都带空格**，直接 `flutter build apk` 会连环失败。三步解决：
+
+### 1. native assets hook 编译失败
+```
+'F:\Zima' is not recognized as an internal or external command
+Building native assets for package:objective_c failed.
+```
+原因：`nfc_manager` → `nfc_manager_ios` → `objective_c` 带 build hook，Flutter 用 cmd 调 dart-sdk 里的 dart 时**没给带空格的路径加引号**。
+
+绕过：用 **8.3 短路径**调用 flutter（先重新开启 native assets，勿用 `--no-enable-native-assets`，`objective_c` 强依赖它）：
+```powershell
+$fso = New-Object -ComObject Scripting.FileSystemObject
+$fso.GetFolder("F:\Zima Institute\WeaveFit\flutter").ShortPath   # F:\ZIMAIN~1\WeaveFit\flutter
+
+$env:FLUTTER_ROOT="F:\ZIMAIN~1\WeaveFit\flutter"
+& "F:\ZIMAIN~1\WeaveFit\flutter\bin\flutter.bat" config --enable-native-assets
+```
+
+### 2. Kotlin 增量缓存写不进去
+```
+Could not close incremental caches in ...kotlin\compileDebugKotlin\caches-jvm\jvm\kotlin
+```
+已在 `client/android/gradle.properties` 固化关闭增量编译：
+```
+kotlin.incremental=false
+kotlin.incremental.useClasspathSnapshot=false
+kotlin.compiler.execution.strategy=in-process
+```
+
+### 3. 标准构建命令
+```powershell
+$env:FLUTTER_ROOT="F:\ZIMAIN~1\WeaveFit\flutter"
+Set-Location "F:\ZIMAIN~1\PROJEC~2\BALA-M~1\client"
+& "F:\ZIMAIN~1\WeaveFit\flutter\bin\flutter.bat" build apk --debug `
+  --dart-define=GOQD_API_BASE=http://<电脑局域网IP>:8000 `
+  --target-platform android-arm64
+
+& "C:\Users\Administrator\AppData\Local\Android\sdk\platform-tools\adb.exe" `
+  install -r build\app\outputs\flutter-apk\app-debug.apk
+```
+
+### 4. 让手机访问电脑上的后端
+
+```powershell
+# 电脑上启动（必须绑定 0.0.0.0，否则手机连不上）
+cd server; uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# 查本机局域网 IP
+Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike "127.*" }
+```
+- Windows 防火墙已放行 `python.exe` 入站，无需额外配置；若改用其它进程，需放行 8000 端口。
+- 电脑 IP 变了就要重新 `--dart-define` 打包。**替代方案**：不改 IP，插着 USB 执行
+  `adb reverse tcp:8000 tcp:8000`，App 用默认的 `http://localhost:8000` 即可（拔线失效）。

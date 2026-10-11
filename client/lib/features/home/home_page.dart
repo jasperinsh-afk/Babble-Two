@@ -85,14 +85,14 @@ class _HomePageState extends State<HomePage> {
             onAction: () => context.go('/vote'),
           ),
           SizedBox(
-            height: 168,
+            height: 200,
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               scrollDirection: Axis.horizontal,
               itemCount: feed.hotPolls.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 10),
+              separatorBuilder: (_, __) => const SizedBox(width: 8),
               itemBuilder: (_, i) => SizedBox(
-                width: 260,
+                width: 272,
                 child: PollCard(
                   poll: feed.hotPolls[i],
                   onTap: () => context.push('/vote/${feed.hotPolls[i].id}'),
