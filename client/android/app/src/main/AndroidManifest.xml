@@ -1,6 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- OMEGA：NFC 读写权限 -->
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-feature android:name="android.hardware.nfc" android:required="false" />
+    <!-- 网络（后端 API） -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
-        android:label="goqd_app"
+        android:label="七德通"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -23,6 +29,45 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+
+            <!-- ── OMEGA Deep Link / App Links ──
+                 服务端需同时提供 /.well-known/assetlinks.json
+                 并替换 SHA256 指纹为正式签名证书指纹 -->
+
+            <!-- 1. NFC 卡片 -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="goqd.com" android:pathPrefix="/nfc" />
+            </intent-filter>
+
+            <!-- 2. NFC 标签直读（NDEF 写入的 URI） -->
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="https" android:host="goqd.com" android:pathPrefix="/nfc" />
+            </intent-filter>
+
+            <!-- 3. App 内分享链接 -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="goqd.com" android:pathPrefix="/vote" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="goqd.com" android:pathPrefix="/club" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="goqd.com" android:pathPrefix="/event" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
