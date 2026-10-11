@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block heading %}投票管理{% endblock %}
+{% block body %}
+<div class="panel">
+  {% if items %}
+  <table>
+    <thead><tr><th>ID</th><th>题干</th><th>类型</th><th>状态</th><th>审核</th><th>开始</th><th>结束</th><th>操作</th></tr></thead>
+    <tbody>
+    {% for p in items %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td class="ellipsis" title="{{ p.title }}">{{ p.title }}</td>
+        <td><span class="tag">{{ p.poll_type.value }}</span></td>
+        <td><span class="tag s-{{ p.status.value }}">{{ p.status.value }}</span></td>
+        <td><span class="tag r-{{ p.review_status.value }}">{{ p.review_status.value }}</span></td>
+        <td>{{ p.start_at.strftime('%m-%d %H:%M') if p.start_at else '-' }}</td>
+        <td>{{ p.end_at.strftime('%m-%d %H:%M') if p.end_at else '-' }}</td>
+        <td>
+          {% if p.review_status.value == 'pending' %}
+          <button onclick="act({{ p.id }},'approve')">通过</button>
+          <button class="danger" onclick="act({{ p.id }},'reject')">驳回</button>
+          {% endif %}
+          {% if p.review_status.value == 'approved' and p.status.value != 'active' %}
+          <button onclick="act({{ p.id }},'publish')">上线</button>
+          {% endif %}
+          {% if p.status.value == 'active' %}
+          <button class="ghost" onclick="act({{ p.id }},'archive')">归档</button>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">暂无投票。</p>
+  {% endif %}
+</div>
+<script>
+async function act(id, action){
+  await fetch(`/api/v1/admin/polls/${id}/${action}`, {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'
+  });
+  location.reload();
+}
+</script>
+{% endblock %}

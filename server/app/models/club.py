@@ -4,7 +4,7 @@ PRD §3.2（C-001 ~ C-204）+ 技术架构文档 §4.2。
 """
 from __future__ import annotations
 
-from sqlalchemy import Boolean, DateTime, Enum, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.common import (
@@ -49,8 +49,12 @@ class ClubMember(Base):
     __tablename__ = "club_members"
     # 联合主键（技术架构文档 §4.2）
 
-    club_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    club_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("clubs.id", ondelete="CASCADE"), primary_key=True
+    )
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
     role: Mapped[str] = mapped_column(String(20), default="member", nullable=False)  # member/admin
     joined_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=False)
 
@@ -63,7 +67,9 @@ class Post(Base):
     __tablename__ = "posts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    club_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    club_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("clubs.id", ondelete="CASCADE"), index=True, nullable=False
+    )
     author_id: Mapped[int] = mapped_column(Integer, nullable=False)
     title: Mapped[str | None] = mapped_column(String(200), nullable=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)  # ≤2000字

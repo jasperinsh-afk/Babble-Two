@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}七德通 GoQD 运营后台{% endblock %}</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">七德通 <span>GoQD</span></div>
+    <nav>
+      <a href="/admin/web" class="{{ 'active' if nav=='dashboard' }}">数据看板</a>
+      <a href="/admin/web/candidates" class="{{ 'active' if nav=='candidates' }}">爬虫候选池</a>
+      <a href="/admin/web/polls" class="{{ 'active' if nav=='polls' }}">投票管理</a>
+      <a href="/admin/web/review" class="{{ 'active' if nav=='review' }}">内容审核</a>
+      <a href="/admin/web/nfc" class="{{ 'active' if nav=='nfc' }}">NFC 卡片</a>
+      <a href="/admin/web/export" class="{{ 'active' if nav=='export' }}">数据导出</a>
+    </nav>
+    <div class="side-foot">
+      <a href="/docs" target="_blank">API 文档</a>
+    </div>
+  </aside>
+  <main class="content">
+    <header class="topbar">
+      <h1>{% block heading %}运营后台{% endblock %}</h1>
+      <div class="hint">墨麟书院 · 人工终审是发布前的最后一道红线</div>
+    </header>
+    {% block body %}{% endblock %}
+  </main>
+</div>
+</body>
+</html>

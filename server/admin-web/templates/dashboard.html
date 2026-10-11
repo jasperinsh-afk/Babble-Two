@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block heading %}数据看板{% endblock %}
+{% block body %}
+<div class="cards">
+  <div class="stat"><div class="num">{{ stats.users }}</div><div class="label">注册用户</div></div>
+  <div class="stat"><div class="num">{{ stats.polls }}</div><div class="label">投票总数</div></div>
+  <div class="stat"><div class="num">{{ stats.active_polls }}</div><div class="label">进行中投票</div></div>
+  <div class="stat"><div class="num">{{ stats.ballots }}</div><div class="label">累计投票记录</div></div>
+  <div class="stat"><div class="num">{{ stats.clubs }}</div><div class="label">已认证社团</div></div>
+</div>
+
+<div class="panel">
+  <h2>快捷入口</h2>
+  <div class="quick">
+    <a class="btn" href="/admin/web/candidates">查看今日候选话题池</a>
+    <a class="btn" href="/admin/web/review">处理内容审核队列</a>
+    <a class="btn ghost" href="/docs" target="_blank">打开 API 文档</a>
+  </div>
+</div>
+
+<div class="panel">
+  <h2>NFC 碰一碰</h2>
+  <p class="muted">卡片跳转目标由后端决定，可随时更换，无需重写 NFC 标签。</p>
+  <p class="muted">中间页示例：<code>/nfc/QD-CT-01-A01</code></p>
+</div>
+{% endblock %}

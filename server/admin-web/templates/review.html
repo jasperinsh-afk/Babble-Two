@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block heading %}内容审核{% endblock %}
+{% block body %}
+<div class="panel">
+  <h2>待审投票（必须人工终审）</h2>
+  {% if polls %}
+  <table>
+    <thead><tr><th>ID</th><th>题干</th><th>操作</th></tr></thead>
+    <tbody>
+    {% for p in polls %}
+    <tr>
+      <td>{{ p.id }}</td>
+      <td>{{ p.title }}</td>
+      <td>
+        <button onclick="pollReview({{ p.id }},'approved')">通过</button>
+        <button class="danger" onclick="pollReview({{ p.id }},'rejected')">驳回</button>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">无待审投票</p>{% endif %}
+</div>
+
+<div class="panel">
+  <h2>待审社团</h2>
+  {% if clubs %}
+  <table>
+    <thead><tr><th>ID</th><th>名称</th><th>简介</th><th>操作</th></tr></thead>
+    <tbody>
+    {% for c in clubs %}
+    <tr>
+      <td>{{ c.id }}</td><td>{{ c.name }}</td><td class="ellipsis">{{ c.description or '-' }}</td>
+      <td>
+        <button onclick="clubReview({{ c.id }},1)">通过</button>
+        <button class="danger" onclick="clubReview({{ c.id }},0)">拒绝</button>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">无待审社团</p>{% endif %}
+</div>
+
+<div class="panel">
+  <h2>待审活动</h2>
+  {% if events %}
+  <table>
+    <thead><tr><th>ID</th><th>标题</th><th>时间</th><th>操作</th></tr></thead>
+    <tbody>
+    {% for e in events %}
+    <tr>
+      <td>{{ e.id }}</td><td>{{ e.title }}</td>
+      <td>{{ e.start_at.strftime('%Y-%m-%d %H:%M') if e.start_at else '-' }}</td>
+      <td>
+        <button onclick="eventReview({{ e.id }},1)">通过</button>
+        <button class="danger" onclick="eventReview({{ e.id }},0)">拒绝</button>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">无待审活动</p>{% endif %}
+</div>
+
+<div class="panel">
+  <h2>敏感词库（Aho-Corasick，改动即时热更新）</h2>
+  <form class="inline" onsubmit="addWord(event)">
+    <input id="w-word" placeholder="敏感词" required>
+    <select id="w-cat">
+      <option value="custom">自定义</option>
+      <option value="political">政治</option>
+      <option value="violence">暴力</option>
+      <option value="sexual">色情</option>
+      <option value="religious">宗教</option>
+    </select>
+    <select id="w-sev"><option value="block">拦截</option><option value="warn">提醒</option></select>
+    <button type="submit">添加</button>
+  </form>
+  {% if words %}
+  <table>
+    <thead><tr><th>ID</th><th>词</th><th>分类</th><th>级别</th><th>状态</th></tr></thead>
+    <tbody>
+    {% for w in words %}
+    <tr><td>{{ w.id }}</td><td>{{ w.word }}</td><td>{{ w.category }}</td><td>{{ w.severity }}</td>
+    <td>{{ '启用' if w.is_active else '停用' }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">词库为空</p>{% endif %}
+</div>
+
+<script>
+async function pollReview(id, status){
+  await fetch(`/api/v1/admin/polls/${id}/${status==='approved'?'approve':'reject'}`,
+    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
+  location.reload();
+}
+async function clubReview(id, ok){
+  await fetch(`/api/v1/admin/review/club/${id}?approved=${ok===1}`, {method:'POST'});
+  location.reload();
+}
+async function eventReview(id, ok){
+  await fetch(`/api/v1/admin/review/event/${id}?approved=${ok===1}`, {method:'POST'});
+  location.reload();
+}
+async function addWord(e){
+  e.preventDefault();
+  await fetch('/api/v1/admin/sensitive-words', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({word:document.getElementById('w-word').value,
+      category:document.getElementById('w-cat').value,
+      severity:document.getElementById('w-sev').value})
+  });
+  location.reload();
+}
+</script>
+{% endblock %}

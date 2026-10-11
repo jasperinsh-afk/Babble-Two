@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block heading %}墨麟书院 · 数据导出{% endblock %}
+{% block body %}
+<div class="panel">
+  <h2>投票数据脱敏导出</h2>
+  <p class="muted">导出字段仅含聚合统计，<strong>不含 user_id / student_id 等个人信息</strong>。</p>
+  <form class="inline" onsubmit="doExport(event)">
+    <label>开始 <input type="date" id="e-start" required></label>
+    <label>结束 <input type="date" id="e-end" required></label>
+    <select id="e-cat">
+      <option value="">全部分类</option>
+      <option value="current_affairs">时事热点</option>
+      <option value="campus">校园生活</option>
+      <option value="culture">青少年文化</option>
+      <option value="values">价值观探讨</option>
+      <option value="lifestyle">生活方式</option>
+    </select>
+    <select id="e-fmt"><option value="csv">CSV</option><option value="excel">Excel</option></select>
+    <button type="submit">导出文件</button>
+    <button type="button" class="ghost" onclick="preview()">预览</button>
+  </form>
+  <pre id="out" class="out hidden"></pre>
+</div>
+<script>
+async function doExport(e){
+  e.preventDefault();
+  const body = {
+    start_date: document.getElementById('e-start').value,
+    end_date: document.getElementById('e-end').value,
+    category: document.getElementById('e-cat').value || null,
+    format: document.getElementById('e-fmt').value
+  };
+  const r = await fetch('/api/v1/admin/export/votes', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  const blob = await r.blob();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'goqd_votes.' + (body.format==='excel'?'xlsx':'csv');
+  a.click();
+}
+async function preview(){
+  const s = document.getElementById('e-start').value, e2 = document.getElementById('e-end').value;
+  const c = document.getElementById('e-cat').value;
+  if(!s || !e2){ alert('请选择时间范围'); return; }
+  const r = await fetch(`/api/v1/admin/export/preview?start_date=${s}&end_date=${e2}${c?'&category='+c:''}`);
+  const j = await r.json();
+  const out = document.getElementById('out');
+  out.textContent = JSON.stringify(j.data, null, 2);
+  out.classList.remove('hidden');
+}
+</script>
+{% endblock %}

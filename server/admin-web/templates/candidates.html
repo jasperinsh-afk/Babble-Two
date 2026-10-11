@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block heading %}爬虫候选池{% endblock %}
+{% block body %}
+<div class="filters">
+  <a class="chip {{ 'on' if status=='pending' }}" href="?status=pending">待审核</a>
+  <a class="chip {{ 'on' if status=='approved' }}" href="?status=approved">已通过</a>
+  <a class="chip {{ 'on' if status=='rejected' }}" href="?status=rejected">已否决</a>
+  <a class="chip {{ 'on' if status=='filtered' }}" href="?status=filtered">已过滤</a>
+  <a class="chip {{ 'on' if status=='used' }}" href="?status=used">已使用</a>
+</div>
+
+<div class="panel">
+  {% if items %}
+  <table>
+    <thead><tr><th>ID</th><th>标题</th><th>来源</th><th>热度</th><th>风险</th><th>LLM 建议</th><th>操作</th></tr></thead>
+    <tbody>
+    {% for it in items %}
+      <tr>
+        <td>{{ it.id }}</td>
+        <td class="ellipsis" title="{{ it.title }}">{{ it.title }}</td>
+        <td><span class="tag">{{ it.source.value }}</span></td>
+        <td>{{ it.heat_score }}</td>
+        <td>{{ it.risk_level or '-' }}</td>
+        <td class="ellipsis" title="{{ it.llm_suggestion or '' }}">{{ it.llm_suggestion or '-' }}</td>
+        <td>
+          <button onclick="review({{ it.id }},'approved')">通过</button>
+          <button class="danger" onclick="review({{ it.id }},'rejected')">否决</button>
+          <button class="ghost" onclick="draft({{ it.id }})">生成草稿</button>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">暂无数据。爬虫默认关闭，可在 <code>.env</code> 中设置 <code>CRAWLER_ENABLED=true</code>，或用种子脚本灌入候选话题。</p>
+  {% endif %}
+</div>
+
+<pre id="draft-out" class="out hidden"></pre>
+
+<script>
+async function review(id, status){
+  await fetch(`/api/v1/admin/candidates/${id}/review`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({status})
+  });
+  location.reload();
+}
+async function draft(id){
+  const r = await fetch(`/api/v1/admin/candidates/${id}/draft`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({crawler_item_id:id, variants:3})
+  });
+  const j = await r.json();
+  const out = document.getElementById('draft-out');
+  out.textContent = JSON.stringify(j.data, null, 2);
+  out.classList.remove('hidden');
+}
+</script>
+{% endblock %}

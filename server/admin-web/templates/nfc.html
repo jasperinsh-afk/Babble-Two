@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block heading %}NFC 卡片管理{% endblock %}
+{% block body %}
+<div class="panel">
+  <h2>注册新卡片</h2>
+  <form class="inline" onsubmit="register(event)">
+    <input id="c-id" placeholder="card_id，如 QD-CT-01-A01" required>
+    <input id="c-loc" placeholder="张贴位置描述">
+    <select id="c-type">
+      <option value="download">下载页</option>
+      <option value="vote">投票</option>
+      <option value="club">社团</option>
+      <option value="event">活动</option>
+    </select>
+    <input id="c-target" placeholder="目标 ID（download 留空）">
+    <button type="submit">注册</button>
+  </form>
+  <p class="muted">卡片 ID 规则：{学校}-{区域}-{楼层/位置}-{序号}；区域：CT 食堂 / LB 图书馆 / DM 宿舍 / BB 公告栏 / CR 教室 / CL 社团 / SP 体育 / GW 校门</p>
+</div>
+
+<div class="panel">
+  <h2>卡片列表（{{ cards|length }}）</h2>
+  {% if cards %}
+  <table>
+    <thead><tr><th>card_id</th><th>位置</th><th>跳转目标</th><th>批次</th><th>碰触</th><th>独立用户</th><th>状态</th></tr></thead>
+    <tbody>
+    {% for c in cards %}
+    <tr>
+      <td><code>{{ c.card_id }}</code></td>
+      <td>{{ c.location_desc or '-' }}</td>
+      <td>{{ c.target_type.value }}{% if c.target_id %} #{{ c.target_id }}{% endif %}</td>
+      <td>{{ c.poster_batch or '-' }}</td>
+      <td>{{ c.tap_count }}</td>
+      <td>{{ c.unique_user_count }}</td>
+      <td>{{ '启用' if c.is_active else '停用' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">暂无卡片</p>{% endif %}
+</div>
+<script>
+async function register(e){
+  e.preventDefault();
+  await fetch('/api/v1/admin/nfc/cards', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      card_id: document.getElementById('c-id').value,
+      location_desc: document.getElementById('c-loc').value,
+      target_type: document.getElementById('c-type').value,
+      target_id: document.getElementById('c-target').value ? parseInt(document.getElementById('c-target').value) : null
+    })
+  });
+  location.reload();
+}
+</script>
+{% endblock %}

@@ -8,6 +8,7 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     Enum,
+    ForeignKey,
     Integer,
     String,
     Text,
@@ -75,7 +76,9 @@ class PollOption(Base):
     __tablename__ = "poll_options"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    poll_id: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    poll_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("polls.id", ondelete="CASCADE"), index=True, nullable=False
+    )
     label: Mapped[str] = mapped_column(String(200), nullable=False)
     sort_order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
