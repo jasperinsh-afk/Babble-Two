@@ -1,0 +1,38 @@
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.db
+*.sqlite3
+*.sqlite
+
+# ── Env ──
+.env
+.env.local
+*.log
+
+# ── Flutter / Dart ──
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+client/ios/Flutter/*.xcconfig
+client/ios/Pods/
+client/android/.gradle/
+client/android/local.properties
+client/android/app/debug
+client/android/app/profile
+client/android/app/release
+client/.idea/
+
+# ── IDE ──
+.vscode/
+.idea/
+.DS_Store
