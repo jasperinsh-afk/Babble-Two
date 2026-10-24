@@ -1,0 +1,10 @@
+{
+  "name": "club",
+  "version": "1.0.0",
+  "description": "叭啦 Babble —— 社团广场",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

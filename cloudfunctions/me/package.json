@@ -1,0 +1,10 @@
+{
+  "name": "me",
+  "version": "1.0.0",
+  "description": "叭啦 Babble —— 本地足迹（我的投票/勋章/打卡）",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

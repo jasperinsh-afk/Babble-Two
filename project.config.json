@@ -1,0 +1,26 @@
+{
+  "description": "叭啦 Babble —— 微信原生小程序（云开发）",
+  "compileType": "miniprogram",
+  "libVersion": "3.5.5",
+  "appid": "wx8d676279f2d09146",
+  "projectname": "babble-miniprogram",
+  "miniprogramRoot": "miniprogram/",
+  "cloudfunctionRoot": "cloudfunctions/",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "coverView": true,
+    "checkSiteMap": true,
+    "uploadWithSourceMap": true,
+    "useCompilerPlugins": false,
+    "packNpmRelationList": []
+  },
+  "condition": {
+    "miniprogram": {
+      "list": []
+    }
+  }
+}
