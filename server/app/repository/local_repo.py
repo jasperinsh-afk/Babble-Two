@@ -110,12 +110,14 @@ class LocalRepository:
         now = utcnow()
         ongoing = [p for p in polls if (parse_dt(p.get("endAt")) or now) > now]
         ongoing.sort(key=lambda p: _dt_key(p.get("endAt")))
-        hot = sorted(polls, key=lambda p: p.get("totalVotes") or 0, reverse=True)
+        hot = sorted(ongoing, key=lambda p: p.get("totalVotes") or 0, reverse=True)
 
         events = [
             e
             for e in await self.store.docs("events")
-            if e.get("status") in ("active", "full") and _visible(e)
+            if e.get("status") in ("active", "full")
+            and _visible(e)
+            and (parse_dt(e.get("endAt")) or now) > now
         ]
         events.sort(key=lambda e: _dt_key(e.get("startAt")))
 
@@ -180,17 +182,61 @@ class LocalRepository:
         if not poll_id:
             _fail("缺少 pollId", "PARAM_MISSING")
         raw = await self._poll(poll_id)
+        if (
+            raw.get("status") in ("draft", "archived", "withdrawn")
+            or raw.get("resultStatus") == "draft"
+            or raw.get("resultScope") == "draft"
+        ):
+            return {
+                "pollId": poll_id,
+                "restricted": True,
+                "total": 0,
+                "options": [
+                    {"optionId": o.get("optionId"), "label": o.get("label")}
+                    for o in raw.get("options") or []
+                ],
+            }
+
         total = raw.get("totalVotes") or 0
-        options = [
+        counts = [
             {
                 "optionId": o.get("optionId"),
                 "label": o.get("label"),
                 "count": o.get("count") or 0,
-                "percent": round((o.get("count") or 0) / total * 1000) / 10 if total else 0,
             }
             for o in raw.get("options") or []
         ]
-        return {"pollId": poll_id, "total": total, "options": options, "groups": []}
+        selection_total = sum(o["count"] for o in counts)
+        # 多选 / 排序按「人次」计百分比，单选 / PK / 接龙按「票数」
+        percent_basis = "selections" if raw.get("pollType") in ("multi", "ranking", "rank") else "votes"
+        basis = selection_total if percent_basis == "selections" else total
+        owner = None
+        if raw.get("ownerType") or raw.get("ownerName"):
+            owner = {
+                "ownerType": raw.get("ownerType"),
+                "ownerName": raw.get("ownerName") or "",
+                "response": raw.get("ownerResponse") or "",
+                "respondedAt": raw.get("ownerRespondedAt") or None,
+            }
+        return {
+            "pollId": poll_id,
+            "restricted": False,
+            "total": total,
+            "options": [
+                {**o, "percent": round(o["count"] / basis * 1000) / 10 if basis else 0}
+                for o in counts
+            ],
+            "sampleSize": total,
+            "selectionTotal": selection_total,
+            "percentBasis": percent_basis,
+            "startAt": raw.get("startAt"),
+            "endAt": raw.get("endAt"),
+            "status": raw.get("status"),
+            "resultScope": raw.get("resultScope") or "campus",
+            "sampleNote": raw.get("sampleNote") or "",
+            "owner": owner,
+            "groups": [],
+        }
 
     async def vote_cast(self, payload, identity):
         async with self._write_lock:
@@ -410,7 +456,7 @@ class LocalRepository:
         events = [
             e
             for e in await self.store.docs("events")
-            if _visible(e) and start <= _dt_key(e.get("startAt")) <= end
+            if _visible(e) and e.get("status") != "cancelled" and start <= _dt_key(e.get("startAt")) <= end
         ]
         events.sort(key=lambda e: _dt_key(e.get("startAt")))
         day_map: Dict[str, int] = {}
@@ -954,6 +1000,11 @@ def _slim_event(event: Dict[str, Any]) -> Dict[str, Any]:
         "status": event.get("status"),
         "casType": event.get("casType"),
         "participantCount": event.get("participantCount") or 0,
+        "changeRevision": event.get("changeRevision") or 0,
+        "changeSummary": event.get("changeSummary") or "",
+        "changedAt": event.get("changedAt") or None,
+        "cancelReason": event.get("cancelReason") or "",
+        "cancelledAt": event.get("cancelledAt") or None,
     }
 
 
@@ -972,6 +1023,11 @@ def _slim_event_home(event: Dict[str, Any]) -> Dict[str, Any]:
             "status",
             "participantCount",
             "maxParticipants",
+            "changeRevision",
+            "changeSummary",
+            "changedAt",
+            "cancelReason",
+            "cancelledAt",
         )
     }
 

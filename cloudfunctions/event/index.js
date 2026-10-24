@@ -34,6 +34,11 @@ function slimEvent(event) {
     status: event.status,
     casType: event.casType || null,
     participantCount: event.participantCount || 0,
+    changeRevision: event.changeRevision || 0,
+    changeSummary: event.changeSummary || '',
+    changedAt: event.changedAt || null,
+    cancelReason: event.cancelReason || '',
+    cancelledAt: event.cancelledAt || null,
   }
 }
 
@@ -67,6 +72,7 @@ async function calendar(payload = {}) {
     .collection('events')
     .where({
       isDeleted: false,
+      status: _.neq('cancelled'), // 已取消活动不再出现在可报名列表
       startAt: _.gte(from).and(_.lte(to)),
     })
     .orderBy('startAt', 'asc')

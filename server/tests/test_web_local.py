@@ -170,6 +170,88 @@ async def test_scan_checkin_badges_and_overview(repo):
         await repo.call("scan", "cardByCode", {"key": "NOPE"}, IDENTITY)
 
 
+async def test_vote_results_restricted_and_extended(repo):
+    poll = await repo.store.get("polls", "p001")
+
+    # resultScope=draft → 只回选项骨架
+    await repo.store.put("polls", {**poll, "resultScope": "draft", "resultStatus": "published"})
+    restricted = await repo.call("vote", "results", {"pollId": "p001"}, IDENTITY)
+    assert restricted["restricted"] is True
+    assert restricted["total"] == 0
+    assert all(set(o.keys()) == {"optionId", "label"} for o in restricted["options"])
+
+    # status=draft 同样受限
+    await repo.store.put("polls", {**poll, "status": "draft"})
+    draft = await repo.call("vote", "results", {"pollId": "p001"}, IDENTITY)
+    assert draft["restricted"] is True
+
+    # 正常返回：扩展字段齐备
+    published = {
+        **poll,
+        "resultScope": "campus",
+        "resultStatus": "published",
+        "sampleNote": "样本 32 人",
+        "ownerType": "school",
+        "ownerName": "学生会",
+        "ownerResponse": "已关注食堂改进建议",
+        "ownerRespondedAt": iso(utcnow()),
+    }
+    await repo.store.put("polls", published)
+    result = await repo.call("vote", "results", {"pollId": "p001"}, IDENTITY)
+    assert result["restricted"] is False
+    assert result["sampleSize"] == result["total"]
+    assert result["percentBasis"] == "votes"  # p001 为单选
+    assert result["resultScope"] == "campus"
+    assert result["sampleNote"] == "样本 32 人"
+    assert result["status"] == "active"
+    assert all("count" in o and "percent" in o for o in result["options"])
+    assert result["owner"]["ownerName"] == "学生会"
+    assert result["owner"]["response"] == "已关注食堂改进建议"
+    assert result["owner"]["respondedAt"]
+
+    # 无负责人时 owner 为 None
+    await repo.store.put("polls", {**published, "ownerType": None, "ownerName": None})
+    plain = await repo.call("vote", "results", {"pollId": "p001"}, IDENTITY)
+    assert plain["owner"] is None
+
+    # 多选按人次计百分比
+    await repo.store.put("polls", {**published, "pollType": "multi"})
+    multi = await repo.call("vote", "results", {"pollId": "p001"}, IDENTITY)
+    assert multi["percentBasis"] == "selections"
+    assert multi["selectionTotal"] == sum(o["count"] for o in multi["options"])
+
+
+async def test_event_calendar_excludes_cancelled(repo):
+    listed = await repo.call("event", "list", {"page": 0}, IDENTITY)
+    assert listed["list"], "平移后应有进行中的活动"
+    first = listed["list"][0]
+    start = parse_dt(first["startAt"])
+    before = await repo.call("event", "calendar", {"year": start.year, "month": start.month}, IDENTITY)
+    assert any(e["_id"] == first["_id"] for e in before["events"])
+
+    raw = await repo.store.get("events", first["_id"])
+    await repo.store.put("events", {**raw, "status": "cancelled"})
+    after = await repo.call("event", "calendar", {"year": start.year, "month": start.month}, IDENTITY)
+    assert all(e["_id"] != first["_id"] for e in after["events"])
+
+
+async def test_home_feed_excludes_ended(repo):
+    feed = await repo.call("home", "feed", {}, IDENTITY)
+    now = utcnow()
+    assert feed["hotPolls"], "平移后应有未结束的热门投票"
+    for poll in feed["hotPolls"]:
+        assert not poll.get("endAt") or parse_dt(poll["endAt"]) > now
+    for event in feed["events"]:
+        assert not event.get("endAt") or parse_dt(event["endAt"]) > now
+
+    # 把一条投票的结束时间改到过去，热门列表不再出现
+    poll = await repo.store.get("polls", feed["hotPolls"][0]["_id"])
+    ended = {**poll, "endAt": iso(now - timedelta(days=1)), "totalVotes": 99999}
+    await repo.store.put("polls", ended)
+    after = await repo.call("home", "feed", {}, IDENTITY)
+    assert all(p["_id"] != poll["_id"] for p in after["hotPolls"])
+
+
 async def test_unknown_action_rejected(repo):
     with pytest.raises(BalaError):
         await repo.call("vote", "dropTables", {}, IDENTITY)

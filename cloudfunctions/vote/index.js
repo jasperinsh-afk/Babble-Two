@@ -187,6 +187,15 @@ async function detail(payload = {}) {
   return poll
 }
 
+/** 结果受限：草稿 / 归档 / 撤回 / 未公示 / 草稿范围时只回选项骨架，不给计数 */
+function isResultRestricted(poll) {
+  return (
+    ['draft', 'archived', 'withdrawn'].includes(poll.status) ||
+    poll.resultStatus === 'draft' ||
+    poll.resultScope === 'draft'
+  )
+}
+
 async function results(payload = {}) {
   const { pollId } = payload
   if (!pollId) fail('缺少 pollId')
@@ -195,20 +204,53 @@ async function results(payload = {}) {
   if (!res.data) fail('投票不存在')
 
   const poll = res.data
+  if (isResultRestricted(poll)) {
+    return {
+      pollId,
+      restricted: true,
+      total: 0,
+      options: (poll.options || []).map((o) => ({ optionId: o.optionId, label: o.label })),
+    }
+  }
+
   const options = (poll.options || []).map((o) => ({
     optionId: o.optionId,
     label: o.label,
     count: o.count || 0,
   }))
   const total = poll.totalVotes || 0
+  const selectionTotal = options.reduce((sum, o) => sum + o.count, 0)
+  // 多选 / 排序按「人次」计百分比，单选 / PK / 接龙按「票数」
+  const percentBasis = ['multi', 'ranking', 'rank'].includes(poll.pollType) ? 'selections' : 'votes'
+  const basis = percentBasis === 'selections' ? selectionTotal : total
+
+  const owner =
+    poll.ownerType || poll.ownerName
+      ? {
+          ownerType: poll.ownerType || null,
+          ownerName: poll.ownerName || '',
+          response: poll.ownerResponse || '',
+          respondedAt: poll.ownerRespondedAt || null,
+        }
+      : null
 
   return {
     pollId,
+    restricted: false,
     total,
     options: options.map((o) => ({
       ...o,
-      percent: total ? Math.round((o.count / total) * 1000) / 10 : 0,
+      percent: basis ? Math.round((o.count / basis) * 1000) / 10 : 0,
     })),
+    sampleSize: total,
+    selectionTotal,
+    percentBasis,
+    startAt: poll.startAt || null,
+    endAt: poll.endAt || null,
+    status: poll.status,
+    resultScope: poll.resultScope || 'campus',
+    sampleNote: poll.sampleNote || '',
+    owner,
     // 已移除用户资料体系，不再提供年级/住宿楼维度的分组统计
     groups: [],
   }
