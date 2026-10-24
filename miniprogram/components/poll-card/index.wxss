@@ -1,0 +1,80 @@
+.poll-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-l);
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: var(--shadow-s);
+}
+
+.poll-card__header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.poll-card__type {
+  background: rgba(139, 92, 246, 0.1);
+  margin-right: 12rpx;
+}
+
+.poll-card__tag {
+  background: rgba(30, 27, 46, 0.05);
+  color: var(--text-normal);
+}
+
+.poll-card__count {
+  font-size: 24rpx;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.poll-card__title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text-strong);
+  margin-bottom: 10rpx;
+  line-height: 1.4;
+}
+
+.poll-card__desc {
+  font-size: 24rpx;
+  color: var(--text-weak);
+  margin-bottom: 16rpx;
+}
+
+.poll-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.poll-card__time {
+  font-size: 24rpx;
+  color: var(--text-weak);
+}
+
+.poll-card__progress {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.poll-card__progress-bar {
+  width: 120rpx;
+  height: 8rpx;
+  border-radius: 4rpx;
+  background: rgba(30, 27, 46, 0.06);
+  overflow: hidden;
+}
+
+.poll-card__progress-fill {
+  height: 100%;
+  border-radius: 4rpx;
+  background: var(--gradient-primary);
+  transition: width 0.5s ease;
+}
+
+.poll-card__progress-text {
+  font-size: 22rpx;
+  color: var(--text-weak);
+}

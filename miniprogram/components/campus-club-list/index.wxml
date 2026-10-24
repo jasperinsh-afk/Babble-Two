@@ -1,0 +1,40 @@
+<view class="page page--club-list">
+  <view class="club-search">
+    <input
+      class="club-search__input"
+      placeholder="搜索社团名称"
+      value="{{keyword}}"
+      bindinput="onInput"
+      bindconfirm="doSearch"
+    />
+  </view>
+
+  <view class="club-tabs">
+    <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="club-tabs__scroll">
+      <view class="club-tabs__wrap">
+        <view
+          class="club-tabs__item {{currentCategory === item.category ? 'club-tabs__item--active' : ''}}"
+          wx:for="{{tabs}}"
+          wx:key="category"
+          bindtap="switchCategory"
+          data-category="{{item.category}}"
+        >
+          {{item.label}}
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="club-grid">
+    <view class="club-grid__cell" wx:for="{{clubs}}" wx:key="_id">
+      <club-card club="{{item}}" bindtap="goDetail" data-id="{{item._id}}" />
+    </view>
+  </view>
+
+  <empty-view
+    wx:if="{{!loading && !clubs.length}}"
+    icon="🏛️"
+    title="暂无社团"
+    subtitle="换个关键词或分类试试看"
+  />
+</view>

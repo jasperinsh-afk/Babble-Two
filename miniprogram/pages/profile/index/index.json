@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "section-header": "/components/section-header/index",
+    "empty-view": "/components/empty-view/index"
+  },
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#FAF8FF"
+}

@@ -1,0 +1,36 @@
+<view class="page page--vote-list">
+  <view class="vote-tabs">
+    <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="vote-tabs__scroll">
+      <view class="vote-tabs__wrap">
+        <view
+          class="vote-tabs__item {{currentTag === item.tag ? 'vote-tabs__item--active' : ''}}"
+          wx:for="{{tabs}}"
+          wx:key="tag"
+          bindtap="switchTag"
+          data-tag="{{item.tag}}"
+        >
+          {{item.label}}
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="vote-list">
+    <poll-card
+      wx:for="{{polls}}"
+      wx:key="_id"
+      poll="{{item}}"
+      bindtap="goDetail"
+      data-id="{{item._id}}"
+    />
+  </view>
+
+  <empty-view
+    wx:if="{{!loading && !polls.length}}"
+    icon="🗳️"
+    title="暂无投票"
+    subtitle="切换标签看看，精彩内容马上就来"
+  />
+
+  <view class="vote-list__footer" wx:if="{{!hasMore && polls.length}}">— 已经到底啦 —</view>
+</view>

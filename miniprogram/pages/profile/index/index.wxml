@@ -1,0 +1,72 @@
+<view class="page page--profile">
+  <view class="profile-header">
+    <view class="profile-header__title">本地足迹</view>
+    <view class="profile-header__subtitle">你的兴趣数字足迹</view>
+  </view>
+
+  <view class="profile-stats card section">
+    <view class="profile-stat">
+      <text class="profile-stat__num">{{stats.voteCount || 0}}</text>
+      <text class="profile-stat__label">参与投票</text>
+    </view>
+    <view class="profile-stat__divider"></view>
+    <view class="profile-stat">
+      <text class="profile-stat__num">{{stats.checkinCount || 0}}</text>
+      <text class="profile-stat__label">扫码打卡</text>
+    </view>
+    <view class="profile-stat__divider"></view>
+    <view class="profile-stat">
+      <text class="profile-stat__num">{{stats.badgeCount || 0}}</text>
+      <text class="profile-stat__label">获得勋章</text>
+    </view>
+  </view>
+
+  <view class="section">
+    <section-header title="勋章墙" />
+    <view class="profile-badges">
+      <view
+        class="profile-badge {{item.unlocked ? 'profile-badge--unlocked' : 'profile-badge--locked'}}"
+        wx:for="{{badges}}"
+        wx:key="code"
+      >
+        <view class="profile-badge__icon">
+          <text wx:if="{{item.unlocked}}">{{item.code === 'scan_explorer' ? '◎' : item.code === 'club_pioneer' ? '⌂' : '★'}}</text>
+          <text wx:else>🔒</text>
+        </view>
+        <view class="profile-badge__name">{{item.name}}</view>
+        <view class="profile-badge__desc">{{item.description || ruleText(item.rule)}}</view>
+        <view class="profile-badge__earned" wx:if="{{item.unlocked}}">{{earnedAtText(item.earnedAt)}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{recentVotes.length}}">
+    <section-header title="最近投票" />
+    <view class="profile-foot">
+      <view class="profile-foot__item" wx:for="{{recentVotes}}" wx:key="pollId">
+        <view class="profile-foot__dot profile-foot__dot--vote"></view>
+        <view class="profile-foot__body">
+          <view class="profile-foot__title ellipsis">{{item.title}}</view>
+          <view class="profile-foot__time">{{item.createdAt}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section" wx:if="{{recentCheckins.length}}">
+    <section-header title="最近打卡" />
+    <view class="profile-foot">
+      <view class="profile-foot__item" wx:for="{{recentCheckins}}" wx:key="cardId">
+        <view class="profile-foot__dot profile-foot__dot--scan"></view>
+        <view class="profile-foot__body">
+          <view class="profile-foot__title">{{item.cardId}}</view>
+          <view class="profile-foot__time">{{item.lastTapAt}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{!loading && !recentVotes.length && !recentCheckins.length}}" class="section">
+    <empty-view icon="👣" title="暂无足迹" subtitle="去投票或扫码打卡，留下你的兴趣印记" />
+  </view>
+</view>

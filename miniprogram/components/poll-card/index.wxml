@@ -1,0 +1,19 @@
+<view class="poll-card" bindtap="onTap">
+  <view class="poll-card__header">
+    <view class="poll-card__type chip">{{typeText}}</view>
+    <view class="poll-card__tag chip">{{tagText}}</view>
+    <view class="grow"></view>
+    <view class="poll-card__count">{{totalText}}</view>
+  </view>
+  <view class="poll-card__title ellipsis-2">{{poll.title}}</view>
+  <view class="poll-card__desc" wx:if="{{poll.description}}">{{poll.description}}</view>
+  <view class="poll-card__footer">
+    <view class="poll-card__time">{{timeText}}</view>
+    <view class="poll-card__progress" wx:if="{{poll.pollType === 'groupbuy' && poll.maxParticipants}}">
+      <view class="poll-card__progress-bar">
+        <view class="poll-card__progress-fill" style="width: {{joinPercent}}%;"></view>
+      </view>
+      <text class="poll-card__progress-text">{{joinText}}</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,45 @@
+{
+  "pages": [
+    "pages/launch/index/index",
+    "pages/index/index",
+    "pages/campus/index/index",
+    "pages/message/index/index",
+    "pages/vote/list/list",
+    "pages/vote/detail/detail",
+    "pages/club/list/list",
+    "pages/club/detail/detail",
+    "pages/calendar/index/index",
+    "pages/living/index/index",
+    "pages/scan/index/index",
+    "pages/profile/index/index"
+  ],
+  "entryPagePath": "pages/index/index",
+  "window": {
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#8B5CF6",
+    "navigationBarTitleText": "叭啦",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#FAF8FF"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#9D96B8",
+    "selectedColor": "#8B5CF6",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "今日" },
+      { "pagePath": "pages/campus/index/index", "text": "校园" },
+      { "pagePath": "pages/message/index/index", "text": "消息" },
+      { "pagePath": "pages/profile/index/index", "text": "我的" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于展示附近的活动与失物招领地点"
+    }
+  }
+}

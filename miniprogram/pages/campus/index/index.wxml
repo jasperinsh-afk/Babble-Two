@@ -1,0 +1,18 @@
+<view class="page page--campus">
+  <view class="campus-segment">
+    <view
+      class="campus-segment__item {{current === item.key ? 'campus-segment__item--active' : ''}}"
+      wx:for="{{segments}}"
+      wx:key="key"
+      bindtap="switchSegment"
+      data-key="{{item.key}}"
+    >
+      {{item.label}}
+    </view>
+  </view>
+
+  <campus-calendar wx:if="{{current === 'event'}}" id="campus-calendar" event-id="{{eventId}}" />
+  <campus-vote-list wx:elif="{{current === 'vote'}}" id="campus-vote-list" />
+  <campus-club-list wx:elif="{{current === 'club'}}" id="campus-club-list" />
+  <campus-living wx:elif="{{current === 'service'}}" id="campus-living" />
+</view>

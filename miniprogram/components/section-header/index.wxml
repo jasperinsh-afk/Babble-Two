@@ -1,0 +1,7 @@
+<view class="section-header">
+  <view class="section-header__title">
+    <image class="section-header__spark" src="/assets/brand/spark.png" mode="aspectFit" />
+    <text>{{title}}</text>
+  </view>
+  <view class="section-header__action" wx:if="{{actionText}}" bindtap="onTap">{{actionText}}</view>
+</view>

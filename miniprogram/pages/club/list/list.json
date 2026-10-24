@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "campus-club-list": "/components/campus-club-list/index"
+  },
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#FAF8FF"
+}

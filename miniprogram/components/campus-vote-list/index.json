@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "usingComponents": {
+    "poll-card": "/components/poll-card/index",
+    "section-header": "/components/section-header/index",
+    "empty-view": "/components/empty-view/index"
+  }
+}

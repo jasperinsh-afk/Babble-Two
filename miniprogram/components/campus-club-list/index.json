@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "usingComponents": {
+    "club-card": "/components/club-card/index",
+    "section-header": "/components/section-header/index",
+    "empty-view": "/components/empty-view/index"
+  }
+}

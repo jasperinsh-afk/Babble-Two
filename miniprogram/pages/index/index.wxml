@@ -1,0 +1,105 @@
+<view class="page page--home">
+  <!-- 品牌标题栏 -->
+  <view class="home-header">
+    <view class="home-header__brand">
+      <image class="home-header__mark" src="/assets/brand/logo-mark.png" mode="aspectFit" />
+      <text class="home-header__logo">叭啦</text>
+      <text class="home-header__tag">Babble</text>
+    </view>
+    <view class="home-header__scan" bindtap="goScan">
+      <view class="home-header__scan-dot"></view>
+    </view>
+  </view>
+
+  <view class="home-skeleton" wx:if="{{loading}}">
+    <view class="home-skeleton__banner"></view>
+    <view class="home-skeleton__row">
+      <view class="home-skeleton__card"></view>
+      <view class="home-skeleton__card"></view>
+    </view>
+  </view>
+
+  <view wx:else>
+    <!-- Banner 轮播 -->
+    <swiper class="home-banner" indicator-dots autoplay circular interval="5000" duration="400" wx:if="{{banners.length}}">
+      <swiper-item wx:for="{{banners}}" wx:key="_id" bindtap="onBannerTap" data-item="{{item}}">
+        <view class="home-banner__item">
+          <image class="home-banner__img" src="{{item.imageUrl}}" mode="aspectFill" />
+          <view class="home-banner__shade">
+            <text class="home-banner__title">{{item.title}}</text>
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+
+    <!-- 今日投票 -->
+    <view class="section" wx:if="{{todayPoll}}">
+      <section-header title="今日投票" />
+      <view class="home-today" bindtap="goVote" data-id="{{todayPoll._id}}">
+        <view class="home-today__border"></view>
+        <view class="home-today__content">
+          <view class="home-today__title ellipsis">{{todayPoll.title}}</view>
+          <view class="home-today__count">{{todayPoll.totalVotes || 0}} 人参与 · {{todayPoll.timeText}}</view>
+          <view class="home-today__btn">立即投票</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 快捷入口 -->
+    <view class="section">
+      <view class="home-quick">
+        <view class="home-quick__item" bindtap="goVoteList">
+          <view class="home-quick__icon home-quick__icon--vote">✓</view>
+          <text class="home-quick__label">投票</text>
+        </view>
+        <view class="home-quick__item" bindtap="goClubList">
+          <view class="home-quick__icon home-quick__icon--club">⌂</view>
+          <text class="home-quick__label">社团</text>
+        </view>
+        <view class="home-quick__item" bindtap="goCalendar">
+          <view class="home-quick__icon home-quick__icon--calendar">▦</view>
+          <text class="home-quick__label">日历</text>
+        </view>
+        <view class="home-quick__item" bindtap="goLiving">
+          <view class="home-quick__icon home-quick__icon--living">🏠</view>
+          <text class="home-quick__label">住宿</text>
+        </view>
+        <view class="home-quick__item" bindtap="goScan">
+          <view class="home-quick__icon home-quick__icon--scan">◎</view>
+          <text class="home-quick__label">扫码</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 热门投票 -->
+    <view class="section" wx:if="{{hotPolls.length}}">
+      <section-header title="热门投票" />
+      <scroll-view class="home-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+        <view class="home-scroll__wrap">
+          <view class="home-poll-mini" wx:for="{{hotPolls}}" wx:key="_id" bindtap="goVote" data-id="{{item._id}}">
+            <view class="home-poll-mini__title ellipsis-2">{{item.title}}</view>
+            <view class="home-poll-mini__count">{{item.totalVotes || 0}} 已投</view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 推荐活动 -->
+    <view class="section" wx:if="{{events.length}}">
+      <section-header title="推荐活动" />
+      <view wx:for="{{events}}" wx:key="_id">
+        <event-card event="{{item}}" bindtap="goEvent" data-id="{{item._id}}" />
+      </view>
+    </view>
+
+    <!-- 社团精选 -->
+    <view class="section" wx:if="{{clubs.length}}">
+      <section-header title="社团精选" />
+      <view class="grid-2">
+        <view class="grid-2__cell" wx:for="{{clubs}}" wx:key="_id">
+          <club-card club="{{item}}" bindtap="goClub" data-id="{{item._id}}" />
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,8 @@
+<view class="page page--message">
+  <empty-view
+    wx:if="{{!loading && !messages.length}}"
+    icon="✉️"
+    title="暂无消息"
+    subtitle="{{apiReady ? '暂时没有新消息' : '消息 API 接入后会展示真实消息'}}"
+  />
+</view>

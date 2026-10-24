@@ -1,0 +1,129 @@
+/* 品牌启动页 · 叭啦 Babble */
+
+.launch {
+  position: relative;
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 80% at 12% 8%, rgba(139, 92, 246, 0.12) 0%, rgba(139, 92, 246, 0) 58%),
+    radial-gradient(110% 75% at 92% 92%, rgba(249, 115, 22, 0.10) 0%, rgba(249, 115, 22, 0) 55%),
+    var(--bg-page, #faf8ff);
+}
+
+/* 品牌图形徽章：浅底资产裁为软圆，低透明度融于品牌底色 */
+.launch__badge {
+  position: absolute;
+  border-radius: 50%;
+  overflow: hidden;
+  opacity: 0.55;
+  animation: launch-float 5.5s ease-in-out infinite;
+}
+
+.launch__badge image {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.launch__badge--spark {
+  width: 184rpx;
+  height: 184rpx;
+  top: 11%;
+  right: 8%;
+}
+
+.launch__badge--ribbon {
+  width: 124rpx;
+  height: 124rpx;
+  top: 21%;
+  left: 13%;
+  opacity: 0.4;
+  animation-delay: 2.4s;
+}
+
+.launch__badge--brush {
+  width: 152rpx;
+  height: 152rpx;
+  bottom: 17%;
+  left: 7%;
+  opacity: 0.45;
+  animation-delay: 1.2s;
+}
+
+@keyframes launch-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-14rpx);
+  }
+}
+
+.launch__stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: launch-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.launch__logo {
+  width: 560rpx;
+  height: 420rpx;
+}
+
+@keyframes launch-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.launch__loading {
+  position: absolute;
+  bottom: 96rpx;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 14rpx;
+}
+
+.launch__dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: var(--primary, #8b5cf6);
+  opacity: 0.35;
+  animation: launch-bounce 1.1s ease-in-out infinite;
+}
+
+.launch__dot:nth-child(2) {
+  background: var(--accent, #f97316);
+  animation-delay: 0.15s;
+}
+
+.launch__dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes launch-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-10rpx);
+    opacity: 0.85;
+  }
+}

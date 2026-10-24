@@ -1,0 +1,117 @@
+<view class="page page--living">
+  <view class="living-tabs">
+    <view
+      class="living-tabs__item {{currentTab === 0 ? 'living-tabs__item--active' : ''}}"
+      bindtap="switchTab"
+      data-idx="0"
+    >生活圈</view>
+    <view
+      class="living-tabs__item {{currentTab === 1 ? 'living-tabs__item--active' : ''}}"
+      bindtap="switchTab"
+      data-idx="1"
+    >失物招领</view>
+    <view
+      class="living-tabs__item {{currentTab === 2 ? 'living-tabs__item--active' : ''}}"
+      bindtap="switchTab"
+      data-idx="2"
+    >二手交换</view>
+  </view>
+
+  <view wx:if="{{currentTab === 0}}">
+    <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="living-channels">
+      <view class="living-channels__wrap">
+        <view
+          class="living-channels__item {{currentChannel === item._id ? 'living-channels__item--active' : ''}}"
+          wx:for="{{channels}}"
+          wx:key="_id"
+          bindtap="selectChannel"
+          data-id="{{item._id}}"
+        >
+          {{item.name}}
+        </view>
+      </view>
+    </scroll-view>
+
+    <view class="living-posts">
+      <view class="living-post" wx:for="{{dormPosts}}" wx:key="_id">
+        <view class="living-post__content">{{item.content}}</view>
+        <view class="living-post__images" wx:if="{{item.images.length}}">
+          <image
+            wx:for="{{item.images}}"
+            wx:for-item="img"
+            wx:key="*this"
+            src="{{img}}"
+            mode="aspectFill"
+            class="living-post__img"
+            lazy-load
+          />
+        </view>
+        <view class="living-post__footer">
+          <text class="living-post__likes">{{item.likeCount || 0}} 赞</text>
+          <text class="living-post__time">{{item.createdAt}}</text>
+        </view>
+      </view>
+      <empty-view
+        wx:if="{{!loading && !dormPosts.length}}"
+        icon="🏠"
+        title="暂无帖子"
+        subtitle="换个频道看看"
+      />
+    </view>
+  </view>
+
+  <view wx:if="{{currentTab === 1}}">
+    <view class="living-kind">
+      <view
+        class="living-kind__item {{lostKind === 'all' ? 'living-kind__item--active' : ''}}"
+        bindtap="setLostKind"
+        data-kind="all"
+      >全部</view>
+      <view
+        class="living-kind__item {{lostKind === 'lost' ? 'living-kind__item--active' : ''}}"
+        bindtap="setLostKind"
+        data-kind="lost"
+      >寻物</view>
+      <view
+        class="living-kind__item {{lostKind === 'found' ? 'living-kind__item--active' : ''}}"
+        bindtap="setLostKind"
+        data-kind="found"
+      >招领</view>
+    </view>
+
+    <view class="living-cards">
+      <view class="living-card" wx:for="{{lostItems}}" wx:key="_id">
+        <view class="living-card__top">
+          <text class="living-card__title">{{item.title}}</text>
+          <text class="chip chip--{{item.kind === 'lost' ? 'warning' : 'success'}}">{{item.kind === 'lost' ? '寻物' : '招领'}}</text>
+        </view>
+        <view class="living-card__desc" wx:if="{{item.description}}">{{item.description}}</view>
+        <view class="living-card__meta" wx:if="{{item.location}}">📍 {{item.location}}</view>
+        <view class="living-card__meta" wx:if="{{item.contact}}">📞 {{item.contact}}</view>
+      </view>
+      <empty-view
+        wx:if="{{!loading && !lostItems.length}}"
+        icon="🔍"
+        title="暂无信息"
+        subtitle="暂无相关失物招领"
+      />
+    </view>
+  </view>
+
+  <view wx:if="{{currentTab === 2}}">
+    <view class="living-second">
+      <view class="living-second__item" wx:for="{{secondItems}}" wx:key="_id">
+        <view class="living-second__title">{{item.title}}</view>
+        <view class="living-second__price">{{priceText(item.price)}}</view>
+        <view class="living-second__desc" wx:if="{{item.description}}">{{item.description}}</view>
+        <view class="living-second__contact" wx:if="{{item.contact}}">联系：{{item.contact}}</view>
+      </view>
+      <empty-view
+        wx:if="{{!loading && !secondItems.length}}"
+        icon="🛍️"
+        title="暂无商品"
+        subtitle="暂时没有二手物品"
+      />
+    </view>
+  </view>
+</view>

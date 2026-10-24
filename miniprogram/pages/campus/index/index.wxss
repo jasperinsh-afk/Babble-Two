@@ -1,0 +1,33 @@
+@import "../../vote/list/list.wxss";
+@import "../../club/list/list.wxss";
+@import "../../calendar/index/index.wxss";
+@import "../../living/index/index.wxss";
+
+.page--campus {
+  padding-top: 8rpx;
+}
+
+.campus-segment {
+  display: flex;
+  margin: 16rpx 24rpx 24rpx;
+  padding: 8rpx;
+  background: var(--bg-card);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-s);
+}
+
+.campus-segment__item {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  border-radius: var(--radius-pill);
+  font-size: 26rpx;
+  color: var(--text-normal);
+  transition: all 0.2s ease;
+}
+
+.campus-segment__item--active {
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: var(--shadow-s);
+}

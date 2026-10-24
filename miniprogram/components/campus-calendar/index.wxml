@@ -1,0 +1,37 @@
+<view class="page page--calendar">
+  <view class="calendar-header">
+    <view class="calendar-header__btn" bindtap="prevMonth">‹</view>
+    <view class="calendar-header__title">{{year}} 年 {{month}} 月</view>
+    <view class="calendar-header__btn" bindtap="nextMonth">›</view>
+  </view>
+
+  <view class="calendar-weekdays">
+    <view class="calendar-weekday" wx:for="{{weekdays}}" wx:key="*this">{{item}}</view>
+  </view>
+
+  <view class="calendar-grid">
+    <view
+      class="calendar-day {{item.outside ? 'calendar-day--outside' : ''}} {{item.isToday ? 'calendar-day--today' : ''}} {{item.date === selectedDate ? 'calendar-day--selected' : ''}} {{item.hasEvent ? 'calendar-day--event' : ''}}"
+      wx:for="{{days}}"
+      wx:key="date"
+      bindtap="selectDate"
+      data-date="{{item.date}}"
+    >
+      <text class="calendar-day__num">{{item.day}}</text>
+      <view class="calendar-day__dot" wx:if="{{item.hasEvent}}"></view>
+    </view>
+  </view>
+
+  <view class="section">
+    <section-header title="{{selectedDate ? selectedDate + ' 的活动' : '近期活动'}}" />
+    <view wx:for="{{currentEvents}}" wx:key="_id">
+      <event-card event="{{item}}" bindtap="goEvent" data-id="{{item._id}}" />
+    </view>
+    <empty-view
+      wx:if="{{!currentEvents.length}}"
+      icon="🗓️"
+      title="暂无活动"
+      subtitle="{{selectedDate ? '换个日期看看' : '近期还没有活动哦'}}"
+    />
+  </view>
+</view>

@@ -1,0 +1,64 @@
+<view class="page page--scan">
+  <view class="scan-guide card section">
+    <view class="scan-guide__icon">◎</view>
+    <view class="scan-guide__title">叭啦 扫码打卡</view>
+    <view class="scan-guide__desc">扫描活动现场的小程序码，解锁不同点位勋章</view>
+    <view class="btn" bindtap="startScan">立即扫码</view>
+    <view class="scan-guide__input-row" wx:if="{{false}}">
+      <input class="scan-guide__input" placeholder="或输入卡片编号" bindinput="onInput" />
+      <view class="btn btn--ghost" bindtap="manualLookup">查询</view>
+    </view>
+  </view>
+
+  <view class="scan-card card section" wx:if="{{card}}">
+    <view class="scan-card__title">点位信息</view>
+    <view class="scan-card__row">
+      <text class="scan-card__label">编号</text>
+      <text class="scan-card__value">{{card.cardId}}</text>
+    </view>
+    <view class="scan-card__row" wx:if="{{card.locationDesc}}">
+      <text class="scan-card__label">位置</text>
+      <text class="scan-card__value">{{card.locationDesc}}</text>
+    </view>
+    <view class="scan-card__row">
+      <text class="scan-card__label">区域</text>
+      <text class="scan-card__value">{{locationName}}</text>
+    </view>
+    <view class="scan-card__status">
+      <text wx:if="{{card.checked}}" class="chip chip--success">已打卡</text>
+      <text wx:else class="chip chip--warning">未打卡</text>
+    </view>
+    <view class="btn" bindtap="doCheckin" wx:if="{{!card.checked}}">立即打卡</view>
+    <view wx:else class="scan-card__tip">累计打卡 {{card.tapCount || 1}} 次</view>
+  </view>
+
+  <view class="scan-progress card section" wx:if="{{card}}">
+    <view class="scan-progress__title">打卡进度</view>
+    <view class="scan-progress__ring">
+      <view class="scan-progress__num">{{card.uniqueCards || 0}}</view>
+      <view class="scan-progress__label">已打卡点位</view>
+    </view>
+    <view class="scan-progress__tip">再打卡 {{nextBadgeNeed}} 个即可解锁「扫码探索者」</view>
+  </view>
+
+  <view class="scan-rules card section">
+    <section-header title="点位说明" />
+    <view class="scan-rule" wx:for="{{rules}}" wx:key="type">
+      <view class="scan-rule__dot"></view>
+      <view>
+        <view class="scan-rule__name">{{item.name}}</view>
+        <view class="scan-rule__desc">{{item.desc}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="scan-toast" wx:if="{{newBadges.length}}">
+    <view class="scan-toast__box pop-in">
+      <view class="scan-toast__title">🎉 解锁新勋章</view>
+      <view class="scan-toast__badge" wx:for="{{newBadges}}" wx:key="code">
+        <text class="scan-toast__name">{{item.name}}</text>
+        <text class="scan-toast__rarity">{{rarityText(item.rarity)}}</text>
+      </view>
+    </view>
+  </view>
+</view>

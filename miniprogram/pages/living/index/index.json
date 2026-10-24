@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "campus-living": "/components/campus-living/index"
+  },
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#FAF8FF"
+}

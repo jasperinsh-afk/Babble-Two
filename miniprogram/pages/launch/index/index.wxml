@@ -1,0 +1,22 @@
+<view class="launch" bindtap="onTap">
+  <!-- 品牌图形装饰：星芒 / 笔刷 / 飘带，浅底资产裁为软圆徽章 -->
+  <view class="launch__badge launch__badge--spark">
+    <image src="/assets/brand/spark.png" mode="aspectFit" />
+  </view>
+  <view class="launch__badge launch__badge--ribbon">
+    <image src="/assets/brand/ribbon.png" mode="aspectFit" />
+  </view>
+  <view class="launch__badge launch__badge--brush">
+    <image src="/assets/brand/brush.png" mode="aspectFit" />
+  </view>
+
+  <view class="launch__stage">
+    <image class="launch__logo" src="/assets/brand/logo-secondary.png" mode="aspectFit" />
+  </view>
+
+  <view class="launch__loading">
+    <view class="launch__dot"></view>
+    <view class="launch__dot"></view>
+    <view class="launch__dot"></view>
+  </view>
+</view>

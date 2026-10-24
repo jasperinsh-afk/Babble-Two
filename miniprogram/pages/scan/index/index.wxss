@@ -1,0 +1,187 @@
+.page--scan {
+  padding-bottom: 40rpx;
+}
+
+.scan-guide {
+  padding: 40rpx 28rpx;
+  text-align: center;
+}
+
+.scan-guide__icon {
+  width: 120rpx;
+  height: 120rpx;
+  line-height: 120rpx;
+  margin: 0 auto 24rpx;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: #fff;
+  font-size: 60rpx;
+  box-shadow: var(--shadow-m);
+}
+
+.scan-guide__title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin-bottom: 12rpx;
+}
+
+.scan-guide__desc {
+  font-size: 24rpx;
+  color: var(--text-weak);
+  margin-bottom: 28rpx;
+}
+
+.scan-card {
+  padding: 28rpx;
+}
+
+.scan-card__title {
+  font-size: 30rpx;
+  font-weight: 600;
+  margin-bottom: 20rpx;
+}
+
+.scan-card__row {
+  display: flex;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid rgba(30, 27, 46, 0.04);
+}
+
+.scan-card__label {
+  width: 120rpx;
+  font-size: 24rpx;
+  color: var(--text-weak);
+}
+
+.scan-card__value {
+  flex: 1;
+  font-size: 26rpx;
+  color: var(--text-strong);
+  word-break: break-all;
+}
+
+.scan-card__status {
+  margin: 20rpx 0;
+}
+
+.scan-card__tip {
+  margin-top: 16rpx;
+  font-size: 24rpx;
+  color: var(--text-weak);
+}
+
+.scan-progress {
+  padding: 28rpx;
+  text-align: center;
+}
+
+.scan-progress__title {
+  font-size: 30rpx;
+  font-weight: 600;
+  text-align: left;
+  margin-bottom: 20rpx;
+}
+
+.scan-progress__ring {
+  width: 220rpx;
+  height: 220rpx;
+  margin: 0 auto 20rpx;
+  border-radius: 50%;
+  background: conic-gradient(var(--primary-light) 0deg, var(--primary) 180deg, var(--primary-violet) 360deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: var(--shadow-l);
+}
+
+.scan-progress__num {
+  font-size: 64rpx;
+  font-weight: 800;
+}
+
+.scan-progress__label {
+  font-size: 24rpx;
+  opacity: 0.9;
+}
+
+.scan-progress__tip {
+  font-size: 24rpx;
+  color: var(--text-weak);
+}
+
+.scan-rules {
+  padding: 28rpx;
+}
+
+.scan-rule {
+  display: flex;
+  padding: 14rpx 0;
+}
+
+.scan-rule__dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: var(--primary);
+  margin-right: 16rpx;
+  margin-top: 10rpx;
+  flex-shrink: 0;
+}
+
+.scan-rule__name {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: var(--text-strong);
+  margin-bottom: 4rpx;
+}
+
+.scan-rule__desc {
+  font-size: 22rpx;
+  color: var(--text-weak);
+  line-height: 1.5;
+}
+
+.scan-toast {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 30%;
+  display: flex;
+  justify-content: center;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.scan-toast__box {
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: var(--radius-l);
+  padding: 32rpx 48rpx;
+  box-shadow: var(--shadow-l);
+  text-align: center;
+}
+
+.scan-toast__title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin-bottom: 16rpx;
+}
+
+.scan-toast__badge {
+  margin: 8rpx 0;
+}
+
+.scan-toast__name {
+  font-size: 30rpx;
+  color: var(--primary);
+  font-weight: 600;
+  margin-right: 12rpx;
+}
+
+.scan-toast__rarity {
+  font-size: 22rpx;
+  color: var(--warning);
+}

@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "campus-vote-list": "/components/campus-vote-list/index"
+  },
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#FAF8FF"
+}

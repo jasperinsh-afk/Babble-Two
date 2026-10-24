@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "校园",
+  "usingComponents": {
+    "campus-calendar": "/components/campus-calendar/index",
+    "campus-vote-list": "/components/campus-vote-list/index",
+    "campus-club-list": "/components/campus-club-list/index",
+    "campus-living": "/components/campus-living/index",
+    "empty-view": "/components/empty-view/index"
+  },
+  "backgroundColor": "#FAF8FF"
+}

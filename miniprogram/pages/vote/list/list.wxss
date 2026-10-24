@@ -1,0 +1,44 @@
+.page--vote-list {
+  padding-top: 8rpx;
+}
+
+.vote-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg-page);
+  padding: 16rpx 24rpx;
+}
+
+.vote-tabs__wrap {
+  display: inline-flex;
+}
+
+.vote-tabs__item {
+  flex-shrink: 0;
+  padding: 10rpx 28rpx;
+  margin-right: 16rpx;
+  border-radius: 999rpx;
+  background: var(--bg-card);
+  font-size: 26rpx;
+  color: var(--text-normal);
+  box-shadow: var(--shadow-s);
+  transition: all 0.2s ease;
+}
+
+.vote-tabs__item--active {
+  background: var(--gradient-primary);
+  color: #fff;
+  box-shadow: var(--shadow-m);
+}
+
+.vote-list {
+  padding: 0 24rpx 40rpx;
+}
+
+.vote-list__footer {
+  text-align: center;
+  padding: 32rpx;
+  font-size: 24rpx;
+  color: var(--text-weak);
+}

@@ -1,0 +1,18 @@
+<view class="event-card" bindtap="onTap">
+  <view class="event-card__thumb event-card__thumb--empty" wx:if="{{!event.coverUrl}}">
+    <text>{{initial}}</text>
+  </view>
+  <image class="event-card__thumb" src="{{event.coverUrl}}" mode="aspectFill" lazy-load wx:else />
+  <view class="event-card__body">
+    <view class="event-card__title ellipsis">{{event.title}}</view>
+    <view class="event-card__row">
+      <text class="event-card__meta">{{timeText}}</text>
+    </view>
+    <view class="event-card__row" wx:if="{{event.location}}">
+      <text class="event-card__meta">📍 {{event.location}}</text>
+    </view>
+    <view class="event-card__count">
+      <text class="event-card__chip chip chip--solid">{{countText}}</text>
+    </view>
+  </view>
+</view>

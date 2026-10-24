@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "result-chart": "/components/result-chart/index",
+    "section-header": "/components/section-header/index"
+  },
+  "backgroundColor": "#FAF8FF"
+}

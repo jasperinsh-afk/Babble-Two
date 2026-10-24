@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "section-header": "/components/section-header/index",
+    "empty-view": "/components/empty-view/index"
+  },
+  "backgroundColor": "#FAF8FF"
+}

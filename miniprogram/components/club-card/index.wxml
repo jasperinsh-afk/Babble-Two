@@ -1,0 +1,18 @@
+<view class="club-card" bindtap="onTap">
+  <view class="club-card__cover" wx:if="{{club.coverUrl}}">
+    <image src="{{club.coverUrl}}" mode="aspectFill" lazy-load />
+  </view>
+  <view class="club-card__cover club-card__cover--empty" wx:else>
+    <text>{{initial}}</text>
+  </view>
+  <view class="club-card__body">
+    <view class="club-card__title-row">
+      <text class="club-card__name ellipsis">{{club.name}}</text>
+      <view class="club-card__badge" wx:if="{{club.isVerified}}">V</view>
+    </view>
+    <view class="club-card__meta">
+      <text class="club-card__category">{{categoryText}}</text>
+      <text class="club-card__count">{{club.memberCount || 0}} 成员</text>
+    </view>
+  </view>
+</view>

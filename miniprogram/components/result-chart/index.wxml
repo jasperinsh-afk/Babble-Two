@@ -1,0 +1,39 @@
+<view class="result-chart">
+  <view class="result-chart__header">
+    <view class="result-chart__total">
+      <text class="result-chart__total-num">{{results.total || 0}}</text>
+      <text class="result-chart__total-label">人参与</text>
+    </view>
+    <view class="result-chart__pk" wx:if="{{isPk}}">
+      <view class="result-chart__pk-item result-chart__pk-left">
+        <text class="result-chart__pk-num">{{leftPercent}}%</text>
+        <text class="result-chart__pk-label">{{rows[0].label}}</text>
+      </view>
+      <view class="result-chart__pk-vs">VS</view>
+      <view class="result-chart__pk-item result-chart__pk-right">
+        <text class="result-chart__pk-num">{{rightPercent}}%</text>
+        <text class="result-chart__pk-label">{{rows[1].label}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="result-chart__list" wx:if="{{!isPk}}">
+    <view class="result-chart__row" wx:for="{{rows}}" wx:key="optionId">
+      <view class="result-chart__info">
+        <text class="result-chart__label">{{item.label}}</text>
+        <text class="result-chart__value">{{item.count}} 票</text>
+      </view>
+      <view class="result-chart__bar-bg">
+        <view class="result-chart__bar-fill" style="width: {{item.percent}}%;"></view>
+      </view>
+      <text class="result-chart__percent">{{item.percentText}}</text>
+    </view>
+  </view>
+
+  <view class="result-chart__list" wx:if="{{isPk}}">
+    <view class="result-chart__pk-bar">
+      <view class="result-chart__pk-fill result-chart__pk-fill--left" style="width: {{leftPercent}}%;"></view>
+      <view class="result-chart__pk-fill result-chart__pk-fill--right" style="width: {{rightPercent}}%;"></view>
+    </view>
+  </view>
+</view>

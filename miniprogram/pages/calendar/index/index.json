@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "campus-calendar": "/components/campus-calendar/index"
+  },
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#FAF8FF"
+}

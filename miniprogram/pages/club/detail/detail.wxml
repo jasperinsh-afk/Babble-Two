@@ -1,0 +1,66 @@
+<view class="page page--club-detail">
+  <view wx:if="{{club}}">
+    <!-- 封面与信息卡 -->
+    <view class="club-hero">
+      <view class="club-hero__cover" wx:if="{{club.coverUrl}}">
+        <image src="{{club.coverUrl}}" mode="aspectFill" />
+      </view>
+      <view class="club-hero__cover club-hero__cover--empty" wx:else>
+        <text>{{initial}}</text>
+      </view>
+      <view class="club-hero__body">
+        <view class="club-hero__name-row">
+          <text class="club-hero__name">{{club.name}}</text>
+          <view class="club-hero__verified" wx:if="{{club.isVerified}}">官方认证</view>
+        </view>
+        <text class="club-hero__desc">{{club.description || ''}}</text>
+        <view class="club-hero__meta">
+          <text class="chip">{{categoryText}}</text>
+          <text class="club-hero__count">{{club.memberCount || 0}} 成员 · 热度 {{club.heatScore || 0}}</text>
+        </view>
+        <view
+          class="club-hero__btn btn {{club.joined ? 'btn--ghost' : ''}}"
+          bindtap="toggleJoin"
+        >
+          {{club.joined ? '已加入' : '加入社团'}}
+        </view>
+      </view>
+    </view>
+
+    <!-- 社团动态（仅官方注入，无评论） -->
+    <view class="section">
+      <section-header title="社团动态" />
+      <view class="club-posts">
+        <view class="club-post" wx:for="{{posts}}" wx:key="_id">
+          <view class="club-post__title" wx:if="{{item.title}}">{{item.title}}</view>
+          <view class="club-post__content">{{item.content}}</view>
+          <view class="club-post__images" wx:if="{{item.images.length}}">
+            <image
+              class="club-post__img"
+              wx:for="{{item.images}}"
+              wx:for-item="img"
+              wx:key="*this"
+              src="{{img}}"
+              mode="aspectFill"
+              lazy-load
+            />
+          </view>
+          <view class="club-post__footer">
+            <text class="club-post__pinned" wx:if="{{item.isPinned}}">置顶</text>
+            <text class="club-post__likes">{{item.likeCount || 0}} 赞</text>
+          </view>
+        </view>
+        <empty-view
+          wx:if="{{!loading && !posts.length}}"
+          icon="📰"
+          title="暂无动态"
+          subtitle="精彩内容即将发布"
+        />
+      </view>
+    </view>
+  </view>
+
+  <view wx:else class="club-detail__loading">
+    <text>加载中…</text>
+  </view>
+</view>

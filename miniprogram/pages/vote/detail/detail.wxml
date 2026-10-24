@@ -1,0 +1,82 @@
+<view class="page page--vote-detail">
+  <view wx:if="{{poll}}">
+    <!-- 头部信息 -->
+    <view class="vote-detail__header card section">
+      <view class="vote-detail__tags">
+        <text class="chip">{{typeText}}</text>
+        <text class="chip" wx:if="{{poll.tag}}">{{tagText}}</text>
+        <text class="vote-detail__time">{{timeText}}</text>
+      </view>
+      <view class="vote-detail__title">{{poll.title}}</view>
+      <view class="vote-detail__desc" wx:if="{{poll.description}}">{{poll.description}}</view>
+      <view class="vote-detail__count">{{poll.totalVotes || 0}} 人已参与</view>
+    </view>
+
+    <!-- 选项区 -->
+    <view class="vote-detail__options card section" wx:if="{{!showResults}}">
+      <view
+        class="vote-option {{isSelected(item.optionId) ? 'vote-option--selected' : ''}}"
+        wx:for="{{poll.options}}"
+        wx:key="optionId"
+        bindtap="toggleOption"
+        data-id="{{item.optionId}}"
+      >
+        <view class="vote-option__check">
+          <view class="vote-option__circle" wx:if="{{isSingleLike}}"></view>
+          <view class="vote-option__square" wx:else></view>
+        </view>
+        <view class="vote-option__body">
+          <text class="vote-option__label">{{item.label}}</text>
+          <text class="vote-option__count" wx:if="{{poll.pollType === 'groupbuy'}}">{{item.count || 0}} 人已接龙</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 结果图表 -->
+    <view class="section" wx:if="{{showResults}}">
+      <section-header title="结果" />
+      <result-chart results="{{results}}" poll-type="{{poll.pollType}}" />
+    </view>
+
+    <!-- 接龙信息 -->
+    <view class="vote-detail__chain card section" wx:if="{{poll.pollType === 'groupbuy'}}">
+      <view class="vote-detail__chain-title">接龙进度</view>
+      <view class="vote-detail__chain-bar">
+        <view
+          class="vote-detail__chain-fill"
+          style="width: {{chainPercent}}%"
+        ></view>
+      </view>
+      <view class="vote-detail__chain-text">
+        {{poll.participantCount || 0}} / {{poll.maxParticipants || '∞'}} 人
+        <text wx:if="{{poll.isFull}}" class="vote-detail__chain-full">已满员</text>
+      </view>
+      <button
+        class="btn {{poll.joined ? 'btn--ghost' : ''}}"
+        wx:if="{{!poll.joined}}"
+        bindtap="joinChain"
+        disabled="{{submitting}}"
+      >我要接龙</button>
+      <button class="btn btn--ghost" wx:else bindtap="leaveChain" disabled="{{submitting}}">取消接龙</button>
+    </view>
+
+    <!-- 已投提示 -->
+    <view class="vote-detail__voted-tip" wx:if="{{poll.hasVoted && !showResults && poll.pollType !== 'groupbuy'}}">
+      你已参与，点击下方按钮查看结果
+    </view>
+  </view>
+
+  <view wx:else class="vote-detail__loading">
+    <text>加载中…</text>
+  </view>
+
+  <!-- 底部悬浮按钮 -->
+  <view class="btn-fixed vote-detail__submit" wx:if="{{poll && !showResults && poll.pollType !== 'groupbuy'}}">
+    <view
+      class="btn {{submitting || !canSubmit ? 'btn--disabled' : ''}}"
+      bindtap="submitVote"
+    >
+      {{poll.hasVoted ? '修改投票' : '投 票'}}
+    </view>
+  </view>
+</view>

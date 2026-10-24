@@ -1,0 +1,11 @@
+{
+  "usingComponents": {
+    "poll-card": "/components/poll-card/index",
+    "club-card": "/components/club-card/index",
+    "event-card": "/components/event-card/index",
+    "section-header": "/components/section-header/index",
+    "empty-view": "/components/empty-view/index"
+  },
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#FAF8FF"
+}
