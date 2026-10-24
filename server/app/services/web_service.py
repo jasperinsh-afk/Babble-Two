@@ -21,7 +21,8 @@ ALLOWED_ACTIONS: Dict[str, frozenset] = {
     "event": frozenset({"list", "calendar", "detail", "join", "myCas"}),
     "living": frozenset({"channels", "channelPosts", "lostFound", "secondHand"}),
     "scan": frozenset({"cardByCode", "checkin"}),
-    "me": frozenset({"overview"}),
+    "me": frozenset({"overview", "messages", "markRead", "messagePrefs"}),
+    "analytics": frozenset({"track"}),
 }
 
 # 只缓存与身份无关的读操作，云开发 HTTP API 有日配额，缓存可显著省调用
@@ -46,6 +47,9 @@ WRITE_ACTIONS = frozenset(
         ("club", "leave"),
         ("event", "join"),
         ("scan", "checkin"),
+        ("me", "markRead"),
+        ("me", "messagePrefs"),
+        ("analytics", "track"),
     }
 )
 
@@ -68,7 +72,7 @@ async def call(fn: str, action: str, payload: Dict[str, Any], identity: str) -> 
     ):
         raise BalaError(
             "网页写入暂未开启：请先在微信开发者工具部署更新后的 "
-            "vote/club/event/scan/me 云函数，再把 WEB_CLOUD_WRITE_ENABLED 设为 true",
+            "vote/club/event/scan/me/analytics 云函数，再把 WEB_CLOUD_WRITE_ENABLED 设为 true",
             "WRITE_DISABLED",
             409,
         )

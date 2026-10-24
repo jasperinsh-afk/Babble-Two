@@ -93,7 +93,125 @@ async function overview(payload = {}) {
   }
 }
 
-const ACTIONS = { overview }
+// ---------------------------------------------------------------- 消息中心
+
+const MESSAGE_PAGE = 20
+
+/** 消息偏好默认值（全部开启）；文档缺失的键以此兜底 */
+const DEFAULT_PREFS = {
+  eventChange: true,
+  eventCancel: true,
+  pollResult: true,
+  ownerResponse: true,
+  deadline: true,
+}
+
+const PREF_KEYS = Object.keys(DEFAULT_PREFS)
+
+function slimMessage(m) {
+  return {
+    _id: m._id,
+    type: m.type,
+    title: m.title,
+    content: m.content,
+    refType: m.refType || '',
+    refId: m.refId || '',
+    readAt: m.readAt || null,
+    createdAt: m.createdAt,
+  }
+}
+
+function shapePrefs(doc) {
+  const out = { ...DEFAULT_PREFS }
+  PREF_KEYS.forEach((k) => {
+    if (typeof doc[k] === 'boolean') out[k] = doc[k]
+  })
+  return out
+}
+
+/**
+ * me.messages —— 消息中心分页读取
+ *
+ * cursor 为上一页最后一条的 createdAt（倒序分页，严格小于游标）。
+ * unread 为当前用户全部未读数（不受 type/unreadOnly 过滤影响）。
+ */
+async function messages(payload = {}) {
+  const openid = resolveOpenid(payload)
+  const where = { _openid: openid }
+  if (payload.type) where.type = payload.type
+  if (payload.unreadOnly) where.readAt = null
+
+  if (payload.cursor) {
+    const cursorDate = new Date(payload.cursor)
+    if (!isNaN(cursorDate.getTime())) where.createdAt = db.command.lt(cursorDate)
+  }
+
+  const [listRes, unreadRes] = await Promise.all([
+    db
+      .collection('messages')
+      .where(where)
+      .orderBy('createdAt', 'desc')
+      .limit(MESSAGE_PAGE)
+      .get(),
+    db.collection('messages').where({ _openid: openid, readAt: null }).count(),
+  ])
+
+  return {
+    list: listRes.data.map(slimMessage),
+    hasMore: listRes.data.length === MESSAGE_PAGE,
+    unread: unreadRes.total,
+  }
+}
+
+/**
+ * me.markRead —— 标记已读
+ *
+ * 三种入参：{ ids: [...] } / { id } / { all: true }。
+ * where 必带 _openid，杜绝标记他人消息；readAt: null 保证只统计真正未读的条数。
+ */
+async function markRead(payload = {}) {
+  const openid = resolveOpenid(payload)
+  const where = { _openid: openid, readAt: null }
+
+  if (!payload.all) {
+    if (payload.ids && payload.ids.length) where._id = db.command.in(payload.ids)
+    else if (payload.id) where._id = payload.id
+    else fail('缺少要标记的消息')
+  }
+
+  const res = await db.collection('messages').where(where).update({ data: { readAt: new Date() } })
+  return { updated: (res.stats && res.stats.updated) || 0 }
+}
+
+/**
+ * me.messagePrefs —— 消息偏好读写
+ *
+ * 无参或 prefs 为空时返回当前偏好（与默认值合并）；
+ * 带 payload.prefs 时按 _openid upsert（存在则更新，不存在则新建）。
+ */
+async function messagePrefs(payload = {}) {
+  const openid = resolveOpenid(payload)
+  const incoming = payload.prefs
+
+  if (incoming && typeof incoming === 'object') {
+    const patch = { updatedAt: new Date() }
+    PREF_KEYS.forEach((k) => {
+      if (typeof incoming[k] === 'boolean') patch[k] = incoming[k]
+    })
+    const existRes = await db.collection('message_prefs').where({ _openid: openid }).limit(1).get()
+    if (existRes.data.length) {
+      await db.collection('message_prefs').doc(existRes.data[0]._id).update({ data: patch })
+    } else {
+      await db.collection('message_prefs').add({ data: { _openid: openid, ...patch } })
+    }
+    return { prefs: shapePrefs({ ...DEFAULT_PREFS, ...patch }) }
+  }
+
+  const res = await db.collection('message_prefs').where({ _openid: openid }).limit(1).get()
+  return { prefs: shapePrefs(res.data[0] || {}) }
+}
+
+const ACTIONS = { overview, messages, markRead, messagePrefs }
 
 exports.main = async (event = {}) => {
   const { action = 'overview', payload = {} } = event

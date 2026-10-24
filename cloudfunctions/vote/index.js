@@ -316,7 +316,8 @@ async function joinChain(payload = {}) {
   const poll = await db.collection(POLLS).doc(pollId).get()
   if (!poll.data || poll.data.pollType !== 'groupbuy') fail('接龙不存在')
 
-  return cast({ pollId, optionIds: [optionId] })
+  // __openid 必须透传：cast 经 resolveOpenid 取身份，网页版匿名身份在此链路不能丢
+  return cast({ pollId, optionIds: [optionId], __openid: payload.__openid })
 }
 
 async function leaveChain(payload = {}) {

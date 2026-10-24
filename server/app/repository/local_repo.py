@@ -16,6 +16,15 @@ from app.repository.local_store import DocumentStore
 
 PAGE_SIZE = 20
 
+# 消息偏好默认值（全部开启），与 cloudfunctions/me/index.js DEFAULT_PREFS 对齐
+DEFAULT_MESSAGE_PREFS = {
+    "eventChange": True,
+    "eventCancel": True,
+    "pollResult": True,
+    "ownerResponse": True,
+    "deadline": True,
+}
+
 OPTION_RANGE = {
     "single": (1, 1),
     "multi": (1, 8),
@@ -113,7 +122,10 @@ class LocalRepository:
         clubs = [c for c in await self.store.docs("clubs") if _visible(c)]
         clubs.sort(key=lambda c: c.get("heatScore") or 0, reverse=True)
 
+        layout = await self.store.get("site_pages", "home")
+
         return {
+            "sections": (layout or {}).get("sections") or [],
             "banners": [
                 {
                     "_id": b.get("_id"),
@@ -754,6 +766,101 @@ class LocalRepository:
         }
 
 
+    # ── me / 消息中心 ──
+
+    async def me_messages(self, payload, identity):
+        msg_type = payload.get("type") or ""
+        unread_only = bool(payload.get("unreadOnly"))
+        try:
+            size = max(1, min(int(payload.get("limit") or PAGE_SIZE), 50))
+        except (TypeError, ValueError):
+            size = PAGE_SIZE
+
+        items = [m for m in await self.store.docs("messages") if m.get("_openid") == identity]
+        unread = sum(1 for m in items if not m.get("readAt"))
+        if msg_type:
+            items = [m for m in items if m.get("type") == msg_type]
+        if unread_only:
+            items = [m for m in items if not m.get("readAt")]
+        items.sort(key=lambda m: _dt_key(m.get("createdAt")), reverse=True)
+
+        cursor = parse_dt(payload.get("cursor"))
+        if cursor:
+            threshold = cursor.timestamp()
+            items = [m for m in items if _dt_key(m.get("createdAt")) < threshold]
+
+        chunk = items[:size]
+        return {
+            "list": [
+                {
+                    "_id": m.get("_id"),
+                    "type": m.get("type"),
+                    "title": m.get("title"),
+                    "content": m.get("content") or "",
+                    "refType": m.get("refType") or "",
+                    "refId": m.get("refId") or "",
+                    "readAt": m.get("readAt"),
+                    "createdAt": m.get("createdAt"),
+                }
+                for m in chunk
+            ],
+            "hasMore": len(chunk) == size,
+            "unread": unread,
+        }
+
+    async def me_mark_read(self, payload, identity):
+        async with self._write_lock:
+            items = [m for m in await self.store.docs("messages") if m.get("_openid") == identity]
+            if payload.get("all"):
+                targets = [m for m in items if not m.get("readAt")]
+            else:
+                wanted = payload.get("ids") or ([payload["id"]] if payload.get("id") else None)
+                if not wanted:
+                    _fail("缺少要标记的消息", "PARAM_MISSING")
+                wanted_ids = {str(i) for i in wanted}
+                targets = [
+                    m for m in items if not m.get("readAt") and str(m.get("_id")) in wanted_ids
+                ]
+            now = iso(utcnow())
+            for target in targets:
+                target["readAt"] = now
+                await self.store.put("messages", target)
+            return {"updated": len(targets)}
+
+    async def me_message_prefs(self, payload, identity):
+        prefs = payload.get("prefs") if isinstance(payload.get("prefs"), dict) else {}
+        existing = next(
+            (d for d in await self.store.docs("message_prefs") if d.get("_openid") == identity),
+            None,
+        )
+        if prefs:
+            doc = {**(existing or {}), "_openid": identity, "updatedAt": iso(utcnow())}
+            for key in DEFAULT_MESSAGE_PREFS:
+                if isinstance(prefs.get(key), bool):
+                    doc[key] = prefs[key]
+            await self.store.put("message_prefs", doc)
+            return {"prefs": _shape_message_prefs(doc)}
+        return {"prefs": _shape_message_prefs(existing or {})}
+
+    # ── analytics ──
+
+    async def analytics_track(self, payload, identity):
+        event = (payload.get("event") or "").strip()
+        if not event:
+            _fail("缺少 event", "PARAM_MISSING")
+        await self.store.insert(
+            "analytics_events",
+            {
+                "_openid": identity,
+                "event": event,
+                "props": payload.get("props") or {},
+                "createdAt": iso(utcnow()),
+                "sessionId": payload.get("sessionId") or "",
+            },
+        )
+        return {"ok": True}
+
+
 # ── 视图裁剪（对齐云函数 slim*）──
 
 
@@ -869,6 +976,14 @@ def _slim_event_home(event: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _shape_message_prefs(doc: Dict[str, Any]) -> Dict[str, bool]:
+    shaped = dict(DEFAULT_MESSAGE_PREFS)
+    for key in DEFAULT_MESSAGE_PREFS:
+        if isinstance(doc.get(key), bool):
+            shaped[key] = doc[key]
+    return shaped
+
+
 def _ballot_option_ids(ballot: Optional[Dict[str, Any]]) -> List[str]:
     if not ballot:
         return []
@@ -921,6 +1036,10 @@ _ACTIONS = {
     ("scan", "cardByCode"): LocalRepository.scan_card_by_code,
     ("scan", "checkin"): LocalRepository.scan_checkin,
     ("me", "overview"): LocalRepository.me_overview,
+    ("me", "messages"): LocalRepository.me_messages,
+    ("me", "markRead"): LocalRepository.me_mark_read,
+    ("me", "messagePrefs"): LocalRepository.me_message_prefs,
+    ("analytics", "track"): LocalRepository.analytics_track,
 }
 
 

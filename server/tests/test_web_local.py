@@ -5,12 +5,14 @@
 """
 from __future__ import annotations
 
+from datetime import timedelta
+
 from pathlib import Path
 
 import pytest
 
 from app.repository.base import BalaError
-from app.repository.dates import parse_dt
+from app.repository.dates import iso, parse_dt, utcnow
 from app.repository.local_repo import LocalRepository
 from app.repository.local_store import DocumentStore
 
@@ -171,3 +173,146 @@ async def test_scan_checkin_badges_and_overview(repo):
 async def test_unknown_action_rejected(repo):
     with pytest.raises(BalaError):
         await repo.call("vote", "dropTables", {}, IDENTITY)
+
+
+def _message(identity, index, total):
+    return {
+        "_openid": identity,
+        "type": "poll_result" if index % 2 else "event_change",
+        "title": f"消息 {index}",
+        "content": "正文",
+        "refType": "poll",
+        "refId": "p001",
+        "readAt": None,
+        "createdAt": iso(utcnow() - timedelta(minutes=total - index)),
+    }
+
+
+async def test_me_messages_pagination_and_unread(repo):
+    total = 25
+    for i in range(total):
+        await repo.store.insert("messages", _message(IDENTITY, i, total))
+
+    page1 = await repo.call("me", "messages", {}, IDENTITY)
+    assert len(page1["list"]) == 20
+    assert page1["hasMore"] is True
+    assert page1["unread"] == 25
+    assert page1["list"][0]["title"] == "消息 24"  # createdAt 倒序
+    assert page1["list"][0]["readAt"] is None
+
+    page2 = await repo.call(
+        "me", "messages", {"cursor": page1["list"][-1]["createdAt"]}, IDENTITY
+    )
+    assert len(page2["list"]) == 5
+    assert page2["hasMore"] is False
+    assert page2["unread"] == 25
+    assert [m["title"] for m in page2["list"]] == ["消息 4", "消息 3", "消息 2", "消息 1", "消息 0"]
+
+    typed = await repo.call("me", "messages", {"type": "poll_result"}, IDENTITY)
+    assert all(m["type"] == "poll_result" for m in typed["list"])
+    assert typed["unread"] == 25  # 未读数不受 type 过滤影响
+
+    await repo.call("me", "markRead", {"id": page1["list"][0]["_id"]}, IDENTITY)
+    unread_only = await repo.call("me", "messages", {"unreadOnly": True}, IDENTITY)
+    assert len(unread_only["list"]) == 20
+    assert all(m["readAt"] is None for m in unread_only["list"])
+    assert unread_only["unread"] == 24
+
+
+async def test_me_mark_read_only_own(repo):
+    mine = await repo.store.insert("messages", _message(IDENTITY, 1, 2))
+    theirs = await repo.store.insert("messages", _message(OTHER, 2, 2))
+
+    # 用户 A 标记用户 B 的消息：不得越权
+    denied = await repo.call("me", "markRead", {"id": theirs["_id"]}, IDENTITY)
+    assert denied["updated"] == 0
+    assert (await repo.store.get("messages", theirs["_id"]))["readAt"] is None
+    assert (await repo.call("me", "messages", {}, OTHER))["unread"] == 1
+
+    # 标记自己的消息
+    own = await repo.call("me", "markRead", {"id": mine["_id"]}, IDENTITY)
+    assert own["updated"] == 1
+    stored = await repo.store.get("messages", mine["_id"])
+    assert stored["readAt"]
+    assert (await repo.call("me", "messages", {}, IDENTITY))["unread"] == 0
+
+    # 重复标记已读消息不重复计数
+    again = await repo.call("me", "markRead", {"ids": [mine["_id"]]}, IDENTITY)
+    assert again["updated"] == 0
+
+    # ids 批量 + all 两种路径
+    second = await repo.store.insert("messages", _message(IDENTITY, 3, 4))
+    third = await repo.store.insert("messages", _message(IDENTITY, 4, 4))
+    batch = await repo.call(
+        "me", "markRead", {"ids": [second["_id"], third["_id"]]}, IDENTITY
+    )
+    assert batch["updated"] == 2
+    assert (await repo.call("me", "messages", {}, IDENTITY))["unread"] == 0
+
+    fourth = await repo.store.insert("messages", _message(OTHER, 5, 6))
+    fifth = await repo.store.insert("messages", _message(OTHER, 6, 6))
+    everything = await repo.call("me", "markRead", {"all": True}, OTHER)
+    assert everything["updated"] == 3  # B 的三条未读（最初那条 + 后加两条）
+    assert (await repo.call("me", "messages", {}, OTHER))["unread"] == 0
+
+
+async def test_me_message_prefs_upsert(repo):
+    defaults = {
+        "eventChange": True,
+        "eventCancel": True,
+        "pollResult": True,
+        "ownerResponse": True,
+        "deadline": True,
+    }
+    first = await repo.call("me", "messagePrefs", {}, IDENTITY)
+    assert first["prefs"] == defaults
+
+    saved = await repo.call(
+        "me",
+        "messagePrefs",
+        {
+            "prefs": {
+                "eventChange": False,
+                "eventCancel": True,
+                "pollResult": False,
+                "ownerResponse": False,
+                "deadline": False,
+            }
+        },
+        IDENTITY,
+    )
+    assert saved["prefs"] == {
+        "eventChange": False,
+        "eventCancel": True,
+        "pollResult": False,
+        "ownerResponse": False,
+        "deadline": False,
+    }
+
+    reread = await repo.call("me", "messagePrefs", {}, IDENTITY)
+    assert reread["prefs"]["eventCancel"] is True
+    assert reread["prefs"]["eventChange"] is False
+
+    # 第二个用户互不影响
+    other = await repo.call("me", "messagePrefs", {}, OTHER)
+    assert other["prefs"] == defaults
+
+
+async def test_analytics_track_writes_without_echo(repo):
+    tracked = await repo.call(
+        "analytics",
+        "track",
+        {"event": "today_action_done", "props": {"pollId": "p001"}, "sessionId": "s-1"},
+        IDENTITY,
+    )
+    assert tracked == {"ok": True}
+
+    rows = [r for r in await repo.store.docs("analytics_events") if r["_openid"] == IDENTITY]
+    assert len(rows) == 1
+    assert rows[0]["event"] == "today_action_done"
+    assert rows[0]["props"] == {"pollId": "p001"}
+    assert rows[0]["sessionId"] == "s-1"
+    assert rows[0]["createdAt"]
+
+    with pytest.raises(BalaError):
+        await repo.call("analytics", "track", {"event": ""}, IDENTITY)
