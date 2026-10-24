@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     )
 
     # ── 应用 ──
-    APP_NAME: str = "七德通 GoQD"
+    APP_NAME: str = "叭啦 Babble"
     APP_ENV: str = "development"
     DEBUG: bool = True
     API_V1_PREFIX: str = "/api/v1"
@@ -60,10 +60,26 @@ class Settings(BaseSettings):
     LLM_ENABLED: bool = False
     LLM_CACHE_TTL: int = 86400  # 相同话题 24h 内不重复调用
 
-    # ── OMEGA / NFC ──
-    NFC_BASE_URL: str = "https://goqd.com/nfc"
-    IOS_APP_STORE_URL: str = "https://apps.apple.com/app/goqd/idXXXXXXXX"
-    ANDROID_STORE_URL: str = "https://www.coolapk.com/apk/com.goqd.app"
+    # ── 微信云开发（小程序端数据在此，运营侧经 HTTP API 读写）──
+    WECHAT_APPID: str = ""
+    WECHAT_SECRET: str = ""
+    WECHAT_CLOUD_ENV: str = ""
+    # 与云函数 adminIngest 的环境变量保持一致，用于运营侧写库鉴权
+    INGEST_TOKEN: str = ""
+    # 运营后台访问口令（C 端已无登录，运营后台独立口令保护）
+    ADMIN_WEB_TOKEN: str = "change-me-admin-token"
+
+    # ── 网页版 bala-web ──
+    # auto：配置了 WECHAT_SECRET 就走云数据库，否则回落本地 SQLite
+    WEB_DATA_MODE: str = "auto"  # auto / cloud / local
+    WEB_LOCAL_DB: str = "./data/bala_web.db"
+    WEB_SEED_FILE: str = "../cloudfunctions/seedImport/seed_data.json"
+    # 本地种子日期整体平移，让最新一条落在「今天 + 10 天」，保证演示时投票/活动仍在进行
+    WEB_SEED_SHIFT_DATES: bool = True
+    WEB_CACHE_ENABLED: bool = True
+    # 云模式写入闸门：云函数未部署 resolveOpenid 版本前，网页写入会产生 _openid 为空
+    # 的脏数据。部署 vote/club/event/scan/me 五个云函数后再置为 true。
+    WEB_CLOUD_WRITE_ENABLED: bool = False
 
     # ── 推送 ──
     JPUSH_APP_KEY: str = ""
@@ -108,6 +124,14 @@ class Settings(BaseSettings):
     @property
     def db_is_sqlite(self) -> bool:
         return self.DATABASE_URL.startswith("sqlite")
+
+    @property
+    def web_data_mode(self) -> str:
+        """网页版实际数据源：cloud（微信云数据库）或 local（SQLite 种子）。"""
+        mode = (self.WEB_DATA_MODE or "auto").lower()
+        if mode in ("cloud", "local"):
+            return mode
+        return "cloud" if self.WECHAT_SECRET and self.WECHAT_CLOUD_ENV else "local"
 
 
 @lru_cache

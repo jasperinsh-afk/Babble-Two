@@ -1,0 +1,173 @@
+"""网页版本地数据源（LocalRepository）行为测试。
+
+云端规则以 cloudfunctions/*.js 为准，这里验证本地回落实现与之对齐。
+运行：pytest tests/test_web_local.py
+"""
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from app.repository.base import BalaError
+from app.repository.dates import parse_dt
+from app.repository.local_repo import LocalRepository
+from app.repository.local_store import DocumentStore
+
+SEED = Path(__file__).resolve().parent.parent.parent / "cloudfunctions/seedImport/seed_data.json"
+IDENTITY = "web:" + "a" * 32
+OTHER = "web:" + "b" * 32
+
+
+@pytest.fixture
+async def repo(tmp_path):
+    store = DocumentStore(str(tmp_path / "test.db"), seed_file=str(SEED), shift_dates=True)
+    repository = LocalRepository(store)
+    await store.ensure_ready()
+    yield repository
+    await store.close()
+
+
+async def test_home_feed(repo):
+    feed = await repo.call("home", "feed", {}, IDENTITY)
+    assert len(feed["banners"]) == 2
+    assert feed["hotPolls"] and feed["clubs"]
+    assert feed["todayPoll"] is not None  # 日期平移后必有进行中的投票
+
+
+async def test_vote_list_and_detail(repo):
+    page = await repo.call("vote", "list", {"tag": "all", "page": 0}, IDENTITY)
+    assert len(page["list"]) == 5
+    campus = await repo.call("vote", "list", {"tag": "campus", "page": 0}, IDENTITY)
+    assert all(p["tag"] == "campus" for p in campus["list"])
+
+    detail = await repo.call("vote", "detail", {"pollId": "p004"}, IDENTITY)
+    assert detail["hasVoted"] is False and detail["myChoice"] == []
+    assert detail["pollType"] == "ranking"
+
+
+async def test_vote_cast_updates_counts_and_results(repo):
+    before = await repo.call("vote", "results", {"pollId": "p004"}, IDENTITY)
+    total_before = before["total"]
+
+    cast = await repo.call(
+        "vote", "cast", {"pollId": "p004", "optionIds": ["p004o1", "p004o2"]}, IDENTITY
+    )
+    assert cast["voted"] is True and cast["changed"] is False
+
+    after = await repo.call("vote", "results", {"pollId": "p004"}, IDENTITY)
+    assert after["total"] == total_before + 1
+    assert after["options"][0]["count"] == before["options"][0]["count"] + 1
+
+    detail = await repo.call("vote", "detail", {"pollId": "p004"}, IDENTITY)
+    assert detail["hasVoted"] is True
+    assert detail["myChoice"] == ["p004o1", "p004o2"]
+
+    # 他人身份互不影响
+    other = await repo.call("vote", "detail", {"pollId": "p004"}, OTHER)
+    assert other["hasVoted"] is False
+
+
+async def test_vote_change_only_once(repo):
+    payload = {"pollId": "p004", "optionIds": ["p004o1", "p004o2"]}
+    await repo.call("vote", "cast", payload, IDENTITY)
+    changed = await repo.call(
+        "vote", "cast", {"pollId": "p004", "optionIds": ["p004o3", "p004o4"]}, IDENTITY
+    )
+    assert changed["changed"] is True
+    with pytest.raises(BalaError):
+        await repo.call("vote", "cast", payload, IDENTITY)
+
+
+async def test_vote_rejects_bad_option_count(repo):
+    with pytest.raises(BalaError):
+        await repo.call("vote", "cast", {"pollId": "p004", "optionIds": ["p004o1"]}, IDENTITY)
+    with pytest.raises(BalaError):
+        await repo.call("vote", "cast", {"pollId": "p004", "optionIds": ["nope"]}, IDENTITY)
+
+
+async def test_groupbuy_join_and_leave(repo):
+    joined = await repo.call(
+        "vote", "joinChain", {"pollId": "p005", "optionId": "p005o1"}, IDENTITY
+    )
+    assert joined["voted"] is True
+    detail = await repo.call("vote", "detail", {"pollId": "p005"}, IDENTITY)
+    assert detail["joined"] is True and detail["joinedOptionId"] == "p005o1"
+
+    left = await repo.call("vote", "leaveChain", {"pollId": "p005"}, IDENTITY)
+    assert left["left"] is True
+    detail = await repo.call("vote", "detail", {"pollId": "p005"}, IDENTITY)
+    assert detail["joined"] is False
+
+
+async def test_club_join_leave_and_search(repo):
+    clubs = await repo.call("club", "list", {"category": "all", "page": 0}, IDENTITY)
+    assert len(clubs["list"]) == 6
+    searched = await repo.call("club", "list", {"keyword": "辩论", "page": 0}, IDENTITY)
+    assert len(searched["list"]) == 1
+
+    await repo.call("club", "join", {"clubId": "c001"}, IDENTITY)
+    detail = await repo.call("club", "detail", {"clubId": "c001"}, IDENTITY)
+    assert detail["joined"] is True
+    again = await repo.call("club", "join", {"clubId": "c001"}, IDENTITY)
+    assert again["already"] is True
+
+    await repo.call("club", "leave", {"clubId": "c001"}, IDENTITY)
+    detail = await repo.call("club", "detail", {"clubId": "c001"}, IDENTITY)
+    assert detail["joined"] is False
+
+    posts = await repo.call("club", "posts", {"clubId": "c001"}, IDENTITY)
+    assert posts["list"][0]["isPinned"] is True
+
+
+async def test_event_calendar_and_join(repo):
+    listed = await repo.call("event", "list", {"page": 0}, IDENTITY)
+    assert listed["list"], "平移后应有进行中的活动"
+    first_start = parse_dt(listed["list"][0]["startAt"])
+    calendar = await repo.call(
+        "event", "calendar", {"year": first_start.year, "month": first_start.month}, IDENTITY
+    )
+    assert calendar["events"], "活动所在月份必须能在日历里查到"
+    assert calendar["days"]
+    joined = await repo.call("event", "join", {"eventId": "e001"}, IDENTITY)
+    assert joined["joined"] is True
+    detail = await repo.call("event", "detail", {"eventId": "e001"}, IDENTITY)
+    assert detail["registered"] is True
+
+
+async def test_living_panels(repo):
+    channels = await repo.call("living", "channels", {}, IDENTITY)
+    assert len(channels["list"]) == 5
+    posts = await repo.call("living", "channelPosts", {"channelId": "dc1"}, IDENTITY)
+    assert len(posts["list"]) == 1
+    lost = await repo.call("living", "lostFound", {"kind": "lost"}, IDENTITY)
+    assert all(i["kind"] == "lost" for i in lost["list"])
+    goods = await repo.call("living", "secondHand", {}, IDENTITY)
+    assert len(goods["list"]) == 2
+
+
+async def test_scan_checkin_badges_and_overview(repo):
+    card = await repo.call("scan", "cardByCode", {"key": "QD-CT-01-A01"}, IDENTITY)
+    assert card["checked"] is False and card["uniqueCards"] == 0
+    assert card["targetType"] == "vote" and card["targetId"] == "p001"
+
+    result = await repo.call("scan", "checkin", {"key": "QD-CT-01-A01"}, IDENTITY)
+    assert result["firstTime"] is True and result["uniqueCards"] == 1
+
+    again = await repo.call("scan", "checkin", {"key": "QD-CT-01-A01"}, IDENTITY)
+    assert again["firstTime"] is False and again["uniqueCards"] == 1
+
+    for key in ("QD-LB-01-A01", "QD-CL-01-A01"):
+        await repo.call("scan", "checkin", {"key": key}, IDENTITY)
+    overview = await repo.call("me", "overview", {}, IDENTITY)
+    assert overview["stats"]["checkinCount"] == 3
+    unlocked = {b["code"] for b in overview["badges"] if b["unlocked"]}
+    assert "scan_explorer" in unlocked  # 累计 3 个点位解锁
+
+    with pytest.raises(BalaError):
+        await repo.call("scan", "cardByCode", {"key": "NOPE"}, IDENTITY)
+
+
+async def test_unknown_action_rejected(repo):
+    with pytest.raises(BalaError):
+        await repo.call("vote", "dropTables", {}, IDENTITY)
