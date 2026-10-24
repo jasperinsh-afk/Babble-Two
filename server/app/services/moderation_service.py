@@ -212,7 +212,7 @@ async def llm_review_ugc(content: str, poll_title: str = "", grade: str = "") ->
     )
 
 
-UGC_REVIEW_SYSTEM = """你是七德通的内容审核员，负责审核高中生用户发布的内容。
+UGC_REVIEW_SYSTEM = """你是叭啦的内容审核员，负责审核高中生用户发布的内容。
 
 审核标准：
 

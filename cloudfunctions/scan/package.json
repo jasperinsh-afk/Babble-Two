@@ -1,0 +1,10 @@
+{
+  "name": "scan",
+  "version": "1.0.0",
+  "description": "叭啦 Babble —— OMEGA 扫码落地页与打卡",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

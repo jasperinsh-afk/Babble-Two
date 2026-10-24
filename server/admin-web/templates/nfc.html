@@ -42,7 +42,7 @@
 <script>
 async function register(e){
   e.preventDefault();
-  await fetch('/api/v1/admin/nfc/cards', {
+  await fetch('/admin/web/api/nfc/cards', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
       card_id: document.getElementById('c-id').value,

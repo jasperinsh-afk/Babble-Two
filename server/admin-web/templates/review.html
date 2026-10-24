@@ -63,6 +63,7 @@
   {% else %}<p class="muted">无待审活动</p>{% endif %}
 </div>
 
+{% if request.state.principal.is_admin %}
 <div class="panel">
   <h2>敏感词库（Aho-Corasick，改动即时热更新）</h2>
   <form class="inline" onsubmit="addWord(event)">
@@ -89,24 +90,25 @@
   </table>
   {% else %}<p class="muted">词库为空</p>{% endif %}
 </div>
+{% endif %}
 
 <script>
 async function pollReview(id, status){
-  await fetch(`/api/v1/admin/polls/${id}/${status==='approved'?'approve':'reject'}`,
+  await fetch(`/admin/web/api/polls/${id}/${status==='approved'?'approve':'reject'}`,
     {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
   location.reload();
 }
 async function clubReview(id, ok){
-  await fetch(`/api/v1/admin/review/club/${id}?approved=${ok===1}`, {method:'POST'});
+  await fetch(`/admin/web/api/clubs/${id}/approve`, {method:'POST'});
   location.reload();
 }
 async function eventReview(id, ok){
-  await fetch(`/api/v1/admin/review/event/${id}?approved=${ok===1}`, {method:'POST'});
+  await fetch(`/admin/web/api/events/${id}/approve`, {method:'POST'});
   location.reload();
 }
 async function addWord(e){
   e.preventDefault();
-  await fetch('/api/v1/admin/sensitive-words', {
+  await fetch('/admin/web/api/sensitive-words', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({word:document.getElementById('w-word').value,
       category:document.getElementById('w-cat').value,

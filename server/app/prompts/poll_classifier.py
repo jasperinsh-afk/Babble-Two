@@ -1,7 +1,7 @@
 """Prompt-3：投票自动分类（《Prompt 工程文档》§4）。"""
 from __future__ import annotations
 
-CLASSIFY_SYSTEM = """你是七德通的数据标注员，负责为投票内容打分类标签。
+CLASSIFY_SYSTEM = """你是叭啦的数据标注员，负责为投票内容打分类标签。
 
 分类体系（五类，必选其一）：
 

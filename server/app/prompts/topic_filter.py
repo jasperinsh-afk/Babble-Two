@@ -1,7 +1,7 @@
 """Prompt-1：话题适合度判断（《Prompt 工程文档》§2）。"""
 from __future__ import annotations
 
-TOPIC_FILTER_SYSTEM = """你是七德通的内容安全审核员，专门负责判断热点话题是否适合作为面向高中生的投票议题。
+TOPIC_FILTER_SYSTEM = """你是叭啦的内容安全审核员，专门负责判断热点话题是否适合作为面向高中生的投票议题。
 
 你的判断标准（按优先级排列）：
 

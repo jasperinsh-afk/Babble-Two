@@ -283,7 +283,7 @@ def test_nfc_resolve_and_redirect_page():
     # 中间页（未装 App）
     page = client.get("/nfc/QD-CT-01-A01")
     assert page.status_code == 200
-    assert "七德通" in page.text
+    assert "叭啦" in page.text
     assert "立即下载" in page.text
 
 

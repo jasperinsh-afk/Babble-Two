@@ -5,7 +5,7 @@
 """
 from __future__ import annotations
 
-import os
+from pathlib import Path
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import (
@@ -26,12 +26,14 @@ class Base(DeclarativeBase):
 
 
 def _build_engine():
-    url = settings.DATABASE_URL
+    url = settings.database_url
     kwargs = {"echo": settings.DB_ECHO, "future": True}
 
     if url.startswith("sqlite"):
-        # SQLite: 确保目录存在；用 StaticPool 让内存/文件库共享连接，便于测试
-        os.makedirs("data", exist_ok=True)
+        # SQLite: 确保目录存在（绝对路径，不依赖进程启动目录）
+        db_file = url.partition("///")[2]
+        if db_file and db_file != ":memory:":
+            Path(db_file).parent.mkdir(parents=True, exist_ok=True)
         kwargs["connect_args"] = {"check_same_thread": False}
         if ":memory:" in url:
             kwargs["poolclass"] = StaticPool

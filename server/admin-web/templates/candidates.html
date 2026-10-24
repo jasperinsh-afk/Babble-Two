@@ -40,14 +40,14 @@
 
 <script>
 async function review(id, status){
-  await fetch(`/api/v1/admin/candidates/${id}/review`, {
+  await fetch(`/admin/web/api/candidates/${id}/review`, {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({status})
   });
   location.reload();
 }
 async function draft(id){
-  const r = await fetch(`/api/v1/admin/candidates/${id}/draft`, {
+  const r = await fetch(`/admin/web/api/candidates/${id}/draft`, {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({crawler_item_id:id, variants:3})
   });

@@ -1,23 +1,22 @@
 """墨麟书院 · 数据输出层：投票数据沉淀与脱敏导出。
 
-PRD §3.6.2（ML-O-001 ~ ML-O-005）+ 技术架构文档 §11
+数据源已由本地 PostgreSQL 切换为**微信云开发数据库**（云开发 HTTP API）。
+投票票数由云函数用原子自增维护在 `polls.options[].count` 与 `polls.totalVotes`，
+本模块只做聚合与脱敏，不触碰任何 `_openid` 等可关联到个人的字段。
+
+PRD §3.6.2（ML-O-001 ~ ML-O-005）
 红线：导出必须脱敏，移除一切可关联到个人的信息。
 """
 from __future__ import annotations
 
 import csv
 import io
-import json
 import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app import cloudbase_client
 from app.core.exceptions import ERR_EXPORT_RANGE_INVALID, AppError
-from app.models.common import PollCategory, PollStatus
-from app.models.vote import Ballot, Poll, PollOption
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +24,7 @@ EXPORT_FIELDS = [
     "poll_id",
     "title",
     "category",
+    "poll_type",
     "option_labels",
     "vote_counts",
     "total_participants",
@@ -32,62 +32,64 @@ EXPORT_FIELDS = [
     "end_at",
 ]
 
+POLLS = "polls"
+
+
+def _iso(value: Any) -> str:
+    return value if isinstance(value, str) else ""
+
+
+def _parse_dt(value: Any) -> Optional[datetime]:
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00")).replace(tzinfo=None)
+    except ValueError:
+        return None
+
 
 async def collect_poll_stats(
-    db: AsyncSession,
     start_date: Optional[datetime] = None,
     end_date: Optional[datetime] = None,
-    category: Optional[PollCategory] = None,
+    category: Optional[str] = None,
 ) -> List[Dict[str, Any]]:
-    """聚合投票数据（仅统计口径，不触碰 user_id）。"""
+    """聚合云开发数据库中的投票数据（仅统计口径，不读取 _openid）。"""
     if start_date and end_date and start_date > end_date:
         raise AppError(ERR_EXPORT_RANGE_INVALID, "开始时间不能晚于结束时间")
 
-    conds = [Poll.is_deleted.is_(False)]
-    if start_date:
-        conds.append(Poll.created_at >= start_date)
-    if end_date:
-        conds.append(Poll.created_at <= end_date)
+    where: Dict[str, Any] = {"isDeleted": False}
     if category:
-        conds.append(Poll.category == category)
+        where["tag"] = category
 
-    polls = (
-        await db.execute(select(Poll).where(*conds).order_by(Poll.created_at.desc()))
-    ).scalars().all()
+    polls = await cloudbase_client.query(
+        POLLS, where=where, order_by="createdAt", order="desc", limit=100
+    )
 
     rows: List[Dict[str, Any]] = []
     for p in polls:
-        options = (
-            await db.execute(
-                select(PollOption).where(PollOption.poll_id == p.id).order_by(PollOption.sort_order)
-            )
-        ).scalars().all()
-        counts_res = (
-            await db.execute(
-                select(Ballot.option_id, Ballot.id).where(Ballot.poll_id == p.id)
-            )
-        ).all()
-        counter: Dict[int, int] = {}
-        for oid, _ in counts_res:
-            if oid:
-                counter[oid] = counter.get(oid, 0) + 1
+        created = _parse_dt(p.get("createdAt"))
+        if start_date and created and created < start_date:
+            continue
+        if end_date and created and created > end_date:
+            continue
 
-        labels = [o.label for o in options]
-        counts = [counter.get(o.id, 0) for o in options]
-        total = (
-            await db.execute(select(Ballot.id).where(Ballot.poll_id == p.id))
-        ).scalars().all()
+        options = p.get("options") or []
+        labels = [o.get("label", "") for o in options]
+        counts = [int(o.get("count", 0)) for o in options]
 
         rows.append(
             {
-                "poll_id": p.id,
-                "title": p.title,
-                "category": p.category.value if p.category else "",
+                "poll_id": p.get("_id", ""),
+                "title": p.get("title", ""),
+                "category": p.get("tag", ""),
+                "poll_type": p.get("pollType", ""),
                 "option_labels": labels,
                 "vote_counts": counts,
-                "total_participants": len(total),
-                "start_at": p.start_at.isoformat() if p.start_at else "",
-                "end_at": p.end_at.isoformat() if p.end_at else "",
+                "total_participants": int(p.get("totalVotes", 0)),
+                "start_at": _iso(p.get("startAt")),
+                "end_at": _iso(p.get("endAt")),
             }
         )
     return rows
@@ -103,6 +105,7 @@ def to_csv(rows: List[Dict[str, Any]]) -> str:
                 r["poll_id"],
                 r["title"],
                 r["category"],
+                r["poll_type"],
                 " | ".join(r["option_labels"]),
                 " | ".join(str(c) for c in r["vote_counts"]),
                 r["total_participants"],
@@ -119,13 +122,14 @@ def to_excel_bytes(rows: List[Dict[str, Any]]) -> bytes:
     wb = Workbook()
     ws = wb.active
     ws.title = "投票数据"
-    ws.append(["投票ID", "题干", "分类", "选项", "各选项票数", "参与人数", "开始时间", "结束时间"])
+    ws.append(["投票ID", "题干", "分类", "类型", "选项", "各选项票数", "参与人数", "开始时间", "结束时间"])
     for r in rows:
         ws.append(
             [
                 r["poll_id"],
                 r["title"],
                 r["category"],
+                r["poll_type"],
                 " | ".join(r["option_labels"]),
                 " | ".join(str(c) for c in r["vote_counts"]),
                 r["total_participants"],
@@ -139,13 +143,16 @@ def to_excel_bytes(rows: List[Dict[str, Any]]) -> bytes:
 
 
 async def export_votes(
-    db: AsyncSession,
     start_date: datetime,
     end_date: datetime,
-    category: Optional[PollCategory] = None,
+    category: Optional[str] = None,
     fmt: str = "csv",
 ) -> tuple[bytes, str, str]:
-    rows = await collect_poll_stats(db, start_date, end_date, category)
+    rows = await collect_poll_stats(start_date, end_date, category)
     if fmt == "excel":
-        return to_excel_bytes(rows), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", ".xlsx"
+        return (
+            to_excel_bytes(rows),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            ".xlsx",
+        )
     return to_csv(rows).encode("utf-8-sig"), "text/csv; charset=utf-8", ".csv"

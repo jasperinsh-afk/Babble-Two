@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>运营后台登录 · 叭啦 Babble</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-grid">
+    <div class="panel login-panel">
+      <h2>运营后台</h2>
+      <p class="muted">管理员使用原运营口令，版主和审核员使用自己的账号</p>
+      <form method="post" action="/admin/web/login" class="login-form">
+        <label>管理员口令<input type="password" name="token" placeholder="仅管理员填写" autocomplete="current-password"></label>
+        <div class="login-divider"><span>或使用账号登录</span></div>
+        <label>昵称<input type="text" name="nickname" placeholder="账号昵称" autocomplete="username" maxlength="50"></label>
+        <label>密码<input type="password" name="password" placeholder="账号密码" autocomplete="current-password"></label>
+        <button type="submit">进入后台</button>
+      </form>
+      {% if error %}<p class="err">{{ error }}</p>{% endif %}
+    </div>
+    <div class="panel login-panel">
+      <h2>开通后台账号</h2>
+      <p class="muted">昵称和密码由自己设置，授权码用于确认账号资格</p>
+      <form method="post" action="/admin/web/register" class="login-form">
+        <label>账号角色
+          <select name="role" id="register-role">
+            <option value="club_moderator">社团版主</option>
+            <option value="reviewer">审核员</option>
+          </select>
+        </label>
+        <label>昵称<input type="text" name="nickname" required minlength="1" maxlength="50" autocomplete="username"></label>
+        <label>密码<input type="password" name="password" required minlength="8" autocomplete="new-password" placeholder="至少 8 位，含字母和数字"></label>
+        <label>确认密码<input type="password" name="password_confirm" required minlength="8" autocomplete="new-password"></label>
+        <label id="club-field">所属社团
+          <select name="club_id" id="register-club">
+            <option value="">请选择社团</option>
+            {% for club in clubs or [] %}<option value="{{ club._id }}">{{ club.name }}</option>{% endfor %}
+          </select>
+        </label>
+        <label>授权码<input type="password" name="authorization_code" required inputmode="numeric" autocomplete="off"></label>
+        <button type="submit">开通并进入</button>
+      </form>
+      {% if register_error %}<p class="err">{{ register_error }}</p>{% endif %}
+    </div>
+  </div>
+</div>
+<script>
+const role = document.getElementById('register-role')
+const club = document.getElementById('register-club')
+function syncRole() {
+  const isModerator = role.value === 'club_moderator'
+  document.getElementById('club-field').classList.toggle('hidden', !isModerator)
+  club.required = isModerator
+  if (!isModerator) club.value = ''
+}
+role.addEventListener('change', syncRole)
+syncRole()
+</script>
+</body>
+</html>

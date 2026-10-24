@@ -5,9 +5,22 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import List
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# 固定目录：无论从哪里启动服务，路径都按仓库结构解析，不跟随工作目录
+SERVER_ROOT = Path(__file__).resolve().parents[1]  # .../bala-miniapp/server
+PROJECT_ROOT = Path(__file__).resolve().parents[2]  # .../bala-miniapp
+
+
+def resolve_path(value: str) -> str:
+    """相对路径统一按 server 根目录解析（等价于此前的「在 server 目录下启动」）。"""
+    path = Path(value)
+    if path.is_absolute():
+        return path.as_posix()
+    return (SERVER_ROOT / path).resolve().as_posix()
 
 
 class Settings(BaseSettings):
@@ -68,6 +81,9 @@ class Settings(BaseSettings):
     INGEST_TOKEN: str = ""
     # 运营后台访问口令（C 端已无登录，运营后台独立口令保护）
     ADMIN_WEB_TOKEN: str = "change-me-admin-token"
+    ADMIN_SESSION_MINUTES: int = 480
+    CLUB_MODERATOR_AUTH_CODE: str = "0923"
+    REVIEWER_AUTH_CODE: str = "2012"
 
     # ── 网页版 bala-web ──
     # auto：配置了 WECHAT_SECRET 就走云数据库，否则回落本地 SQLite
@@ -132,6 +148,26 @@ class Settings(BaseSettings):
         if mode in ("cloud", "local"):
             return mode
         return "cloud" if self.WECHAT_SECRET and self.WECHAT_CLOUD_ENV else "local"
+
+    @property
+    def database_url(self) -> str:
+        """SQLite 相对路径按 server 根目录解析：换启动目录也不会连到空库。"""
+        url = self.DATABASE_URL
+        if url.startswith("sqlite") and "///" in url:
+            prefix, _, rest = url.partition("///")
+            if rest and rest != ":memory:" and not Path(rest).is_absolute():
+                return f"{prefix}///{resolve_path(rest)}"
+        return url
+
+    @property
+    def web_local_db_path(self) -> str:
+        """网页版本地库绝对路径。"""
+        return resolve_path(self.WEB_LOCAL_DB)
+
+    @property
+    def web_seed_file_path(self) -> str:
+        """网页版种子数据绝对路径。"""
+        return resolve_path(self.WEB_SEED_FILE)
 
 
 @lru_cache

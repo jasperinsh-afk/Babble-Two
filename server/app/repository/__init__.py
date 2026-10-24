@@ -20,8 +20,8 @@ def get_repository() -> BalaRepository:
         else:
             _repository = LocalRepository(
                 DocumentStore(
-                    settings.WEB_LOCAL_DB,
-                    seed_file=settings.WEB_SEED_FILE,
+                    settings.web_local_db_path,
+                    seed_file=settings.web_seed_file_path,
                     shift_dates=settings.WEB_SEED_SHIFT_DATES,
                 )
             )

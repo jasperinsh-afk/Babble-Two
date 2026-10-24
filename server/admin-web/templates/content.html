@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}站点内容 · 叭啦 Babble{% endblock %}
+{% block heading %}站点内容{% endblock %}
+{% block body %}
+<div class="cms-toolbar">
+  <div class="cms-tabs" role="tablist" aria-label="内容类型">
+    {% if request.state.principal.is_admin %}<button class="cms-tab is-active" data-view="layout" role="tab" aria-selected="true">首页版块</button>{% endif %}
+    {% for key, schema in schemas.items() %}<button class="cms-tab{{ ' is-active' if key == initial_view }}" data-view="{{ key }}" role="tab" aria-selected="{{ 'true' if key == initial_view else 'false' }}">{{ schema.label }}</button>{% endfor %}
+  </div>
+  <div class="cms-toolbar__actions">
+    <span class="cms-mode">数据源：{{ '本地 SQLite' if mode == 'local' else '微信云数据库' }}</span>
+    <a class="btn ghost" href="/home" target="_blank" rel="noopener">打开网站</a>
+    <button id="cms-add" class="hidden" type="button">新增内容</button>
+    <button id="cms-save" class="{{ '' if request.state.principal.is_admin else 'hidden' }}" type="button">保存首页</button>
+  </div>
+</div>
+<div id="cms-notice" class="cms-notice" role="status" aria-live="polite"></div>
+<section id="cms-layout" class="cms-workspace{{ '' if request.state.principal.is_admin else ' hidden' }}">
+  <div class="cms-workspace__intro">
+    <div><h2>首页版块与顺序</h2><p>拖动版块调整顺序，也可使用上下移动按钮。关闭显示可暂时隐藏，保存后网站立即生效。</p></div>
+    <button id="cms-add-section" class="ghost" type="button">添加版块</button>
+  </div>
+  <div id="cms-sections" class="cms-sections" aria-label="首页版块列表"></div>
+</section>
+<section id="cms-documents" class="cms-workspace{{ ' hidden' if request.state.principal.is_admin else '' }}">
+  <div class="cms-workspace__intro">
+    <div><h2 id="cms-collection-title">内容列表</h2><p>点击编辑修改字段。删除操作会要求二次确认，保存后同步到用户端。</p></div>
+    <span id="cms-count" class="cms-count"></span>
+  </div>
+  <div id="cms-loading" class="cms-loading">正在读取内容…</div>
+  <div id="cms-list" class="cms-list"></div>
+  <div id="cms-empty" class="cms-empty hidden">还没有内容，点击“新增内容”创建第一条。</div>
+</section>
+<dialog id="cms-editor" class="cms-dialog">
+  <form id="cms-form" method="dialog">
+    <div class="cms-dialog__header"><div><span class="cms-eyebrow">内容编辑器</span><h2 id="cms-editor-title">编辑内容</h2></div><button id="cms-close" class="cms-icon-btn ghost" type="button" aria-label="关闭">×</button></div>
+    <div id="cms-fields" class="cms-fields"></div>
+    <div class="cms-dialog__footer"><button id="cms-cancel" class="ghost" type="button">取消</button><button id="cms-submit" type="submit">保存内容</button></div>
+  </form>
+</dialog>
+<template id="cms-section-template">
+  <article class="cms-section" draggable="true">
+    <div class="cms-section__bar">
+      <span class="cms-drag" title="拖动排序" aria-hidden="true">⠿</span>
+      <span class="cms-section__number"></span>
+      <div class="cms-section__heading"><strong></strong><small></small></div>
+      <label class="cms-switch"><input type="checkbox"><span>显示</span></label>
+      <div class="cms-row-actions"><button class="ghost cms-up" type="button" aria-label="上移">↑</button><button class="ghost cms-down" type="button" aria-label="下移">↓</button><button class="ghost cms-expand" type="button">编辑字段</button><button class="ghost cms-danger-text cms-remove-section" type="button">删除</button></div>
+    </div>
+    <div class="cms-section__fields hidden"></div>
+  </article>
+</template>
+<script>window.CONTENT_CONFIG = {{ {"schemas": schemas, "sectionTypes": section_types, "canCreate": can_create, "initialView": initial_view} | tojson }};</script>
+<script src="/static/content.js" defer></script>
+{% endblock %}

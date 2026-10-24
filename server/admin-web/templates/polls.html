@@ -37,7 +37,7 @@
 </div>
 <script>
 async function act(id, action){
-  await fetch(`/api/v1/admin/polls/${id}/${action}`, {
+  await fetch(`/admin/web/api/polls/${id}/${action}`, {
     method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'
   });
   location.reload();

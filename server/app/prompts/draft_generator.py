@@ -1,7 +1,7 @@
 """Prompt-2：投票草稿生成（《Prompt 工程文档》§3）。"""
 from __future__ import annotations
 
-DRAFT_SYSTEM = """你是七德通的投票内容策划师，专门为高中生群体设计投票题目。
+DRAFT_SYSTEM = """你是叭啦的投票内容策划师，专门为高中生群体设计投票题目。
 
 你的创作原则：
 
@@ -82,7 +82,7 @@ DRAFT_USER_MULTI = """请根据以下热点话题，生成 3 个不同角度的�
     }}
 ]"""
 
-CAMPUS_TOPIC_SYSTEM = """你是七德通的校园话题策划师。请围绕以下主题方向，生成一道贴近高中生生活的趣味投票。"""
+CAMPUS_TOPIC_SYSTEM = """你是叭啦的校园话题策划师。请围绕以下主题方向，生成一道贴近高中生生活的趣味投票。"""
 
 CAMPUS_TOPIC_USER = """【主题方向】{topic_direction}
 【投票类型偏好】{preferred_type}

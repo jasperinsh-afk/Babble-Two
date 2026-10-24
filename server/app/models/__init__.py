@@ -1,18 +1,16 @@
-"""ORM 模型汇总（导入本包即注册全部表）。"""
+"""ORM 模型汇总（导入本包即注册全部表）。
+
+瘦身后仅保留：
+- common.py：枚举与基类
+- crawler.py：crawler_items / sensitive_words（墨麟书院输入层）
+- user.py：运营后台管理员账号（仅 operators，C 端已无登录）
+
+其余业务表（polls / clubs / events / living / nfc / badges）数据已迁至
+微信云开发数据库，原模型归档于 archive/fastapi/models/。
+"""
 from app.models.common import Base  # noqa: F401
-from app.models.user import Notification, PushDevice, User  # noqa: F401
-from app.models.vote import Ballot, Comment, Poll, PollOption  # noqa: F401
-from app.models.club import Club, ClubMember, Post, PostComment  # noqa: F401
-from app.models.event import CasRecord, Event, EventRegistration  # noqa: F401
-from app.models.living import (  # noqa: F401
-    DormChannel,
-    DormPost,
-    DormReply,
-    LostFound,
-    SecondHand,
-)
-from app.models.nfc import NfcCampaign, NfcCard, NfcCheckin, NfcTap  # noqa: F401
-from app.models.badge import BADGE_DEFS, Badge, UserBadge  # noqa: F401
+from app.models.admin_account import AdminAccount  # noqa: F401
+from app.models.user import User  # noqa: F401
 from app.models.crawler import (  # noqa: F401
     DEFAULT_SENSITIVE_WORDS,
     CrawlerItem,
@@ -21,32 +19,8 @@ from app.models.crawler import (  # noqa: F401
 
 __all__ = [
     "Base",
+    "AdminAccount",
     "User",
-    "Notification",
-    "PushDevice",
-    "Poll",
-    "PollOption",
-    "Ballot",
-    "Comment",
-    "Club",
-    "ClubMember",
-    "Post",
-    "PostComment",
-    "Event",
-    "EventRegistration",
-    "CasRecord",
-    "DormChannel",
-    "DormPost",
-    "DormReply",
-    "LostFound",
-    "SecondHand",
-    "NfcCard",
-    "NfcTap",
-    "NfcCheckin",
-    "NfcCampaign",
-    "Badge",
-    "UserBadge",
-    "BADGE_DEFS",
     "CrawlerItem",
     "SensitiveWord",
     "DEFAULT_SENSITIVE_WORDS",

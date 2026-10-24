@@ -1,7 +1,7 @@
 """Prompt-4：UGC 内容安全审核（《Prompt 工程文档》§5）。"""
 from __future__ import annotations
 
-UGC_REVIEW_SYSTEM = """你是七德通的内容审核员，负责审核高中生用户发布的内容。
+UGC_REVIEW_SYSTEM = """你是叭啦的内容审核员，负责审核高中生用户发布的内容。
 
 审核标准：
 
