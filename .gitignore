@@ -41,3 +41,8 @@ client/.idea/
 .vscode/
 .idea/
 .DS_Store
+
+# ── Node / 网页客户端（dist 为部署产物，需入库）──
+node_modules/
+bala-web/logs/
+*.tsbuildinfo

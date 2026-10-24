@@ -135,7 +135,8 @@ DEFAULT_LAYOUT = {
 }
 NEW_DEFAULTS = {
     "banners": {"isActive": True, "sort": 0},
-    "polls": {"pollType": "single", "status": "draft", "tag": "campus", "reviewStatus": "approved", "allowChange": False, "options": [{"optionId": "", "label": "", "sortOrder": 0}, {"optionId": "", "label": "", "sortOrder": 1}], "resultStatus": "draft", "resultScope": "campus", "resultRevision": 0, "responseRevision": 0},
+    # isDeleted/totalVotes 等字段必须显式写入：云函数 where({isDeleted:false}) 不会命中缺失字段的文档
+    "polls": {"pollType": "single", "status": "draft", "tag": "campus", "reviewStatus": "approved", "allowChange": False, "anonymous": True, "isDeleted": False, "totalVotes": 0, "participantCount": 0, "options": [{"optionId": "", "label": "", "sortOrder": 0}, {"optionId": "", "label": "", "sortOrder": 1}], "resultStatus": "draft", "resultScope": "campus", "resultRevision": 0, "responseRevision": 0},
     "events": {"status": "draft", "organizerType": "school", "isDeleted": False, "participantCount": 0, "registeredOpenids": [], "waitlistOpenids": [], "changeRevision": 0},
     "clubs": {"isVerified": False, "isDeleted": False, "heatScore": 0, "memberCount": 0, "memberOpenids": []},
     "club_posts": {"images": [], "isPinned": False, "likeCount": 0},

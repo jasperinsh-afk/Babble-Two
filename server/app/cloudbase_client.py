@@ -17,7 +17,9 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 import httpx
@@ -91,18 +93,63 @@ def _env() -> str:
     return settings.WECHAT_CLOUD_ENV
 
 
+ISO_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}")
+
+
+def _as_utc_iso(value: Any) -> Optional[str]:
+    """把 datetime / ISO 字符串规范化为云函数 new Date().toISOString() 的格式。"""
+    if isinstance(value, datetime):
+        dt = value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
+    if isinstance(value, str) and ISO_DATE_RE.match(value.strip()):
+        try:
+            parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+        except ValueError:
+            return None
+        return _as_utc_iso(parsed)
+    return None
+
+
 def _js(value: Any) -> str:
-    """把 Python 值序列化成云开发 query 能识别的 JS 字面量。"""
+    """把 Python 值序列化成云开发 query 能识别的 JS 字面量。
+
+    日期必须写成 new Date(...)：小程序云函数用 endAt/startAt 与 new Date() 做比较，
+    若存成普通字符串，后台新建的投票/活动不会出现在小程序与网页首页。
+    """
+    iso_value = _as_utc_iso(value)
+    if iso_value:
+        return f'new Date("{iso_value}")'
+    if isinstance(value, dict):
+        return "{" + ",".join(
+            f"{json.dumps(str(key), ensure_ascii=False)}:{_js(item)}"
+            for key, item in value.items()
+        ) + "}"
+    if isinstance(value, (list, tuple)):
+        return "[" + ",".join(_js(item) for item in value) + "]"
     return json.dumps(value, ensure_ascii=False)
+
+
+def _normalize_dates(value: Any) -> Any:
+    """云开发 HTTP API 可能把 Date 返回为 {"$date": 毫秒}，统一还原为 ISO 字符串。"""
+    if isinstance(value, dict):
+        if set(value) == {"$date"}:
+            raw = value["$date"]
+            if isinstance(raw, (int, float)):
+                return _as_utc_iso(datetime.fromtimestamp(raw / 1000, tz=timezone.utc))
+            return _as_utc_iso(raw) or raw
+        return {key: _normalize_dates(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_normalize_dates(item) for item in value]
+    return value
 
 
 def _parse_rows(data: Dict[str, Any]) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     for raw in data.get("data", []):
         if isinstance(raw, str):
-            rows.append(json.loads(raw))
+            rows.append(_normalize_dates(json.loads(raw)))
         elif isinstance(raw, dict):
-            rows.append(raw)
+            rows.append(_normalize_dates(raw))
     return rows
 
 
@@ -197,9 +244,9 @@ async def invoke(
                 parsed = json.loads(raw)
             except json.JSONDecodeError:
                 return {"ok": False, "data": None, "message": raw}
-            return parsed if isinstance(parsed, dict) else {"ok": True, "data": parsed}
+            return _normalize_dates(parsed) if isinstance(parsed, dict) else {"ok": True, "data": parsed}
         if isinstance(raw, dict):
-            return raw
+            return _normalize_dates(raw)
         raise CloudbaseError(f"invokecloudfunction({name}) 返回为空: {data}")
 
     raise CloudbaseError(f"invokecloudfunction({name}) 重试后仍失败")

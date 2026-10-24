@@ -1,0 +1,67 @@
+/**
+ * 叭啦 Babble —— 设计令牌（移植自 miniprogram/app.wxss）
+ * 单位换算：小程序 750rpx = 屏宽，网页按 375 设计稿，1rpx = 0.5px。
+ * 例：88rpx → 44px，28rpx → 14px，1rpx 发丝线 → 0.5px。
+ */
+:root {
+  /* 品牌主色 · 叭啦紫 */
+  --primary: #8b5cf6;
+  --primary-light: #a78bfa;
+  --primary-violet: #7c3aed;
+
+  /* 品牌辅色 · 星芒橙 */
+  --accent: #f97316;
+  --accent-dark: #ea580c;
+  --accent-light: #fdba74;
+
+  /* 点缀青 */
+  --mint: #06b6d4;
+
+  /* 品牌标准渐变：紫 → 橙 */
+  --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #f97316 100%);
+
+  --bg-page: #faf8ff;
+  --bg-card: #ffffff;
+  --bg-tint: #f3edfd;
+
+  --text-strong: #1e1b2e;
+  --text-normal: #5c5775;
+  --text-weak: #9d96b8;
+
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-l: 14px;
+  --radius-pill: 999px;
+
+  --shadow-s: 0 2px 8px rgba(30, 27, 46, 0.05);
+  --shadow-m: 0 4px 16px rgba(139, 92, 246, 0.1);
+  --shadow-l: 0 8px 24px rgba(139, 92, 246, 0.16);
+
+  --hairline: rgba(30, 27, 46, 0.06);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* 应用壳宽度：手机全宽，平板/桌面逐步放宽 */
+  --shell-width: 480px;
+
+  /* 桌面端左侧常驻导航栏宽度（默认 0，≥1200px 展开） */
+  --rail: 0px;
+}
+
+/* 横屏 / 平板：放宽壳宽，提高信息密度 */
+@media (min-width: 768px) {
+  :root {
+    --shell-width: 720px;
+  }
+}
+
+/* 桌面：更宽内容区 + 左侧导航 */
+@media (min-width: 1200px) {
+  :root {
+    --shell-width: 1080px;
+    --rail: 96px;
+  }
+}

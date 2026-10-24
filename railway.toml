@@ -1,0 +1,13 @@
+# Railway 部署配置
+# 仓库根为 bala-miniapp，后端位于 server/ 子目录
+# 构建：安装 server 依赖；启动：在 server 目录下运行 uvicorn
+[build]
+builder = "NIXPACKS"
+buildCommand = "pip install -r server/requirements.txt"
+
+[deploy]
+startCommand = "cd server && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+healthcheckPath = "/healthz"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10

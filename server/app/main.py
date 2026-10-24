@@ -113,7 +113,15 @@ except Exception as exc:  # noqa: BLE001
 
 
 # ── 同域网页版：构建后由 FastAPI 提供 assets 与 SPA history fallback ──
-FRONTEND_DIST = Path(__file__).resolve().parents[3] / "bala-web" / "dist"
+# 网页客户端构建产物：优先仓库内 bala-web/dist，兼容旧的同级目录布局
+_WEB_DIST_CANDIDATES = [
+    Path(__file__).resolve().parents[2] / "bala-web" / "dist",
+    Path(__file__).resolve().parents[3] / "bala-web" / "dist",
+]
+FRONTEND_DIST = next(
+    (path for path in _WEB_DIST_CANDIDATES if (path / "index.html").is_file()),
+    _WEB_DIST_CANDIDATES[0],
+)
 if (FRONTEND_DIST / "index.html").is_file():
     if (FRONTEND_DIST / "assets").is_dir():
         app.mount("/assets", StaticFiles(directory=FRONTEND_DIST / "assets"), name="web-assets")

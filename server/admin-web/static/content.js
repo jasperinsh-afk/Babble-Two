@@ -44,6 +44,16 @@
     return el
   }
 
+  // 云端存 UTC ISO 字符串，表单按本地时间编辑，避免 8 小时时差
+  const pad2 = (value) => String(value).padStart(2, '0')
+
+  function toLocalInput(value) {
+    if (!value) return ''
+    const date = new Date(value)
+    if (Number.isNaN(date.getTime())) return String(value).slice(0, 16)
+    return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${pad2(date.getHours())}:${pad2(date.getMinutes())}`
+  }
+
   function fieldControl(field, value, onChange) {
     const wrap = document.createElement('div')
     wrap.className = `cms-field cms-field--${field.type}`
@@ -123,13 +133,20 @@
       input = document.createElement('input')
       input.type = field.type === 'datetime' ? 'datetime-local' : field.type === 'number' ? 'number' : 'text'
       if (field.type === 'url') input.inputMode = 'url'
-      input.value = field.type === 'datetime' && value ? String(value).slice(0, 16) : (value ?? '')
+      input.value = field.type === 'datetime' ? toLocalInput(value) : (value ?? '')
       if (field.type === 'number') input.step = 'any'
       if (field.placeholder) input.placeholder = field.placeholder
     }
     input.required = Boolean(field.required)
-    input.addEventListener('input', () => onChange(field.type === 'boolean' ? input.checked : field.type === 'number' && input.value !== '' ? Number(input.value) : input.value))
-    input.addEventListener('change', () => onChange(field.type === 'boolean' ? input.checked : field.type === 'number' && input.value !== '' ? Number(input.value) : input.value))
+    const readValue = () => {
+      if (field.type === 'boolean') return input.checked
+      if (field.type === 'number') return input.value !== '' ? Number(input.value) : ''
+      // datetime-local 是本地时间，提交前统一转 UTC ISO，供小程序云函数按 Date 比较
+      if (field.type === 'datetime') return input.value ? new Date(input.value).toISOString() : ''
+      return input.value
+    }
+    input.addEventListener('input', () => onChange(readValue()))
+    input.addEventListener('change', () => onChange(readValue()))
     wrap.append(input)
     return wrap
   }

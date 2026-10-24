@@ -22,5 +22,6 @@
     "miniprogram": {
       "list": []
     }
-  }
+  },
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/"
 }
