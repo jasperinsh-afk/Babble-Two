@@ -1,0 +1,540 @@
+{
+  "banners": [
+    {
+      "_id": "b1",
+      "title": "新学期社团博览会来袭",
+      "imageUrl": "https://picsum.photos/id/1/750/320",
+      "targetRoute": "/pages/club/list/list",
+      "sort": 1,
+      "isActive": true
+    },
+    {
+      "_id": "b2",
+      "title": "扫码打卡解锁专属勋章",
+      "imageUrl": "https://picsum.photos/id/20/750/320",
+      "targetRoute": "/pages/scan/index/index",
+      "sort": 2,
+      "isActive": true
+    }
+  ],
+
+  "polls": [
+    {
+      "_id": "p001",
+      "title": "你认为学校食堂最该改进什么？",
+      "description": "本周热议话题，选出你最希望食堂优先改进的方向。",
+      "pollType": "single",
+      "status": "active",
+      "tag": "campus",
+      "topicTags": ["食堂", "校园生活"],
+      "startAt": "2026-10-13T00:00:00.000Z",
+      "endAt": "2026-10-20T23:59:59.000Z",
+      "allowChange": true,
+      "anonymous": true,
+      "maxChoices": null,
+      "maxParticipants": null,
+      "coverUrl": "https://picsum.photos/id/10/750/320",
+      "sourceType": "manual",
+      "reviewStatus": "approved",
+      "options": [
+        { "optionId": "p001o1", "label": "菜品种类", "sortOrder": 0, "count": 12 },
+        { "optionId": "p001o2", "label": "价格实惠", "sortOrder": 1, "count": 7 },
+        { "optionId": "p001o3", "label": "就餐环境", "sortOrder": 2, "count": 5 },
+        { "optionId": "p001o4", "label": "排队速度", "sortOrder": 3, "count": 8 }
+      ],
+      "totalVotes": 32,
+      "participantCount": 0,
+      "isDeleted": false
+    },
+    {
+      "_id": "p002",
+      "title": "你平时关注哪些校园媒体？（多选）",
+      "description": "看看同学们都在哪里获取校园资讯，最多选 3 项。",
+      "pollType": "multi",
+      "status": "active",
+      "tag": "campus",
+      "topicTags": ["媒体", "校园资讯"],
+      "startAt": "2026-10-13T00:00:00.000Z",
+      "endAt": "2026-10-21T23:59:59.000Z",
+      "allowChange": true,
+      "anonymous": true,
+      "maxChoices": 3,
+      "maxParticipants": null,
+      "coverUrl": "https://picsum.photos/id/42/750/320",
+      "sourceType": "manual",
+      "reviewStatus": "approved",
+      "options": [
+        { "optionId": "p002o1", "label": "学校公众号", "sortOrder": 0, "count": 45 },
+        { "optionId": "p002o2", "label": "小红书", "sortOrder": 1, "count": 18 },
+        { "optionId": "p002o3", "label": "B 站", "sortOrder": 2, "count": 22 },
+        { "optionId": "p002o4", "label": "抖音", "sortOrder": 3, "count": 16 },
+        { "optionId": "p002o5", "label": "校园广播", "sortOrder": 4, "count": 9 },
+        { "optionId": "p002o6", "label": "朋友圈", "sortOrder": 5, "count": 31 }
+      ],
+      "totalVotes": 141,
+      "participantCount": 0,
+      "isDeleted": false
+    },
+    {
+      "_id": "p003",
+      "title": "周五晚自习应该改为社团活动时间吗？",
+      "description": "支持与反对，亮出你的立场。",
+      "pollType": "pk",
+      "status": "active",
+      "tag": "news",
+      "topicTags": ["晚自习", "社团"],
+      "startAt": "2026-10-14T00:00:00.000Z",
+      "endAt": "2026-10-18T23:59:59.000Z",
+      "allowChange": false,
+      "anonymous": true,
+      "maxChoices": null,
+      "maxParticipants": null,
+      "coverUrl": "https://picsum.photos/id/60/750/320",
+      "sourceType": "manual",
+      "reviewStatus": "approved",
+      "options": [
+        { "optionId": "p003o1", "label": "支持改为社团活动", "sortOrder": 0, "count": 88 },
+        { "optionId": "p003o2", "label": "维持晚自习", "sortOrder": 1, "count": 64 }
+      ],
+      "totalVotes": 152,
+      "participantCount": 0,
+      "isDeleted": false
+    },
+    {
+      "_id": "p004",
+      "title": "你最期待哪个校园活动？（多选排序）",
+      "description": "按你的期待程度依次点选，最多选 3 项。",
+      "pollType": "ranking",
+      "status": "active",
+      "tag": "campus",
+      "topicTags": ["活动", "投票"],
+      "startAt": "2026-10-12T00:00:00.000Z",
+      "endAt": "2026-10-25T23:59:59.000Z",
+      "allowChange": true,
+      "anonymous": true,
+      "maxChoices": 3,
+      "maxParticipants": null,
+      "coverUrl": "https://picsum.photos/id/64/750/320",
+      "sourceType": "manual",
+      "reviewStatus": "approved",
+      "options": [
+        { "optionId": "p004o1", "label": "秋季运动会", "sortOrder": 0, "count": 76 },
+        { "optionId": "p004o2", "label": "艺术节", "sortOrder": 1, "count": 52 },
+        { "optionId": "p004o3", "label": "社团博览会", "sortOrder": 2, "count": 61 },
+        { "optionId": "p004o4", "label": "秋季研学", "sortOrder": 3, "count": 43 }
+      ],
+      "totalVotes": 232,
+      "participantCount": 0,
+      "isDeleted": false
+    },
+    {
+      "_id": "p005",
+      "title": "周六上午自习室接龙：选择你想自习的时间段",
+      "description": "选一个时间段接龙，凑够 20 人就开放该时段自习室。",
+      "pollType": "groupbuy",
+      "status": "active",
+      "tag": "group",
+      "topicTags": ["自习", "接龙"],
+      "startAt": "2026-10-13T00:00:00.000Z",
+      "endAt": "2026-10-19T23:59:59.000Z",
+      "allowChange": true,
+      "anonymous": false,
+      "maxChoices": null,
+      "maxParticipants": 20,
+      "coverUrl": "https://picsum.photos/id/30/750/320",
+      "sourceType": "manual",
+      "reviewStatus": "approved",
+      "options": [
+        { "optionId": "p005o1", "label": "08:00 - 10:00", "sortOrder": 0, "count": 6 },
+        { "optionId": "p005o2", "label": "10:00 - 12:00", "sortOrder": 1, "count": 9 },
+        { "optionId": "p005o3", "label": "14:00 - 16:00", "sortOrder": 2, "count": 3 },
+        { "optionId": "p005o4", "label": "16:00 - 18:00", "sortOrder": 3, "count": 2 }
+      ],
+      "totalVotes": 20,
+      "participantCount": 20,
+      "isFull": false,
+      "isDeleted": false
+    }
+  ],
+
+  "clubs": [
+    {
+      "_id": "c001",
+      "name": "叭啦辩论社",
+      "category": "academic",
+      "description": "每周一场公开辩论，训练逻辑与表达，常年参加市赛。",
+      "coverUrl": "https://picsum.photos/id/180/750/400",
+      "isVerified": true,
+      "memberCount": 68,
+      "heatScore": 92,
+      "createdAt": "2026-09-01T00:00:00.000Z"
+    },
+    {
+      "_id": "c002",
+      "name": "麒麟篮球社",
+      "category": "sports",
+      "description": "校内联赛主力社团，每周二四训练，欢迎零基础加入。",
+      "coverUrl": "https://picsum.photos/id/1050/750/400",
+      "isVerified": true,
+      "memberCount": 124,
+      "heatScore": 88,
+      "createdAt": "2026-09-02T00:00:00.000Z"
+    },
+    {
+      "_id": "c003",
+      "name": "RoboMaster 机器人社",
+      "category": "academic",
+      "description": "从机械设计到视觉算法，一起打高校联盟赛。",
+      "coverUrl": "https://picsum.photos/id/119/750/400",
+      "isVerified": false,
+      "memberCount": 41,
+      "heatScore": 76,
+      "createdAt": "2026-09-05T00:00:00.000Z"
+    },
+    {
+      "_id": "c004",
+      "name": "青桐公益社",
+      "category": "charity",
+      "description": "组织社区服务与支教项目，累计服务时长认证。",
+      "coverUrl": "https://picsum.photos/id/1040/750/400",
+      "isVerified": true,
+      "memberCount": 95,
+      "heatScore": 81,
+      "createdAt": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "_id": "c005",
+      "name": "弦歌民乐团",
+      "category": "art",
+      "description": "古筝、二胡、琵琶，校园艺术节常驻演出团体。",
+      "coverUrl": "https://picsum.photos/id/1084/750/400",
+      "isVerified": false,
+      "memberCount": 37,
+      "heatScore": 64,
+      "createdAt": "2026-09-10T00:00:00.000Z"
+    },
+    {
+      "_id": "c006",
+      "name": "影像创作社",
+      "category": "interest",
+      "description": "短片、摄影、剪辑，作品在校内影展放映。",
+      "coverUrl": "https://picsum.photos/id/250/750/400",
+      "isVerified": false,
+      "memberCount": 52,
+      "heatScore": 70,
+      "createdAt": "2026-09-12T00:00:00.000Z"
+    }
+  ],
+
+  "club_posts": [
+    {
+      "_id": "cp001",
+      "clubId": "c001",
+      "title": "本周辩题：AI 是否应当参与评分",
+      "content": "周三下午 4 点图书馆报告厅，正反双方公开辩论，欢迎旁听。",
+      "images": [],
+      "isPinned": true,
+      "likeCount": 42,
+      "publishedAt": "2026-10-13T00:00:00.000Z"
+    },
+    {
+      "_id": "cp002",
+      "clubId": "c001",
+      "title": "市赛集训名单公示",
+      "content": "入选同学请于周五前确认参训时间，集训从下周一正式开始。",
+      "images": [],
+      "isPinned": false,
+      "likeCount": 28,
+      "publishedAt": "2026-10-10T00:00:00.000Z"
+    },
+    {
+      "_id": "cp003",
+      "clubId": "c002",
+      "title": "校内篮球联赛报名开启",
+      "content": "以班级为单位组队，每队 5-8 人，报名截止本周五。",
+      "images": ["https://picsum.photos/id/1051/400/400"],
+      "isPinned": true,
+      "likeCount": 96,
+      "publishedAt": "2026-10-12T00:00:00.000Z"
+    },
+    {
+      "_id": "cp004",
+      "clubId": "c003",
+      "title": "新赛季招新：机械/电控/视觉三组",
+      "content": "零基础可报名视觉组，提供完整培训计划与导师带练。",
+      "images": [],
+      "isPinned": false,
+      "likeCount": 33,
+      "publishedAt": "2026-10-08T00:00:00.000Z"
+    },
+    {
+      "_id": "cp005",
+      "clubId": "c004",
+      "title": "周末社区服务：图书馆整理志愿服务",
+      "content": "本周六上午 9 点集合，服务时长计入 CAS 记录。",
+      "images": [],
+      "isPinned": false,
+      "likeCount": 51,
+      "publishedAt": "2026-10-14T00:00:00.000Z"
+    }
+  ],
+
+  "events": [
+    {
+      "_id": "e001",
+      "title": "大学招生官见面会：芝加哥大学",
+      "description": "招生官现场答疑，介绍申请流程与专业设置。",
+      "coverUrl": "https://picsum.photos/id/1011/750/400",
+      "startAt": "2026-10-17T02:00:00.000Z",
+      "endAt": "2026-10-17T04:00:00.000Z",
+      "location": "图书馆四楼报告厅",
+      "category": "academic",
+      "casCategory": "activity",
+      "maxParticipants": 120,
+      "participantCount": 76,
+      "registered": [],
+      "waitlist": [],
+      "status": "published",
+      "createdAt": "2026-10-05T00:00:00.000Z"
+    },
+    {
+      "_id": "e002",
+      "title": "秋季运动会入场式彩排",
+      "description": "各班方阵入场式彩排，请准时到场。",
+      "coverUrl": "https://picsum.photos/id/1054/750/400",
+      "startAt": "2026-10-19T23:00:00.000Z",
+      "endAt": "2026-10-20T01:00:00.000Z",
+      "location": "田径场",
+      "category": "sports",
+      "casCategory": "activity",
+      "maxParticipants": 400,
+      "participantCount": 312,
+      "registered": [],
+      "waitlist": [],
+      "status": "published",
+      "createdAt": "2026-10-06T00:00:00.000Z"
+    },
+    {
+      "_id": "e003",
+      "title": "社团博览会",
+      "description": "全校社团集中展示与招新，现场可直接报名加入。",
+      "coverUrl": "https://picsum.photos/id/1067/750/400",
+      "startAt": "2026-10-22T05:00:00.000Z",
+      "endAt": "2026-10-22T09:00:00.000Z",
+      "location": "体育馆一层",
+      "category": "club",
+      "casCategory": "activity",
+      "maxParticipants": 600,
+      "participantCount": 288,
+      "registered": [],
+      "waitlist": [],
+      "status": "published",
+      "createdAt": "2026-10-07T00:00:00.000Z"
+    }
+  ],
+
+  "dorm_channels": [
+    { "_id": "dc1", "name": "全校", "type": "ALL", "sort": 1 },
+    { "_id": "dc2", "name": "高一男生楼", "type": "FLOOR", "sort": 2 },
+    { "_id": "dc3", "name": "高一女生楼", "type": "FLOOR", "sort": 3 },
+    { "_id": "dc4", "name": "高二住宿区", "type": "FLOOR", "sort": 4 },
+    { "_id": "dc5", "name": "201 宿舍", "type": "ROOM", "sort": 5 }
+  ],
+
+  "dorm_posts": [
+    {
+      "_id": "dp1",
+      "channelId": "dc1",
+      "content": "本周宿舍卫生检查安排在周四晚 21:00，请各寝室提前整理。",
+      "images": [],
+      "likeCount": 34,
+      "createdAt": "2026-10-14T00:00:00.000Z"
+    },
+    {
+      "_id": "dp2",
+      "channelId": "dc2",
+      "content": "二楼热水机已维修完成，恢复正常供应。",
+      "images": [],
+      "likeCount": 18,
+      "createdAt": "2026-10-13T00:00:00.000Z"
+    },
+    {
+      "_id": "dp3",
+      "channelId": "dc5",
+      "content": "今晚 22:30 宿舍例会，讨论周末外出安排。",
+      "images": [],
+      "likeCount": 7,
+      "createdAt": "2026-10-15T00:00:00.000Z"
+    }
+  ],
+
+  "lost_found": [
+    {
+      "_id": "lf1",
+      "kind": "lost",
+      "title": "丢失黑色保温杯",
+      "description": "周三下午在图书馆三楼遗失，杯身有蓝色贴纸。",
+      "location": "图书馆三楼",
+      "contact": "微信同号 138****0001",
+      "status": "open",
+      "createdAt": "2026-10-14T00:00:00.000Z"
+    },
+    {
+      "_id": "lf2",
+      "kind": "found",
+      "title": "捡到一副眼镜",
+      "description": "黑色方框眼镜，遗落在食堂二楼餐桌，请失主联系认领。",
+      "location": "食堂二楼",
+      "contact": "宿舍 201",
+      "status": "open",
+      "createdAt": "2026-10-15T00:00:00.000Z"
+    }
+  ],
+
+  "second_hand": [
+    {
+      "_id": "sh1",
+      "title": "IB 数学 HL 教材（几乎全新）",
+      "description": "仅翻阅过两次，无笔记，原价 320 现转让。",
+      "price": 15000,
+      "contact": "微信 abc_2026",
+      "status": "available",
+      "createdAt": "2026-10-10T00:00:00.000Z"
+    },
+    {
+      "_id": "sh2",
+      "title": " graphing calculator TI-84",
+      "description": "功能正常，附带保护套与原装数据线。",
+      "price": 42000,
+      "contact": "高二 3 班",
+      "status": "available",
+      "createdAt": "2026-10-12T00:00:00.000Z"
+    }
+  ],
+
+  "nfc_cards": [
+    {
+      "_id": "nc1",
+      "cardId": "QD-CT-01-A01",
+      "locationType": "canteen",
+      "locationDesc": "食堂一楼入口海报",
+      "target": { "type": "vote", "id": "p001" },
+      "isActive": true,
+      "createdAt": "2026-10-01T00:00:00.000Z"
+    },
+    {
+      "_id": "nc2",
+      "cardId": "QD-LB-01-A01",
+      "locationType": "library",
+      "locationDesc": "图书馆一楼公告位",
+      "target": { "type": "club", "id": "c001" },
+      "isActive": true,
+      "createdAt": "2026-10-01T00:00:00.000Z"
+    },
+    {
+      "_id": "nc3",
+      "cardId": "QD-CL-01-A01",
+      "locationType": "clubroom",
+      "locationDesc": "社团活动室门口",
+      "target": { "type": "club", "id": "c003" },
+      "isActive": true,
+      "createdAt": "2026-10-01T00:00:00.000Z"
+    },
+    {
+      "_id": "nc4",
+      "cardId": "QD-BB-01-A01",
+      "locationType": "bulletin",
+      "locationDesc": "中央公告栏",
+      "target": { "type": "event", "id": "e003" },
+      "isActive": true,
+      "createdAt": "2026-10-01T00:00:00.000Z"
+    },
+    {
+      "_id": "nc5",
+      "cardId": "QD-DM-01-A01",
+      "locationType": "dormitory",
+      "locationDesc": "宿舍楼电梯口",
+      "target": { "type": "event", "id": "e002" },
+      "isActive": true,
+      "createdAt": "2026-10-01T00:00:00.000Z"
+    },
+    {
+      "_id": "nc6",
+      "cardId": "QD-GW-01-A01",
+      "locationType": "gateway",
+      "locationDesc": "校门口迎新海报",
+      "target": null,
+      "isActive": true,
+      "createdAt": "2026-10-01T00:00:00.000Z"
+    }
+  ],
+
+  "badges": [
+    {
+      "_id": "bd1",
+      "code": "scan_explorer",
+      "name": "扫码探索者",
+      "description": "累计打卡 3 个不同点位",
+      "rarity": "normal",
+      "rule": { "type": "nfc_unique", "count": 3 },
+      "icon": "◎",
+      "iconUrl": "",
+      "isActive": true
+    },
+    {
+      "_id": "bd2",
+      "code": "vote_participant",
+      "name": "投票参与者",
+      "description": "累计参与 5 次投票",
+      "rarity": "normal",
+      "rule": { "type": "vote_count", "count": 5 },
+      "icon": "✓",
+      "iconUrl": "",
+      "isActive": true
+    },
+    {
+      "_id": "bd3",
+      "code": "club_pioneer",
+      "name": "社团先锋",
+      "description": "加入 3 个社团",
+      "rarity": "rare",
+      "rule": { "type": "club_count", "count": 3 },
+      "icon": "⌂",
+      "iconUrl": "",
+      "isActive": true
+    },
+    {
+      "_id": "bd4",
+      "code": "event_goer",
+      "name": "活动常客",
+      "description": "报名 3 场校园活动",
+      "rarity": "rare",
+      "rule": { "type": "event_count", "count": 3 },
+      "icon": "▦",
+      "iconUrl": "",
+      "isActive": true
+    },
+    {
+      "_id": "bd5",
+      "code": "checkin_master",
+      "name": "打卡达人",
+      "description": "累计打卡 6 个不同点位",
+      "rarity": "epic",
+      "rule": { "type": "nfc_unique", "count": 6 },
+      "icon": "★",
+      "iconUrl": "",
+      "isActive": true
+    },
+    {
+      "_id": "bd6",
+      "code": "campus_legend",
+      "name": "校园传奇",
+      "description": "累计参与 20 次投票",
+      "rarity": "legendary",
+      "rule": { "type": "vote_count", "count": 20 },
+      "icon": "♛",
+      "iconUrl": "",
+      "isActive": true
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "babble-seed",
+  "version": "1.0.0",
+  "description": "叭啦 Babble 云数据库种子脚本",
+  "private": true,
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.9.0"
+  }
+}
