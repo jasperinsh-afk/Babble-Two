@@ -11,6 +11,36 @@
     </view>
   </view>
 
+  <!-- 今日行动：个人消息行动 + 今日安排，优先于 Banner -->
+  <view class="section" wx:if="{{actionMessages.length}}">
+    <section-header title="今日行动" />
+    <view class="today-actions">
+      <view
+        wx:for="{{actionMessages}}"
+        wx:key="_id"
+        class="today-action {{item.readAt ? '' : 'today-action--unread'}}"
+        bindtap="onActionTap"
+        data-id="{{item._id}}"
+      >
+        <view class="today-action__type">{{item.typeLabel}}</view>
+        <view class="today-action__title">{{item.title}}</view>
+        <view class="today-action__content">{{item.content}}</view>
+        <view class="today-action__dot" wx:if="{{!item.readAt}}"></view>
+      </view>
+    </view>
+  </view>
+  <view class="section" wx:elif="{{!loading}}">
+    <section-header title="今日行动" />
+    <empty-view icon="✅" title="暂无待办事项" subtitle="有活动变更或投票结果时会在这里提醒" />
+  </view>
+
+  <view class="section" wx:if="{{todayEvents.length}}">
+    <section-header title="今日安排" />
+    <view wx:for="{{todayEvents}}" wx:key="_id">
+      <event-card event="{{item}}" bindtap="goEvent" data-id="{{item._id}}" />
+    </view>
+  </view>
+
   <view class="home-skeleton" wx:if="{{loading}}">
     <view class="home-skeleton__banner"></view>
     <view class="home-skeleton__row">

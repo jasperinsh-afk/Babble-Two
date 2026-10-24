@@ -1,7 +1,8 @@
 {
   "navigationBarTitleText": "消息",
   "usingComponents": {
-    "empty-view": "/components/empty-view/index"
+    "empty-view": "/components/empty-view/index",
+    "section-header": "/components/section-header/index"
   },
   "enablePullDownRefresh": true,
   "backgroundColor": "#FAF8FF"

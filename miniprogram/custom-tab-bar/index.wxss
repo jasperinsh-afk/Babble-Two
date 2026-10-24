@@ -29,10 +29,31 @@
   transform: translateY(-4rpx);
 }
 
+.tab-bar__icon-wrap {
+  position: relative;
+  margin-bottom: 4rpx;
+}
+
 .tab-bar__icon {
   width: 44rpx;
   height: 44rpx;
-  margin-bottom: 4rpx;
+  display: block;
+}
+
+.tab-bar__badge {
+  position: absolute;
+  top: -10rpx;
+  right: -18rpx;
+  min-width: 28rpx;
+  height: 28rpx;
+  padding: 0 8rpx;
+  border-radius: 999rpx;
+  background: #ef4444;
+  color: #fff;
+  font-size: 18rpx;
+  line-height: 28rpx;
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .tab-bar__label {

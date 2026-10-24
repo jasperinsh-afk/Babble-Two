@@ -1,8 +1,57 @@
 <view class="page page--message">
+  <view class="message-summary">
+    <text class="message-summary__unread">{{unread ? unread + ' 条未读' : '全部已读'}}</text>
+    <text class="message-summary__count" wx:if="{{messages.length}}">已加载 {{messages.length}} 条</text>
+  </view>
+
+  <view class="message-list" wx:if="{{messages.length}}">
+    <view
+      wx:for="{{messages}}"
+      wx:key="_id"
+      class="message-item {{item.readAt ? '' : 'message-item--unread'}}"
+      bindtap="onMessageTap"
+      data-id="{{item._id}}"
+    >
+      <view class="message-item__head">
+        <text class="message-item__type">{{item.typeLabel}}</text>
+        <text class="message-item__time">{{item.timeText}}</text>
+      </view>
+      <view class="message-item__title">{{item.title}}</view>
+      <view class="message-item__content">{{item.content}}</view>
+      <view class="message-item__dot" wx:if="{{!item.readAt}}"></view>
+    </view>
+  </view>
+
+  <view class="message-loading" wx:elif="{{loading}}">
+    <view class="message-loading__bar"></view>
+    <view class="message-loading__bar"></view>
+  </view>
+
   <empty-view
-    wx:if="{{!loading && !messages.length}}"
+    wx:elif="{{loaded}}"
     icon="✉️"
     title="暂无消息"
     subtitle="{{apiReady ? '暂时没有新消息' : '消息 API 接入后会展示真实消息'}}"
   />
+
+  <view class="message-more" wx:if="{{hasMore && !loading}}" bindtap="loadMore">
+    <text class="message-more__text">加载更多</text>
+  </view>
+
+  <view class="section">
+    <section-header title="消息偏好" />
+    <view class="message-prefs">
+      <view class="message-pref" wx:for="{{prefItems}}" wx:key="key">
+        <text class="message-pref__label">{{item.label}}</text>
+        <switch
+          class="message-pref__switch"
+          checked="{{prefs && prefs[item.key]}}"
+          disabled="{{!prefs || savingPref === item.key}}"
+          color="#8B5CF6"
+          data-key="{{item.key}}"
+          bindchange="onPrefToggle"
+        />
+      </view>
+    </view>
+  </view>
 </view>

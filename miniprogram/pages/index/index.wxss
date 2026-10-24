@@ -2,6 +2,54 @@
   padding-top: 8rpx;
 }
 
+.today-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.today-action {
+  position: relative;
+  background: var(--bg-card);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-s);
+  padding: 24rpx 28rpx;
+}
+
+.today-action--unread {
+  box-shadow: var(--shadow-m);
+}
+
+.today-action__type {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 8rpx;
+}
+
+.today-action__title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: var(--text-strong);
+  margin-bottom: 8rpx;
+}
+
+.today-action__content {
+  font-size: 26rpx;
+  color: var(--text-normal);
+  line-height: 1.5;
+}
+
+.today-action__dot {
+  position: absolute;
+  top: 24rpx;
+  right: 24rpx;
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: 50%;
+  background: var(--danger);
+}
+
 .home-header {
   display: flex;
   align-items: center;

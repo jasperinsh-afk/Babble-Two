@@ -1,6 +1,8 @@
 Component({
   data: {
     selected: 0,
+    // 未读角标：key 为 pagePath，value 为未读数量，0/缺省不展示
+    badges: {},
     list: [
       {
         pagePath: '/pages/index/index',
@@ -34,6 +36,11 @@ Component({
       const { path, index } = e.currentTarget.dataset
       if (this.data.selected === index) return
       wx.switchTab({ url: path })
+    },
+
+    /** 由各 Tab 页调用，同步未读角标：setBadges({ '/pages/message/index/index': 3 }) */
+    setBadges(next) {
+      this.setData({ badges: { ...this.data.badges, ...next } })
     },
   },
 })
