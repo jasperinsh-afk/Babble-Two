@@ -1,9 +1,9 @@
 # Railway 部署配置
 # 仓库根为 bala-miniapp，后端位于 server/ 子目录
-# 构建：安装 server 依赖；启动：在 server 目录下运行 uvicorn
+# 构建走 Dockerfile（Nixpacks 在子目录依赖的场景下装不上 pip），启动在 server 目录下跑 uvicorn
 [build]
-builder = "NIXPACKS"
-# 安装命令交给根目录 nixpacks.toml（需显式声明 python provider，否则构建镜像里没有 pip）
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
 
 [deploy]
 startCommand = "cd server && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
