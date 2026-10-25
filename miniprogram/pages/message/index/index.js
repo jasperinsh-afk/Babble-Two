@@ -1,6 +1,6 @@
-const { call } = require('../../utils/api')
-const { messageTargetPath, messageTypeLabel } = require('../../utils/messages')
-const { fromNowText } = require('../../utils/format')
+const { call } = require('../../../utils/api')
+const { messageTargetPath, messageTypeLabel } = require('../../../utils/messages')
+const { fromNowText } = require('../../../utils/format')
 
 // 后端 me.messages / me.markRead / me.messagePrefs 已就绪，直接读取真实数据，不写入任何假消息。
 const MESSAGE_API_READY = true

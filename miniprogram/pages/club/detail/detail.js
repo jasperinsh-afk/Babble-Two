@@ -35,7 +35,7 @@ Page({
         categoryText: clubCategoryLabel[club.category] || club.category,
       })
     } catch (e) {
-      wx.showToast({ title: '加载失败', icon: 'none' })
+      console.warn('[club/detail] 加载失败', e)
     } finally {
       this.setData({ loading: false })
     }

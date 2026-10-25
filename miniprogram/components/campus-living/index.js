@@ -39,7 +39,7 @@ Component({
           this.setData({ currentChannel: channels[0]._id }, () => this.loadDormPosts())
         }
       } catch (e) {
-        wx.showToast({ title: '频道加载失败', icon: 'none' })
+        console.warn('[campus-living] 频道加载失败', e)
       }
     },
 
@@ -50,7 +50,7 @@ Component({
         const res = await call('living', 'channelPosts', { channelId: this.data.currentChannel })
         this.setData({ dormPosts: res.list || [] })
       } catch (e) {
-        wx.showToast({ title: '帖子加载失败', icon: 'none' })
+        console.warn('[campus-living] 帖子加载失败', e)
       } finally {
         this.setData({ loading: false })
       }
@@ -67,7 +67,7 @@ Component({
         const res = await call('living', 'lostFound', { kind: this.data.lostKind })
         this.setData({ lostItems: res.list || [] })
       } catch (e) {
-        wx.showToast({ title: '失物招领加载失败', icon: 'none' })
+        console.warn('[campus-living] 失物招领加载失败', e)
       } finally {
         this.setData({ loading: false })
       }
@@ -79,7 +79,7 @@ Component({
         const res = await call('living', 'secondHand')
         this.setData({ secondItems: res.list || [] })
       } catch (e) {
-        wx.showToast({ title: '二手交换加载失败', icon: 'none' })
+        console.warn('[campus-living] 二手交换加载失败', e)
       } finally {
         this.setData({ loading: false })
       }

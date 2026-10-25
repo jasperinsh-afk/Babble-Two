@@ -56,7 +56,7 @@ Component({
         this.buildDays()
         this.updateCurrentEvents()
       } catch (e) {
-        wx.showToast({ title: '加载失败', icon: 'none' })
+        console.warn('[campus-calendar] 加载失败', e)
       }
     },
 

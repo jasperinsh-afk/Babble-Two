@@ -8,6 +8,9 @@
 /** 合并中的同名请求：避免快速重复点击打出多个云调用 */
 const inflight = new Map()
 
+/** 全局错误弹窗开关：false 时云调用失败只写 console，页面显示空态而不打扰用户 */
+const SHOW_TOAST_ON_ERROR = false
+
 function toast(message) {
   wx.showToast({ title: message || '网络异常', icon: 'none', duration: 2000 })
 }
@@ -66,7 +69,10 @@ function call(name, action, payload = {}, opts = {}) {
   if (dedupe) inflight.set(key, promise)
 
   return promise.catch((err) => {
-    if (!silent) toast(err.message)
+    if (!silent) {
+      console.warn(`[api] ${name}.${action} 失败`, err)
+      if (SHOW_TOAST_ON_ERROR) toast(err.message)
+    }
     throw err
   })
 }

@@ -1,6 +1,6 @@
 <view class="club-card" bindtap="onTap">
   <view class="club-card__cover" wx:if="{{club.coverUrl}}">
-    <image src="{{club.coverUrl}}" mode="aspectFill" lazy-load />
+    <image class="club-card__img" src="{{club.coverUrl}}" mode="aspectFill" lazy-load />
   </view>
   <view class="club-card__cover club-card__cover--empty" wx:else>
     <text>{{initial}}</text>

@@ -13,7 +13,7 @@
   position: relative;
 }
 
-.club-card__cover image {
+.club-card__cover .club-card__img {
   width: 100%;
   height: 100%;
 }

@@ -41,7 +41,7 @@ Page({
         })),
       })
     } catch (e) {
-      wx.showToast({ title: '加载失败', icon: 'none' })
+      console.warn('[profile] 加载失败', e)
     } finally {
       this.setData({ loading: false })
     }
