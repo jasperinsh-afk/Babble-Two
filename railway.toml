@@ -3,7 +3,7 @@
 # 构建：安装 server 依赖；启动：在 server 目录下运行 uvicorn
 [build]
 builder = "NIXPACKS"
-buildCommand = "pip install -r server/requirements.txt"
+# 安装命令交给根目录 nixpacks.toml（需显式声明 python provider，否则构建镜像里没有 pip）
 
 [deploy]
 startCommand = "cd server && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
