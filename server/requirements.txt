@@ -4,6 +4,8 @@ fastapi==0.115.6
 uvicorn[standard]==0.34.0
 sqlalchemy==2.0.36
 aiosqlite==0.20.0
+# 生产库（Railway Postgres）驱动：DATABASE_URL 为 postgresql+asyncpg:// 时需要
+asyncpg==0.30.0
 pydantic==2.10.4
 pydantic-settings==2.7.0
 # app/schemas/auth.py 使用 EmailStr，pydantic 需要它才能生成校验 schema

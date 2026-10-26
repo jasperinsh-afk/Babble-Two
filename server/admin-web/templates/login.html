@@ -35,10 +35,12 @@
         <label>密码<input type="password" name="password" required minlength="8" autocomplete="new-password" placeholder="至少 8 位，含字母和数字"></label>
         <label>确认密码<input type="password" name="password_confirm" required minlength="8" autocomplete="new-password"></label>
         <label id="club-field">所属社团
-          <select name="club_id" id="register-club">
-            <option value="">请选择社团</option>
+          <input type="text" name="club_id" id="register-club" list="club-options"
+                 placeholder="直接输入社团名称或 ID" autocomplete="off">
+          <datalist id="club-options">
             {% for club in clubs or [] %}<option value="{{ club._id }}">{{ club.name }}</option>{% endfor %}
-          </select>
+          </datalist>
+          <small class="muted">可自由填写；下拉候选只是已有社团的快捷选项，读不到云端数据时也能直接输入。</small>
         </label>
         <label>授权码<input type="password" name="authorization_code" required inputmode="numeric" autocomplete="off"></label>
         <button type="submit">开通并进入</button>

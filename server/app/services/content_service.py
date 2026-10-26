@@ -170,10 +170,12 @@ def _assert_collection_allowed(collection: str, principal: AdminPrincipal | None
 
 
 def _document_in_scope(collection: str, document: dict[str, Any], actor: AdminPrincipal) -> bool:
+    # 社团归属改为自由输入后，账号里可能存的是 _id，也可能是社团名称，两种都要认
+    owned = actor.club_id
     if collection == "clubs":
-        return document.get("_id") == actor.club_id
+        return document.get("_id") == owned or document.get("name") == owned
     if collection == "club_posts":
-        return document.get("clubId") == actor.club_id
+        return document.get("clubId") == owned or document.get("clubName") == owned
     if collection == "events":
         return document.get("organizerType") == "club" and document.get("organizerId") == actor.club_id
     return False

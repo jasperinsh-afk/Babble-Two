@@ -156,6 +156,19 @@ async def login(request: Request, token: str = Form(""), nickname: str = Form(""
     return await _login_page(request, error="管理员口令或账号密码不正确")
 
 
+async def _resolve_club_id(value: str) -> str:
+    """把自由填写的社团归一化：命中已有社团（按 ID 或名称）则返回其 _id，否则原样保留。"""
+    try:
+        clubs = await content_service.list_documents("clubs")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[admin-web] 社团解析跳过（云开发不可用）: {exc}")
+        return value
+    for club in clubs or []:
+        if value and value in (str(club.get("_id") or ""), str(club.get("name") or "")):
+            return str(club.get("_id") or value)
+    return value
+
+
 @router.post("/register")
 async def register(
     request: Request,
@@ -184,9 +197,8 @@ async def register(
     elif role == ROLE_CLUB_MODERATOR and not club_id:
         error = "社团版主必须选择所属社团"
     if not error and role == ROLE_CLUB_MODERATOR:
-        club = await content_service.get_document("clubs", club_id)
-        if not club:
-            error = "所选社团不存在，请刷新后重试"
+        # 社团改为自由输入：能匹配到云端社团就归一化成 _id，匹配不到也放行（按填写内容归属）
+        club_id = await _resolve_club_id(club_id)
     if not error:
         async with SessionLocal() as db:
             exists = (await db.execute(select(AdminAccount.id).where(AdminAccount.nickname == nickname))).first()

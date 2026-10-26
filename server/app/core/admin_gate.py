@@ -51,10 +51,12 @@ def _login_required() -> HTTPException:
 
 
 def _is_admin_cookie(token: str) -> bool:
-    return bool(
-        settings.ADMIN_WEB_TOKEN
-        and compare_digest(token.encode("utf-8"), settings.ADMIN_WEB_TOKEN.encode("utf-8"))
-    )
+    # Starlette 对含特殊字符（@ 等）的 Cookie 值会自动加一对双引号，浏览器原样回传，
+    # 拿带引号的值与配置比对必然失败 —— 表现为「口令正确、登录却立刻被弹回登录页」。
+    # 这里两侧都做一次去引号 / 去空白处理再比对。
+    expected = (settings.ADMIN_WEB_TOKEN or "").strip().strip('"')
+    candidate = (token or "").strip().strip('"')
+    return bool(expected and compare_digest(candidate.encode("utf-8"), expected.encode("utf-8")))
 
 
 def create_account_session(account_id: int) -> str:

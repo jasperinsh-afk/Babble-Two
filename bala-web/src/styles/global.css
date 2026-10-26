@@ -546,9 +546,17 @@ ol {
   gap: 12px;
 }
 
-@media (min-width: 1200px) {
+/* 平板起就排多列，桌面更宽 */
+@media (min-width: 768px) {
   .grid-2 {
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .grid-2 {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 16px;
   }
 }
@@ -717,8 +725,8 @@ ol {
   height: 18px;
 }
 
-/* 桌面端：底部 TabBar 变为左侧常驻导航 */
-@media (min-width: 1200px) {
+/* 桌面端（1024 起）：底部 TabBar 变为左侧常驻导航 */
+@media (min-width: 1024px) {
   .app-shell {
     margin-left: var(--rail);
     margin-right: auto;
@@ -792,6 +800,34 @@ ol {
 
   .admin-fab {
     left: calc(var(--rail) + var(--shell-width) - 40px);
+  }
+}
+
+/* 手机横屏：高度很矮，压缩竖向留白，避免一屏只有半屏内容 */
+@media (min-width: 640px) and (max-height: 520px) {
+  .page {
+    padding-bottom: calc(56px + var(--safe-bottom));
+  }
+
+  .page--with-topbar {
+    padding-top: 40px;
+  }
+
+  .top-bar {
+    height: 40px;
+  }
+
+  .top-bar__back {
+    height: 40px;
+    width: 40px;
+  }
+
+  .section {
+    margin: 12px 16px;
+  }
+
+  .tab-bar__item {
+    height: 40px;
   }
 }
 
