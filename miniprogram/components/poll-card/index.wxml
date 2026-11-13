@@ -1,7 +1,6 @@
 <view class="poll-card" bindtap="onTap">
   <view class="poll-card__header">
     <view class="poll-card__type chip">{{typeText}}</view>
-    <view class="poll-card__tag chip">{{tagText}}</view>
     <view class="grow"></view>
     <view class="poll-card__count">{{totalText}}</view>
   </view>

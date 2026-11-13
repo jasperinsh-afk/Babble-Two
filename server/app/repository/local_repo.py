@@ -200,12 +200,10 @@ class LocalRepository:
     # ── vote ──
 
     async def vote_list(self, payload, identity):
-        tag = payload.get("tag") or ""
+        # 投票标签已下线：旧端传 tag 也一律忽略，返回全部进行中的投票
         polls = [
             p for p in await self.store.docs("polls") if p.get("status") == "active" and _visible(p)
         ]
-        if tag and tag != "all":
-            polls = [p for p in polls if p.get("tag") == tag]
         polls.sort(key=lambda p: _dt_key(p.get("createdAt") or p.get("startAt")), reverse=True)
         page = _paginate([_slim_poll(p) for p in polls], payload.get("page", 0))
         return page
@@ -236,9 +234,12 @@ class LocalRepository:
         if not poll_id:
             _fail("缺少 pollId", "PARAM_MISSING")
         raw = await self._poll(poll_id)
-        if (
+        # 历史后台默认写入 resultStatus='draft'，若据此隐藏会显示 0 人 0%；
+        # 该字段不再参与判定，且已投票用户始终能看到真实统计。
+        voted = bool(await self._my_ballot(identity, poll_id))
+        if not voted and (
             raw.get("status") in ("draft", "archived", "withdrawn")
-            or raw.get("resultStatus") == "draft"
+            or raw.get("resultStatus") == "withdrawn"
             or raw.get("resultScope") == "draft"
         ):
             return {
@@ -1318,9 +1319,7 @@ def _slim_poll(poll: Dict[str, Any]) -> Dict[str, Any]:
         "description": poll.get("description") or "",
         "pollType": poll.get("pollType"),
         "status": poll.get("status"),
-        "tag": poll.get("tag"),
         "category": poll.get("category"),
-        "topicTags": poll.get("topicTags") or [],
         "coverUrl": poll.get("coverUrl") or "",
         "startAt": poll.get("startAt"),
         "endAt": poll.get("endAt"),
@@ -1353,7 +1352,6 @@ def _slim_poll_home(poll: Dict[str, Any]) -> Dict[str, Any]:
             "title",
             "description",
             "pollType",
-            "tag",
             "category",
             "coverUrl",
             "endAt",

@@ -40,7 +40,7 @@ export const api = {
   homeFeed: (options?: CallOptions) => call<HomeFeed>('home', 'feed', {}, options),
 
   voteList: (page: number, options?: CallOptions) =>
-    call<PageResult<Poll>>('vote', 'list', { tag: 'all', page }, options),
+    call<PageResult<Poll>>('vote', 'list', { page }, options),
   voteDetail: (pollId: string, options?: CallOptions) =>
     call<Poll>('vote', 'detail', { pollId }, options),
   voteResults: (pollId: string, options?: CallOptions) =>

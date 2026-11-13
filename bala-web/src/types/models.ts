@@ -27,9 +27,7 @@ export interface Poll {
   description: string
   pollType: PollType
   status?: string
-  tag?: string
   category?: string
-  topicTags?: string[]
   coverUrl?: string
   startAt?: string | null
   endAt?: string | null

@@ -20,15 +20,6 @@ module.exports = {
     groupbuy: '接龙',
   },
 
-  // 投票标签 → 展示文案（列表筛选胶囊）
-  pollTagLabel: {
-    all: '全部',
-    news: '时事',
-    campus: '学习',
-    meme: '热梗',
-    group: '接龙',
-  },
-
   // 社团分类 → 展示文案
   clubCategoryLabel: {
     all: '全部',

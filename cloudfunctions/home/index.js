@@ -34,7 +34,6 @@ function slimPoll(poll) {
     title: poll.title,
     description: poll.description || '',
     pollType: poll.pollType,
-    tag: poll.tag,
     category: poll.category,
     coverUrl: poll.coverUrl || '',
     endAt: poll.endAt || null,

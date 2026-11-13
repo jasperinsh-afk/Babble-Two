@@ -346,7 +346,6 @@ async def candidate_draft(item_id: int, request: Request, _=Depends(require_supe
             "title": d.get("title", item.title),
             "description": d.get("description", ""),
             "pollType": d.get("poll_type", "single"),
-            "tag": d.get("category", "news"),
             "options": [
                 {"optionId": f"o{i + 1}", "label": o, "sortOrder": i, "count": 0}
                 for i, o in enumerate(d.get("options", []))

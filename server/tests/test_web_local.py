@@ -38,10 +38,12 @@ async def test_home_feed(repo):
 
 
 async def test_vote_list_and_detail(repo):
-    page = await repo.call("vote", "list", {"tag": "all", "page": 0}, IDENTITY)
+    page = await repo.call("vote", "list", {"page": 0}, IDENTITY)
     assert len(page["list"]) == 5
-    campus = await repo.call("vote", "list", {"tag": "campus", "page": 0}, IDENTITY)
-    assert all(p["tag"] == "campus" for p in campus["list"])
+    assert all("tag" not in p for p in page["list"])
+    # 标签已下线：旧端仍传 tag 时也返回全部
+    legacy = await repo.call("vote", "list", {"tag": "campus", "page": 0}, IDENTITY)
+    assert len(legacy["list"]) == len(page["list"])
 
     detail = await repo.call("vote", "detail", {"pollId": "p004"}, IDENTITY)
     assert detail["hasVoted"] is False and detail["myChoice"] == []
@@ -221,6 +223,16 @@ async def test_vote_results_restricted_and_extended(repo):
     assert result["owner"]["ownerName"] == "学生会"
     assert result["owner"]["response"] == "已关注食堂改进建议"
     assert result["owner"]["respondedAt"]
+
+    # 已投票用户不受「未公示 / 草稿范围」限制，必须看到真实票数与百分比
+    await repo.call(
+        "vote", "cast", {"pollId": "p001", "optionIds": [poll["options"][0]["optionId"]]}, IDENTITY
+    )
+    await repo.store.put("polls", {**published, "resultScope": "draft", "resultStatus": "draft"})
+    visible = await repo.call("vote", "results", {"pollId": "p001"}, IDENTITY)
+    assert visible["restricted"] is False
+    assert visible["total"] >= 1
+    assert any(o["percent"] > 0 for o in visible["options"])
 
     # 无负责人时 owner 为 None
     await repo.store.put("polls", {**published, "ownerType": None, "ownerName": None})

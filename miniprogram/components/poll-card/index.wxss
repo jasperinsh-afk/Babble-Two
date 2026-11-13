@@ -17,11 +17,6 @@
   margin-right: 12rpx;
 }
 
-.poll-card__tag {
-  background: rgba(30, 27, 46, 0.05);
-  color: var(--text-normal);
-}
-
 .poll-card__count {
   font-size: 24rpx;
   color: var(--primary);

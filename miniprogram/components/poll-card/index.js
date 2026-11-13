@@ -1,4 +1,4 @@
-const { pollTypeLabel, pollTagLabel } = require('../../utils/config')
+const { pollTypeLabel } = require('../../utils/config')
 const { countdownText, compactNumber } = require('../../utils/format')
 
 Component({
@@ -7,7 +7,6 @@ Component({
   },
   data: {
     typeText: '',
-    tagText: '',
     totalText: '',
     timeText: '',
     joinPercent: 0,
@@ -19,7 +18,6 @@ Component({
       const total = poll.totalVotes || 0
       this.setData({
         typeText: pollTypeLabel[poll.pollType] || '投票',
-        tagText: pollTagLabel[poll.tag] || poll.tag || '',
         totalText: `${compactNumber(total)} 已投`,
         timeText: poll.endAt ? `剩 ${countdownText(poll.endAt)}` : '',
         joinPercent:

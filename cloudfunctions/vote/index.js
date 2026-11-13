@@ -121,9 +121,7 @@ function slimPoll(poll) {
     description: poll.description || '',
     pollType: poll.pollType,
     status: poll.status,
-    tag: poll.tag,
     category: poll.category,
-    topicTags: poll.topicTags || [],
     coverUrl: poll.coverUrl || '',
     startAt: poll.startAt || null,
     endAt: poll.endAt || null,
@@ -144,9 +142,9 @@ function slimPoll(poll) {
 const PAGE_SIZE = 20
 
 async function list(payload = {}) {
-  const { tag = '', page = 0 } = payload
+  const { page = 0 } = payload
+  // 投票标签已下线：不再按 tag 筛选，旧端传 tag 也直接忽略
   const where = { status: 'active', isDeleted: false }
-  if (tag && tag !== 'all') where.tag = tag
 
   const res = await db
     .collection(POLLS)
@@ -189,13 +187,29 @@ async function detail(payload = {}) {
   return poll
 }
 
-/** 结果受限：草稿 / 归档 / 撤回 / 未公示 / 草稿范围时只回选项骨架，不给计数 */
+/** 结果受限：仅未开放 / 已撤回 / 明确标为草稿范围时，对未投票用户隐藏计数。
+ *  注意：历史后台默认写入 resultStatus='draft'，若据此隐藏会让所有投票结果显示 0 人 0%，
+ *  因此该字段不再参与判定；已投票用户无论什么状态都能看到真实统计。 */
 function isResultRestricted(poll) {
   return (
     ['draft', 'archived', 'withdrawn'].includes(poll.status) ||
-    poll.resultStatus === 'draft' ||
+    poll.resultStatus === 'withdrawn' ||
     poll.resultScope === 'draft'
   )
+}
+
+async function hasVoted(pollId, openid) {
+  if (!openid) return false
+  try {
+    const res = await db
+      .collection(BALLOTS)
+      .where({ _openid: openid, pollId })
+      .limit(1)
+      .get()
+    return res.data.length > 0
+  } catch (err) {
+    return false
+  }
 }
 
 async function results(payload = {}) {
@@ -206,7 +220,8 @@ async function results(payload = {}) {
   if (!res.data) fail('投票不存在')
 
   const poll = res.data
-  if (isResultRestricted(poll)) {
+  const voted = await hasVoted(pollId, resolveOpenid(payload))
+  if (!voted && isResultRestricted(poll)) {
     return {
       pollId,
       restricted: true,

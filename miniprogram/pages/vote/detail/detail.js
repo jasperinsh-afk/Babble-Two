@@ -1,5 +1,5 @@
 const { call } = require('../../../utils/api')
-const { pollTypeLabel, pollTagLabel } = require('../../../utils/config')
+const { pollTypeLabel } = require('../../../utils/config')
 const { countdownText } = require('../../../utils/format')
 const { pushFootprint } = require('../../../utils/storage')
 
@@ -32,7 +32,6 @@ Page(withShare({
     pollId: '',
     poll: null,
     typeText: '',
-    tagText: '',
     timeText: '',
     selectedOptionIds: [],
     optionViews: [],
@@ -58,7 +57,6 @@ Page(withShare({
     try {
       const poll = await call('vote', 'detail', { pollId: this.data.pollId })
       const typeText = pollTypeLabel[poll.pollType] || '投票'
-      const tagText = pollTagLabel[poll.tag] || poll.tag || ''
       const timeText = poll.endAt ? `截止 ${countdownText(poll.endAt)}` : ''
       const chainPercent =
         poll.pollType === 'groupbuy' && poll.maxParticipants
@@ -69,7 +67,6 @@ Page(withShare({
       this.setData({
         poll,
         typeText,
-        tagText,
         timeText,
         chainPercent,
         selectedOptionIds,
@@ -143,11 +140,17 @@ Page(withShare({
       await call('vote', 'cast', { pollId: poll._id, optionIds: selectedOptionIds }, { loading: '提交中…' })
       wx.showToast({ title: poll.hasVoted ? '投票已修改' : '投票成功', icon: 'success' })
       pushFootprint({ pollId: poll._id, title: poll.title, at: new Date() })
+      // 先清空旧结果，再拉取最新票数与详情，避免展示上一次的 0 人 / 0%
+      this.setData({ results: null })
       await this.load()
+      if (poll.pollType !== 'groupbuy') {
+        this.setData({ showResults: true })
+        await this.loadResults()
+      }
     } catch (e) {
       wx.showToast({ title: e && e.message ? e.message : '提交失败，请重试', icon: 'none' })
     } finally {
-      this.setData({ submitting: false, ...selectionData(poll, selectedOptionIds) })
+      this.setData({ submitting: false, ...selectionData(this.data.poll, this.data.selectedOptionIds) })
     }
   },
 
