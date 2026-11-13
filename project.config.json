@@ -1,7 +1,7 @@
 {
   "description": "叭啦 Babble —— 微信原生小程序（云开发）",
   "compileType": "miniprogram",
-  "libVersion": "3.5.5",
+  "libVersion": "3.17.2",
   "appid": "wx8d676279f2d09146",
   "projectname": "babble-miniprogram",
   "miniprogramRoot": "miniprogram/",
@@ -25,7 +25,6 @@
     }
   },
   "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
-  "projectArchitecture": "multiPlatform",
   "simulatorPluginLibVersion": {
     "wxext14566970e7e9f62": "2.27.3"
   }
