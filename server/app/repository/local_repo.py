@@ -20,7 +20,7 @@ PAGE_SIZE = 20
 
 # 与 cloudfunctions/leaderboard/score.js 保持一致的积分与周榜规则
 LEADERBOARD_POINTS = {"vote": 10, "schedule": 5, "nickname": 5}
-MEDAL_NAME = "星耀周冠军"
+MEDAL_NAME = "榜一大哥"
 AVATARS = ("🦊", "🐼", "🐯", "🐨", "🦁", "🐸", "🐙", "🦄", "🐳", "🌻", "🍀", "⚡")
 CHINA_TZ = timezone(timedelta(hours=8))
 
@@ -122,6 +122,9 @@ class LocalRepository:
         ongoing = [p for p in polls if (parse_dt(p.get("endAt")) or now) > now]
         ongoing.sort(key=lambda p: _dt_key(p.get("endAt")))
         hot = sorted(ongoing, key=lambda p: p.get("totalVotes") or 0, reverse=True)
+        recent = sorted(
+            ongoing, key=lambda p: _dt_key(p.get("createdAt") or p.get("startAt")), reverse=True
+        )
 
         events = [
             e
@@ -132,6 +135,32 @@ class LocalRepository:
         ]
         events.sort(key=lambda e: _dt_key(e.get("startAt")))
 
+        # 校历日程：今天进行（含已结束）+ 未来 7 天，用于主页「今日安排」
+        today_key = now.astimezone().strftime("%Y-%m-%d")
+        horizon = now + timedelta(days=7)
+        calendar_events = [
+            e
+            for e in await self.store.docs("events")
+            if not e.get("isDeleted")
+            and e.get("status") != "cancelled"
+            and _dt_key(e.get("startAt"))
+        ]
+        today_calendar, upcoming_calendar = [], []
+        for event in calendar_events:
+            start = parse_dt(event.get("startAt"))
+            if not start:
+                continue
+            local_start = start.astimezone()
+            if local_start.strftime("%Y-%m-%d") == today_key:
+                today_calendar.append(event)
+            elif now <= start <= horizon:
+                upcoming_calendar.append(event)
+        today_calendar.sort(key=lambda e: _dt_key(e.get("startAt")))
+        upcoming_calendar.sort(key=lambda e: _dt_key(e.get("startAt")))
+
+        announcements = [a for a in await self.store.docs("announcements") if a.get("isActive")]
+        announcements.sort(key=lambda a: a.get("sort") or 0)
+
         clubs = [c for c in await self.store.docs("clubs") if _visible(c)]
         clubs.sort(key=lambda c: c.get("heatScore") or 0, reverse=True)
 
@@ -139,6 +168,15 @@ class LocalRepository:
 
         return {
             "sections": (layout or {}).get("sections") or [],
+            "announcements": [
+                {
+                    "_id": a.get("_id"),
+                    "title": a.get("title"),
+                    "content": a.get("content") or "",
+                    "level": a.get("level") or "info",
+                }
+                for a in announcements[:3]
+            ],
             "banners": [
                 {
                     "_id": b.get("_id"),
@@ -149,8 +187,13 @@ class LocalRepository:
                 for b in banners[:5]
             ],
             "todayPoll": _slim_poll_home(ongoing[0]) if ongoing else None,
+            "recentPolls": [_slim_poll_home(p) for p in recent[:5]],
             "hotPolls": [_slim_poll_home(p) for p in hot[:5]],
             "events": [_slim_event_home(e) for e in events[:3]],
+            "calendarEvents": {
+                "today": [_slim_event_home(e) for e in today_calendar[:5]],
+                "upcoming": [_slim_event_home(e) for e in upcoming_calendar[:5]],
+            },
             "clubs": [_slim_club_home(c) for c in clubs[:6]],
         }
 

@@ -114,13 +114,13 @@ export default function CalendarContent({ embedded = false }: { embedded?: boole
     <div className={`${embedded ? '' : 'page'} page--calendar`}>
       <div className="calendar-header">
         <button type="button" className="calendar-header__btn" aria-label="上一月" onClick={() => shiftMonth(-1)}>
-          ‹
+          ⬅️
         </button>
         <span className="calendar-header__title">
           {year} 年 {month} 月
         </span>
         <button type="button" className="calendar-header__btn" aria-label="下一月" onClick={() => shiftMonth(1)}>
-          ›
+          ➡️
         </button>
       </div>
 

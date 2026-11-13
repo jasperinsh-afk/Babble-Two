@@ -12,8 +12,14 @@ const KINDS = [
   { key: 'found', label: '招领' },
 ]
 
-export default function LivingContent({ embedded = false }: { embedded?: boolean }) {
-  const [tab, setTab] = useState(0)
+export default function LivingContent({
+  embedded = false,
+  initialTab = 0,
+}: {
+  embedded?: boolean
+  initialTab?: number
+}) {
+  const [tab, setTab] = useState(initialTab)
   const [channelId, setChannelId] = useState('')
   const [kind, setKind] = useState('all')
 

@@ -1,41 +1,53 @@
-import type { ReactNode } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ClubCard, EventCard } from '@/components/cards'
 import { SectionHeader } from '@/components/common'
-import type { HomeFeed, HomeSection } from '@/types/models'
+import { CalendarIcon, LivingIcon, ScanIcon, VoteIcon } from '@/components/icons'
+import { useOpenService } from '@/components/services'
+import type { HomeFeed, HomeSection as HomeSectionType } from '@/types/models'
+import { SERVICE_OPENED } from '@/utils/config'
 import { countdownText } from '@/utils/format'
 
-export const DEFAULT_HOME_SECTIONS: HomeSection[] = [
-  { id: 'section-banner', type: 'banner', title: 'Banner 轮播', enabled: true, config: { limit: 5 } },
-  { id: 'section-today', type: 'todayPoll', title: '今日投票', enabled: true, config: {} },
+/** 后端未下发配置时的首页版块（活动 / 社团已收敛到校园服务目录） */
+export const DEFAULT_HOME_SECTIONS: HomeSectionType[] = [
   {
-    id: 'section-quick', type: 'quickEntries', title: '快捷入口', enabled: true,
-    config: { items: [
-      { key: 'vote', label: '投票', icon: '✓', to: '/vote' },
-      { key: 'club', label: '社团', icon: '⌂', to: '/club' },
-      { key: 'calendar', label: '日历', icon: '▦', to: '/calendar' },
-      { key: 'living', label: '住宿', icon: '⌂', to: '/living' },
-      { key: 'scan', label: '扫码', icon: '◎', to: '/scan' },
-    ] },
+    id: 'section-quick',
+    type: 'quickEntries',
+    title: '快捷入口',
+    enabled: true,
+    config: {
+      items: [
+        { key: 'days', label: '日子', icon: '📅', to: '/days' },
+        { key: 'vote', label: '投票广场', icon: '🗳️', to: '/vote' },
+      ],
+    },
   },
+  { id: 'section-today', type: 'todayPoll', title: '今日必投', enabled: true, config: {} },
+  { id: 'section-recent', type: 'recentPolls', title: '最近投票', enabled: true, config: { limit: 5 } },
   { id: 'section-hot', type: 'hotPolls', title: '热门投票', enabled: true, config: { limit: 5 } },
-  { id: 'section-events', type: 'events', title: '推荐活动', enabled: true, config: { limit: 3 } },
-  { id: 'section-clubs', type: 'clubs', title: '社团精选', enabled: true, config: { limit: 6 } },
 ]
 
+const ENTRY_GLYPHS: Record<string, ComponentType<{ className?: string }>> = {
+  days: CalendarIcon,
+  vote: VoteIcon,
+  living: LivingIcon,
+  scan: ScanIcon,
+}
+
 interface Props {
-  section: HomeSection
+  section: HomeSectionType
   feed: HomeFeed
-  banner: ReactNode
+  banner?: ReactNode
 }
 
 export function HomeSection({ section, feed, banner }: Props) {
   const navigate = useNavigate()
+  const openService = useOpenService()
   if (!section.enabled) return null
   const title = section.title
   const limit = Math.min(20, Math.max(1, section.config.limit || 5))
 
-  if (section.type === 'banner') return feed.banners.length ? <div key={section.id}>{banner}</div> : null
+  if (section.type === 'banner') return banner ? <>{banner}</> : null
 
   if (section.type === 'todayPoll') {
     const poll = feed.todayPoll
@@ -59,11 +71,62 @@ export function HomeSection({ section, feed, banner }: Props) {
     return entries.length ? (
       <section className="section">
         <div className="home-quick">
-          {entries.map((entry) => (
-            <button type="button" key={entry.key} className="home-quick__item" onClick={() => navigate(entry.to)}>
-              <span className={`home-quick__icon home-quick__icon--${entry.key}`}>{entry.icon}</span>
-              <span className="home-quick__label">{entry.label}</span>
-            </button>
+          {entries.map((entry) => {
+            const Glyph = ENTRY_GLYPHS[entry.key]
+            return (
+              <button
+                type="button"
+                key={entry.key}
+                className={`home-quick__item home-quick__item--${entry.key}`}
+                onClick={() => {
+                  if (!openService(entry.key)) navigate(entry.to)
+                }}
+              >
+                <span className={`home-quick__icon home-quick__icon--${entry.key}`}>
+                  {Glyph ? <Glyph className="home-quick__glyph" /> : entry.icon}
+                </span>
+                <span className="home-quick__text">
+                  <span className="home-quick__label">{entry.label}</span>
+                  <span className="home-quick__hint">
+                    {entry.key === 'days'
+                      ? '记录重要的日子'
+                      : entry.key === 'vote'
+                        ? '看看大家在投什么'
+                        : SERVICE_OPENED
+                          ? '进去逛逛'
+                          : '尚未开通'}
+                  </span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+    ) : null
+  }
+
+  if (section.type === 'recentPolls') {
+    const polls = (feed.recentPolls ?? []).slice(0, limit)
+    return polls.length ? (
+      <section className="section">
+        <SectionHeader title={title} actionText="全部" onAction={() => navigate('/vote')} />
+        <div className="home-recent">
+          {polls.map((poll) => (
+            <div
+              className="home-recent__item pressable"
+              key={poll._id}
+              onClick={() => navigate(`/vote/${poll._id}`)}
+              role="presentation"
+            >
+              <div className="home-recent__body">
+                <div className="home-recent__title ellipsis">{poll.title}</div>
+                <div className="home-recent__meta">
+                  {poll.totalVotes || 0} 人参与
+                  {poll.endAt ? ` · ${countdownText(poll.endAt)}` : ''}
+                </div>
+              </div>
+              <span className="home-recent__go">去投票 ›</span>
+            </div>
           ))}
         </div>
       </section>

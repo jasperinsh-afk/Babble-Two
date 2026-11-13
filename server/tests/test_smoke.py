@@ -335,9 +335,12 @@ def test_admin_requires_operator():
 
 
 def test_admin_web_pages():
-    for path in ("", "/candidates", "/polls", "/review", "/nfc", "/export"):
+    for path in ("", "/candidates", "/polls", "/export"):
         r = client.get(f"/admin/web{path}")
         assert r.status_code == 200, f"{path} -> {r.status_code}"
+    # 内容审核与点位卡片模块已下线（SPA 兜底可能返回 200，但不再渲染后台页）
+    assert "待审投票" not in client.get("/admin/web/review").text
+    assert "点位卡片" not in client.get("/admin/web/nfc").text
 
 
 # ── 墨麟书院输出层：导出脱敏 ──

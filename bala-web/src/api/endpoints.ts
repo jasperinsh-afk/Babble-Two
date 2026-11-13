@@ -8,8 +8,11 @@ import type {
   CheckinResult,
   Club,
   ClubPost,
+  CloudDaySchedule,
   DormPost,
   HomeFeed,
+  LeaderboardMy,
+  LeaderboardWeekly,
   LostFoundItem,
   MessageList,
   MessagePrefs,
@@ -36,8 +39,8 @@ export const api = {
 
   homeFeed: (options?: CallOptions) => call<HomeFeed>('home', 'feed', {}, options),
 
-  voteList: (tag: string, page: number, options?: CallOptions) =>
-    call<PageResult<Poll>>('vote', 'list', { tag, page }, options),
+  voteList: (page: number, options?: CallOptions) =>
+    call<PageResult<Poll>>('vote', 'list', { tag: 'all', page }, options),
   voteDetail: (pollId: string, options?: CallOptions) =>
     call<Poll>('vote', 'detail', { pollId }, options),
   voteResults: (pollId: string, options?: CallOptions) =>
@@ -97,4 +100,30 @@ export const api = {
 
   analyticsTrack: (event: string, props: Record<string, unknown> = {}) =>
     call<unknown>('analytics', 'track', { event, props }, { silent: true, noRetry: true }),
+
+  leaderboardWeekly: (options?: CallOptions) =>
+    call<LeaderboardWeekly>('leaderboard', 'weekly', {}, options),
+  leaderboardMy: (options?: CallOptions) =>
+    call<LeaderboardMy>('leaderboard', 'my', {}, options),
+  leaderboardSetNickname: (nickname: string) =>
+    call<{ nickname: string }>('leaderboard', 'setNickname', { nickname }, { loading: '保存中…' }),
+  leaderboardTrackSchedule: (scheduleId: string) =>
+    call<unknown>(
+      'leaderboard',
+      'track',
+      { type: 'schedule:create', scheduleId },
+      { silent: true, noRetry: true },
+    ),
+
+  daysList: (options?: CallOptions) =>
+    call<{ list: CloudDaySchedule[] }>('days', 'list', {}, options),
+  daysSave: (schedule: CloudDaySchedule, options?: CallOptions) =>
+    call<{ schedule: CloudDaySchedule }>(
+      'days',
+      'save',
+      { ...schedule },
+      { silent: true, noRetry: true, ...options },
+    ),
+  daysRemove: (id: string, options?: CallOptions) =>
+    call<{ removed: boolean }>('days', 'remove', { id }, { silent: true, noRetry: true, ...options }),
 }

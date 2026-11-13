@@ -19,6 +19,17 @@ from app.repository.base import BalaError
 from app.services import web_service
 
 COLLECTIONS = {
+    "announcements": {
+        "label": "公告",
+        "titleKey": "title",
+        "fields": [
+            {"name": "title", "label": "公告标题", "type": "text", "required": True},
+            {"name": "content", "label": "公告内容", "type": "textarea"},
+            {"name": "level", "label": "公告级别", "type": "select", "required": True, "options": [["info", "普通"], ["important", "重要"], ["urgent", "紧急"]]},
+            {"name": "isActive", "label": "在首页显示", "type": "boolean"},
+            {"name": "sort", "label": "排序值（越小越靠前）", "type": "number"},
+        ],
+    },
     "banners": {
         "label": "首页 Banner",
         "titleKey": "title",
@@ -38,7 +49,6 @@ COLLECTIONS = {
             {"name": "description", "label": "投票说明", "type": "textarea"},
             {"name": "pollType", "label": "投票类型", "type": "select", "required": True, "options": [["single", "单选"], ["multi", "多选"], ["pk", "PK"], ["ranking", "排序"], ["groupbuy", "接龙"]]},
             {"name": "status", "label": "发布状态（仅上线在用户端显示）", "type": "select", "required": True, "options": [["active", "上线（用户端可见）"], ["draft", "草稿（用户端不可见）"], ["closed", "结束"], ["archived", "归档"], ["withdrawn", "撤回"]]},
-            {"name": "tag", "label": "分类（与小程序、网页页签一致）", "type": "select", "required": True, "options": [["news", "时事"], ["campus", "学习"], ["meme", "热梗"], ["group", "接龙"]]},
             {"name": "category", "label": "栏目", "type": "text"},
             {"name": "coverUrl", "label": "封面地址", "type": "url"},
             {"name": "startAt", "label": "开始时间", "type": "datetime"},
@@ -181,7 +191,7 @@ COLLECTIONS = {
 
 SECTION_TYPES = [
     ["banner", "Banner 轮播"], ["todayPoll", "今日投票"], ["quickEntries", "快捷入口"],
-    ["hotPolls", "热门投票"], ["events", "推荐活动"],
+    ["recentPolls", "最近投票"], ["hotPolls", "热门投票"], ["events", "推荐活动"],
 ]
 DEFAULT_QUICK_ENTRIES = [
     {"key": "days", "label": "日子", "icon": "📅", "to": "/days"},
@@ -195,21 +205,23 @@ DEFAULT_LAYOUT = {
         {"id": "section-banner", "type": "banner", "title": "Banner 轮播", "enabled": True, "config": {"limit": 5}},
         {"id": "section-today", "type": "todayPoll", "title": "今日投票", "enabled": True, "config": {}},
         {"id": "section-quick", "type": "quickEntries", "title": "快捷入口", "enabled": True, "config": {"items": DEFAULT_QUICK_ENTRIES}},
+        {"id": "section-recent", "type": "recentPolls", "title": "最近投票", "enabled": True, "config": {"limit": 5}},
         {"id": "section-hot", "type": "hotPolls", "title": "热门投票", "enabled": True, "config": {"limit": 5}},
         {"id": "section-events", "type": "events", "title": "推荐活动", "enabled": True, "config": {"limit": 3}},
     ],
 }
 NEW_DEFAULTS = {
+    "announcements": {"level": "info", "isActive": True, "sort": 0},
     "banners": {"isActive": True, "sort": 0},
     # isDeleted/totalVotes 等字段必须显式写入：云函数 where({isDeleted:false}) 不会命中缺失字段的文档
-    "polls": {"pollType": "single", "status": "active", "tag": "campus", "reviewStatus": "approved", "allowChange": False, "anonymous": True, "isDeleted": False, "totalVotes": 0, "participantCount": 0, "options": [{"optionId": "", "label": "", "sortOrder": 0}, {"optionId": "", "label": "", "sortOrder": 1}], "resultStatus": "draft", "resultScope": "campus", "resultRevision": 0, "responseRevision": 0},
+    "polls": {"pollType": "single", "status": "active", "reviewStatus": "approved", "allowChange": False, "anonymous": True, "isDeleted": False, "totalVotes": 0, "participantCount": 0, "options": [{"optionId": "", "label": "", "sortOrder": 0}, {"optionId": "", "label": "", "sortOrder": 1}], "resultStatus": "published", "resultScope": "campus", "resultRevision": 0, "responseRevision": 0},
     "events": {"status": "active", "organizerType": "school", "isDeleted": False, "participantCount": 0, "registeredOpenids": [], "waitlistOpenids": [], "changeRevision": 0},
     "clubs": {"isVerified": False, "isDeleted": False, "heatScore": 0, "memberCount": 0, "memberOpenids": []},
     "club_posts": {"images": [], "isPinned": False, "likeCount": 0},
     "days": {"title": "", "date": "", "note": ""},
     "user_profiles": {"nickname": "", "totalPoints": 0},
     "point_events": {"eventKey": "", "reason": "", "points": 0, "weekKey": ""},
-    "weekly_champions": {"weekKey": "", "nickname": "", "points": 0, "medalName": "星耀周冠军"},
+    "weekly_champions": {"weekKey": "", "nickname": "", "points": 0, "medalName": "榜一大哥"},
     "messages": {"type": "", "title": "", "content": "", "readAt": ""},
     "remote_countdowns": {"code": "", "title": "", "description": "", "emoji": "⏰", "badge": "倒计时", "targetAt": "", "dailyTime": "", "weekdays": [1, 2, 3, 4, 5], "isActive": True, "sort": 0},
 }

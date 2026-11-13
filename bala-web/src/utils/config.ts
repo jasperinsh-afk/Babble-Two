@@ -2,20 +2,19 @@
 
 export const PAGE_SIZE = 20
 
+/**
+ * 服务开通开关：当前演示阶段只有「投票」全量开放，
+ * 扫码打卡与「生活」板块下的校园服务在所属校区尚未开通，
+ * 点击时统一提示「校区尚未开通该服务」。全部开通后置为 true 即可放行。
+ */
+export const SERVICE_OPENED = false
+
 export const pollTypeLabel: Record<string, string> = {
   single: '单选',
   multi: '多选',
   pk: 'PK',
   ranking: '排序',
   groupbuy: '接龙',
-}
-
-export const pollTagLabel: Record<string, string> = {
-  all: '全部',
-  news: '时事',
-  campus: '学习',
-  meme: '热梗',
-  group: '接龙',
 }
 
 export const clubCategoryLabel: Record<string, string> = {
@@ -43,8 +42,16 @@ export const badgeRuleLabel: Record<string, string> = {
   vote_streak: '连续投票',
 }
 
-/** 小程序页面路径 → 网页路由（Banner targetRoute 等深链兼容） */
+/** 小程序页面路径 → 网页路由（Banner targetRoute 等深链兼容）；网页原生路由直接放行 */
 const routeMap: Record<string, string> = {
+  '/home': '/home',
+  '/living': '/living',
+  '/vote': '/vote',
+  '/club': '/club',
+  '/calendar': '/calendar',
+  '/scan': '/scan',
+  '/profile': '/profile',
+  '/messages': '/messages',
   '/pages/index/index': '/home',
   '/pages/campus/index/index': '/campus',
   '/pages/message/index/index': '/messages',

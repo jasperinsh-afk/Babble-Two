@@ -79,7 +79,7 @@ Page(withShare({
 
   noop() {},
 }, {
-  title: '本周达人榜，看看谁是星耀周冠军',
+  title: '本周达人榜，看看谁是榜一大哥',
   path: '/pages/leaderboard/index/index',
   query: '',
 }))

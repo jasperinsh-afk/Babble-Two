@@ -5,9 +5,11 @@ import type { Html5Qrcode } from 'html5-qrcode'
 import { api } from '@/api/endpoints'
 import { SectionHeader } from '@/components/common'
 import { TopBar } from '@/components/chrome'
+import { ScanIcon } from '@/components/icons'
 import type { Badge, ScanCard } from '@/types/models'
-import { rarityLabel } from '@/utils/config'
+import { rarityLabel, SERVICE_OPENED } from '@/utils/config'
 import { toast } from '@/utils/feedback'
+import { showServiceNotice } from '@/utils/notice'
 
 const BADGE_SCAN_THRESHOLD = 3
 
@@ -35,7 +37,7 @@ function extractKey(raw: string): string {
   }
 }
 
-export default function Scan() {
+function ScanBoard() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
@@ -159,7 +161,7 @@ export default function Scan() {
     <div className="page page--scan page--with-topbar">
       <TopBar back />
       <div className="scan-guide card section fade-up">
-        <div className="scan-guide__icon">◎</div>
+        <div className="scan-guide__icon">🔍</div>
         <div className="scan-guide__title">叭啦 扫码打卡</div>
         <div className="scan-guide__desc">扫描活动现场的小程序码，解锁不同点位勋章</div>
         <button type="button" className="btn" onClick={startScanner}>
@@ -270,4 +272,36 @@ export default function Scan() {
       ) : null}
     </div>
   )
+}
+
+/** 未开通时的占位页：与首页扫码按钮给到的提示保持一致 */
+function ScanPending() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    showServiceNotice('scan')
+  }, [])
+
+  return (
+    <div className="page page--with-topbar">
+      <TopBar back title="扫码打卡" />
+      <div className="service-pending card section fade-up">
+        <ScanIcon className="service-pending__glyph" />
+        <div className="service-pending__title">校区尚未开通该服务</div>
+        <div className="service-pending__text">
+          「扫码打卡」需要先在本校区铺设点位码，开通后会第一时间通知你。
+        </div>
+        <button type="button" className="btn" onClick={() => navigate('/vote')}>
+          去看投票
+        </button>
+        <button type="button" className="btn btn--ghost" onClick={() => navigate(-1)}>
+          返回
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default function Scan() {
+  return SERVICE_OPENED ? <ScanBoard /> : <ScanPending />
 }

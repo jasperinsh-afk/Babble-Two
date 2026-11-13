@@ -32,7 +32,8 @@ def test_new_poll_and_event_default_to_visible_and_hide_clubs():
     })
     assert poll["status"] == "active"
     assert poll["isDeleted"] is False
-    assert poll["tag"] == "campus"
+    assert "tag" not in poll
+    assert poll["resultStatus"] == "published"
     assert poll["totalVotes"] == 0
     assert all(option["count"] == 0 for option in poll["options"])
 
@@ -54,7 +55,8 @@ def test_new_poll_and_event_default_to_visible_and_hide_clubs():
 
 async def test_layout_save_drives_home_feed(content_repo):
     layout = content_service.default_layout()
-    layout["sections"] = [layout["sections"][3], layout["sections"][0]]
+    by_type = {section["type"]: section for section in layout["sections"]}
+    layout["sections"] = [by_type["hotPolls"], by_type["banner"]]
     layout["sections"][0]["title"] = "大家正在投"
     saved = await content_service.save_layout(layout)
     assert [section["type"] for section in saved["sections"]] == ["hotPolls", "banner"]

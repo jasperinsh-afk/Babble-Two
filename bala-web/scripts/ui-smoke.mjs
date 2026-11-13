@@ -12,14 +12,13 @@ mkdirSync(OUT, { recursive: true })
 
 const PAGES = [
   ['home', '/home'],
-  ['campus', '/campus'],
+  ['living', '/living'],
   ['messages', '/messages'],
   ['vote-list', '/vote'],
   ['vote-detail', '/vote/p001'],
   ['club-list', '/club'],
   ['club-detail', '/club/c001'],
   ['calendar', '/calendar'],
-  ['living', '/living'],
   ['scan', '/scan'],
   ['profile', '/profile'],
 ]
@@ -68,7 +67,8 @@ const home = await page.evaluate(() => {
   }
   return {
     quickItems: document.querySelectorAll('.home-quick__item').length,
-    scanButton: rect('.home-header__scan'),
+    heroCards: document.querySelectorAll('.home-hero__card').length,
+    scanButton: rect('.scan-btn'),
     lastQuick: rect('.home-quick__item:last-child'),
     shell: rect('.app-shell'),
   }

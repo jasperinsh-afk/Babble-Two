@@ -11,10 +11,12 @@ export const HOME_ACTION_MESSAGES_KEY = ['me', 'messages', 'home-actions']
 interface Props {
   messages: MessageInfo[]
   todayEvents: EventInfo[]
+  /** 校历日程：未来 7 天的活动，显示在主页日程区 */
+  upcomingEvents?: EventInfo[]
 }
 
-/** 今日行动区：个人消息行动 + 今日安排；数据分别来自 me.messages 与 home.feed，不混合 */
-export default function TodayActions({ messages, todayEvents }: Props) {
+/** 今日行动区：个人消息行动 + 今日安排 + 校历日程；数据来自 me.messages 与 home.feed */
+export default function TodayActions({ messages, todayEvents, upcomingEvents = [] }: Props) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -65,6 +67,19 @@ export default function TodayActions({ messages, todayEvents }: Props) {
         <section className="section">
           <SectionHeader title="今日安排" />
           {todayEvents.map((event) => (
+            <EventCard
+              key={event._id}
+              event={event}
+              onClick={() => navigate(`/calendar?eventId=${event._id}`)}
+            />
+          ))}
+        </section>
+      ) : null}
+
+      {upcomingEvents.length ? (
+        <section className="section">
+          <SectionHeader title="校历日程" actionText="日历" onAction={() => navigate('/calendar')} />
+          {upcomingEvents.map((event) => (
             <EventCard
               key={event._id}
               event={event}

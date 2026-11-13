@@ -17,9 +17,7 @@
       <a href="/admin/web/candidates" class="{{ 'active' if nav=='candidates' }}">爬虫候选池</a>
       <a href="/admin/web/polls" class="{{ 'active' if nav=='polls' }}">投票管理</a>
       {% endif %}
-      {% if request.state.principal.role != 'club_moderator' %}<a href="/admin/web/review" class="{{ 'active' if nav=='review' }}">内容审核</a>{% endif %}
       {% if request.state.principal.is_admin %}
-      <a href="/admin/web/nfc" class="{{ 'active' if nav=='nfc' }}">点位卡片</a>
       <a href="/admin/web/export" class="{{ 'active' if nav=='export' }}">数据导出</a>
       {% endif %}
     </nav>

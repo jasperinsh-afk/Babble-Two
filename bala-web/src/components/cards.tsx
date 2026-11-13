@@ -1,5 +1,5 @@
 import type { Club, EventInfo, Poll } from '@/types/models'
-import { clubCategoryLabel, pollTagLabel, pollTypeLabel } from '@/utils/config'
+import { clubCategoryLabel, pollTypeLabel } from '@/utils/config'
 import { compactNumber, countdownText, dateTimeText } from '@/utils/format'
 import { SmartImage } from './common'
 
@@ -16,7 +16,6 @@ export function PollCard({ poll, onClick }: { poll: Poll; onClick?: () => void }
     <article className="poll-card pressable" onClick={onClick}>
       <div className="poll-card__header">
         <span className="poll-card__type chip">{pollTypeLabel[poll.pollType] || '投票'}</span>
-        <span className="poll-card__tag chip">{pollTagLabel[poll.tag || ''] || poll.tag || ''}</span>
         <span className="grow" />
         <span className="poll-card__count">{compactNumber(total)} 已投</span>
       </div>

@@ -1,18 +1,47 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/endpoints'
-import { EmptyView, Skeleton, SmartImage } from '@/components/common'
+import { EmptyView } from '@/components/common'
 import { TabBar } from '@/components/chrome'
+import HomeHero from '@/components/HomeHero'
+import { ScanIcon } from '@/components/icons'
+import { useOpenService } from '@/components/services'
 import { DEFAULT_HOME_SECTIONS, HomeSection } from '@/components/HomeSections'
 import TodayActions, { HOME_ACTION_MESSAGES_KEY } from '@/components/TodayActions'
-import type { HomeFeed } from '@/types/models'
-import { resolveRoute } from '@/utils/config'
+import type { Banner, HomeFeed } from '@/types/models'
 import { dateText } from '@/utils/format'
 import { ACTION_MESSAGE_TYPES } from '@/utils/messages'
 
 const CACHE_KEY = 'bala_home_feed'
 const CACHE_MAX_AGE = 10 * 60 * 1000
+
+/** 后端不可用时的演示 Banner，保证首页版式在任何环境都成立 */
+const DEMO_BANNERS: Banner[] = [
+  {
+    _id: 'demo-1',
+    title: '全校最有梗的投票社区',
+    desc: '每天一个话题，说出你的态度',
+    tag: '热门',
+    imageUrl: '',
+    targetRoute: '/vote',
+  },
+  {
+    _id: 'demo-2',
+    title: '今天中午吃什么？',
+    desc: '食堂窗口由你一票决定',
+    tag: '今日',
+    imageUrl: '',
+    targetRoute: '/vote',
+  },
+  {
+    _id: 'demo-3',
+    title: '社团招新季 · 你来 Pick',
+    desc: '想去哪儿，投一票就知道',
+    tag: '社团',
+    imageUrl: '',
+    targetRoute: '/vote',
+  },
+]
 
 let feedViewTracked = false
 
@@ -28,60 +57,8 @@ function readCache(): { time: number; data: HomeFeed } | null {
   }
 }
 
-function BannerCarousel({ banners }: { banners: HomeFeed['banners'] }) {
-  const [index, setIndex] = useState(0)
-  const navigate = useNavigate()
-  const count = banners.length
-
-  useEffect(() => {
-    if (count < 2) return
-    const timer = window.setInterval(() => setIndex((i) => (i + 1) % count), 5000)
-    return () => window.clearInterval(timer)
-  }, [count])
-
-  if (!count) return null
-  const current = banners[Math.min(index, count - 1)]
-
-  return (
-    <div className="home-banner">
-      <div
-        className="home-banner__track"
-        style={{ transform: `translateX(-${Math.min(index, count - 1) * 100}%)` }}
-      >
-        {banners.map((banner) => (
-          <div
-            className="home-banner__item"
-            key={banner._id}
-            onClick={() => banner.targetRoute && navigate(resolveRoute(banner.targetRoute))}
-            role="presentation"
-          >
-            <SmartImage className="home-banner__img" src={banner.imageUrl} alt={banner.title} />
-            <div className="home-banner__shade">
-              <span className="home-banner__title">{banner.title}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-      {count > 1 ? (
-        <div className="home-banner__dots">
-          {banners.map((banner, i) => (
-            <button
-              key={banner._id}
-              type="button"
-              aria-label={`第 ${i + 1} 张`}
-              className={`home-banner__dot ${i === Math.min(index, count - 1) ? 'is-active' : ''}`}
-              onClick={() => setIndex(i)}
-            />
-          ))}
-        </div>
-      ) : null}
-      <span className="sr-only">{current.title}</span>
-    </div>
-  )
-}
-
 export default function Home() {
-  const navigate = useNavigate()
+  const openService = useOpenService()
   const cached = readCache()
 
   const { data, isLoading } = useQuery({
@@ -114,55 +91,77 @@ export default function Home() {
 
   const loading = isLoading && !data
   const banners = data?.banners ?? []
+  const heroBanners: Banner[] = banners.length ? banners : DEMO_BANNERS
   const sections = data?.sections?.length ? data.sections : DEFAULT_HOME_SECTIONS
+  // Banner 由 HomeHero 统一承载；推荐活动 / 社团精选已并入「生活」板块
+  const visibleSections = sections.filter(
+    (section) => section.type !== 'banner' && section.type !== 'events' && section.type !== 'clubs',
+  )
   const actionMessages = (messageData?.list ?? []).filter((message) =>
     ACTION_MESSAGE_TYPES.includes(message.type),
   )
-  const todayEvents = (data?.events ?? []).filter(
-    (event) => dateText(event.startAt) === dateText(new Date()),
-  )
+  const todayEvents =
+    data?.calendarEvents?.today ??
+    (data?.events ?? []).filter((event) => dateText(event.startAt) === dateText(new Date()))
+  const upcomingCalendar = data?.calendarEvents?.upcoming ?? []
+  const announcements = data?.announcements ?? []
   const unread = messageData?.unread ?? 0
 
   return (
     <div className="page page--home">
-      <div className="home-header">
-        <div className="home-header__brand">
-          <img className="home-header__mark" src="/assets/brand/logo-mark.png" alt="叭啦" />
-          <span className="home-header__logo">叭啦</span>
-          <span className="home-header__tag">Babble</span>
+      <header className="home-top">
+        <div className="home-top__brand">
+          <img className="home-top__mark" src="/assets/brand/logo-mark.png" alt="叭啦" />
+          <div className="home-top__titles"><span className="home-top__logo">叭啦</span></div>
         </div>
         <button
           type="button"
-          className="home-header__scan"
+          className="scan-btn"
           aria-label="扫码打卡"
-          onClick={() => navigate('/scan')}
+          onClick={() => openService('scan')}
         >
-          <span className="home-header__scan-dot" />
+          <ScanIcon className="scan-btn__icon" />
+          <span className="scan-btn__text">扫码</span>
         </button>
-      </div>
+      </header>
 
-      <TodayActions messages={actionMessages} todayEvents={todayEvents} />
-
-      {loading ? (
-        <div className="home-skeleton">
-          <Skeleton className="home-skeleton__banner" />
-          <div className="home-skeleton__row">
-            <Skeleton className="home-skeleton__card" />
-            <Skeleton className="home-skeleton__card" />
-          </div>
+      {announcements.length ? (
+        <div className="home-notice-stack">
+          {announcements.map((item) => (
+            <div
+              key={item._id}
+              className={`home-notice home-notice--${item.level || 'info'}`}
+              role="note"
+            >
+              <span className="home-notice__badge">
+                {item.level === 'urgent' ? '紧急公告' : item.level === 'important' ? '重要公告' : '公告'}
+              </span>
+              <div className="home-notice__body">
+                <span className="home-notice__title">{item.title}</span>
+                {item.content ? <span className="home-notice__content">{item.content}</span> : null}
+              </div>
+            </div>
+          ))}
         </div>
-      ) : (
-        <>
-          {data ? sections.map((section) => (
-            <HomeSection
-              key={section.id}
-              section={section}
-              feed={data}
-              banner={<BannerCarousel banners={banners.slice(0, section.config.limit || 5)} />}
-            />
-          )) : null}
+      ) : null}
 
-          {!loading && !data ? (
+      <HomeHero banners={heroBanners} loading={loading} />
+
+      {loading ? null : (
+        <>
+          {data ? (
+            visibleSections.map((section) => (
+              <HomeSection key={section.id} section={section} feed={data} />
+            ))
+          ) : null}
+
+          <TodayActions
+            messages={actionMessages}
+            todayEvents={todayEvents}
+            upcomingEvents={upcomingCalendar}
+          />
+
+          {!data ? (
             <EmptyView
               icon="📡"
               title="暂时连不上服务"
@@ -171,6 +170,7 @@ export default function Home() {
           ) : null}
         </>
       )}
+
       <TabBar badges={{ '/messages': unread }} />
     </div>
   )

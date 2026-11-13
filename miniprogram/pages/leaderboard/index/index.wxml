@@ -4,12 +4,12 @@
   <view class="my-score">
     <view class="my-score__top"><view><view class="my-score__label">我的达人分</view><view class="my-score__nickname">{{my.nickname}}</view></view><button bindtap="openNickname">{{my.nicknameSet ? '修改昵称' : '设置昵称'}}</button></view>
     <view class="my-score__numbers"><view><text>{{my.totalPoints}}</text><text class="small">累计积分</text></view><view><text>{{my.currentWeekPoints}}</text><text class="small">本周积分</text></view><view><text>{{my.rank || '—'}}</text><text class="small">本周排名</text></view></view>
-    <view wx:if="{{my.champions.length}}" class="my-score__medal"><text>🏅</text>已获得 {{my.champions.length}} 枚「星耀周冠军」勋章</view>
+    <view wx:if="{{my.champions.length}}" class="my-score__medal"><text>🏅</text>已获得 {{my.champions.length}} 枚「榜一大哥」勋章</view>
   </view>
 
   <view wx:if="{{list.length}}" class="weekly-champion">
     <view class="weekly-champion__medal"><text>🏅</text><view></view></view>
-    <view class="weekly-champion__content"><view>本周领跑 · 星耀周冠军</view><text>{{list[0].nickname}}</text></view>
+    <view class="weekly-champion__content"><view>本周领跑 · 榜一大哥</view><text>{{list[0].nickname}}</text></view>
     <view class="weekly-champion__points">{{list[0].points}} 分</view>
   </view>
 
@@ -20,7 +20,7 @@
     <view class="ranking-item {{item.rank === 1 ? 'is-first' : ''}} {{item.isMe ? 'is-me' : ''}}" wx:for="{{list}}" wx:key="key">
       <view class="ranking-item__rank">{{item.rank}}</view>
       <view class="ranking-item__avatar">{{item.avatar}}</view>
-      <view class="ranking-item__content"><view>{{item.nickname}}<text wx:if="{{item.isMe}}">我</text></view><text wx:if="{{item.medal}}" class="ranking-item__medal">🏅 星耀周冠军</text></view>
+      <view class="ranking-item__content"><view>{{item.nickname}}<text wx:if="{{item.isMe}}">我</text></view><text wx:if="{{item.medal}}" class="ranking-item__medal">🏅 榜一大哥</text></view>
       <view class="ranking-item__points"><text>{{item.points}}</text>分</view>
     </view>
   </view>

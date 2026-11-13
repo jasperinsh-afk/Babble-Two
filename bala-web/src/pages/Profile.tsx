@@ -41,6 +41,7 @@ export default function Profile() {
       setCode('')
       toast('绑定成功，两端数据已互通')
       await refetchLink()
+      // 绑定改变了数据归属身份，刷新所有业务数据
       await queryClient.invalidateQueries()
     } catch (error) {
       toast(error instanceof Error ? error.message : '绑定失败，请稍后重试')
@@ -63,6 +64,11 @@ export default function Profile() {
     }
   }
 
+  const { data: talent } = useQuery({
+    queryKey: ['leaderboard', 'my'],
+    queryFn: () => api.leaderboardMy({ silent: true, noRetry: true }),
+  })
+
   const stats = data?.stats
   const badges = data?.badges ?? []
   const recentVotes = data?.recentVotes ?? []
@@ -73,7 +79,6 @@ export default function Profile() {
     <div className="page page--profile">
       <div className="profile-header">
         <div className="profile-header__title">本地足迹</div>
-        <div className="profile-header__subtitle">你的兴趣数字足迹</div>
       </div>
 
       <div className="profile-stats card section">
@@ -93,6 +98,20 @@ export default function Profile() {
         </div>
       </div>
 
+      {talent ? (
+        <div className="card section profile-talent">
+          <div className="profile-talent__head">
+            <strong>🏅 我的达人分</strong>
+            <span>{talent.nickname}</span>
+          </div>
+          <div className="profile-talent__numbers">
+            <div><b>{talent.totalPoints}</b><span>累计积分</span></div>
+            <div><b>{talent.currentWeekPoints}</b><span>本周积分</span></div>
+            <div><b>{talent.champions.length}</b><span>周冠军勋章</span></div>
+          </div>
+        </div>
+      ) : null}
+
       <section className="section">
         <SectionHeader title="勋章墙" />
         {isLoading ? (
@@ -108,7 +127,7 @@ export default function Profile() {
                   {badge.unlocked ? (
                     <span>
                       {badge.icon ||
-                        (badge.code === 'scan_explorer' ? '◎' : badge.code === 'club_pioneer' ? '⌂' : '★')}
+                        (badge.code === 'scan_explorer' ? '🔍' : badge.code === 'club_pioneer' ? '🏠' : '⭐')}
                     </span>
                   ) : (
                     <span>🔒</span>

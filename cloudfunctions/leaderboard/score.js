@@ -1,5 +1,5 @@
 const POINTS = { vote: 10, schedule: 5, nickname: 5 }
-const MEDAL_NAME = '星耀周冠军'
+const MEDAL_NAME = '榜一大哥'
 const CHINA_OFFSET = 8 * 3600000
 const WEEK_MS = 7 * 86400000
 

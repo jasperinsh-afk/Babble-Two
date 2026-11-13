@@ -2,9 +2,9 @@
 
 改造后定位：墨麟书院的**输入层与输出层控制台**。
 
-- 输入层：爬虫候选池（本地 PostgreSQL crawler_items）+ 敏感词库
+- 输入层：爬虫候选池（本地 PostgreSQL crawler_items）
 - 输出层：投票数据导出页
-- 看板 / 投票管理 / 卡片管理：数据读写全部经微信云开发数据库
+- 看板 / 投票管理：数据读写全部经微信云开发数据库
 
 C 端小程序已无登录体系，本后台独立使用 ADMIN_WEB_TOKEN 口令保护。
 """
@@ -34,8 +34,8 @@ from app.core.admin_gate import (
 from app.core.database import SessionLocal
 from app.core.security import hash_password, validate_password_strength, verify_password
 from app.models.admin_account import AdminAccount
-from app.models.common import CrawlerItemStatus, ReviewStatus
-from app.models.crawler import CrawlerItem, SensitiveWord
+from app.models.common import CrawlerItemStatus
+from app.models.crawler import CrawlerItem
 from app.models.user import User
 from app.services import content_service
 
@@ -74,22 +74,6 @@ def _poll_row(p: dict) -> dict:
         "review_status": Enumish(p.get("reviewStatus", "approved")),
         "start_at": _dt(p.get("startAt")),
         "end_at": _dt(p.get("endAt")),
-    }
-
-
-def _card_row(c: dict) -> dict:
-    target_type = c.get("targetType") or (c.get("target") or {}).get("type") or "download"
-    target_id = c.get("targetId") or (c.get("target") or {}).get("id") or ""
-    return {
-        "id": c.get("_id", ""),
-        "card_id": c.get("cardId", ""),
-        "location_desc": c.get("locationDesc", ""),
-        "target_type": Enumish(target_type),
-        "target_id": target_id,
-        "poster_batch": c.get("posterBatch", "-"),
-        "tap_count": c.get("tapCount", 0),
-        "unique_user_count": c.get("uniqueUserCount", 0),
-        "is_active": bool(c.get("isActive", True)),
     }
 
 
@@ -295,49 +279,6 @@ async def polls(request: Request, _=Depends(require_super_admin)):
     )
 
 
-@router.get("/review", response_class=HTMLResponse)
-async def review(request: Request, principal: AdminPrincipal = Depends(require_reviewer)):
-    pending_polls = []
-    try:
-        docs = await cloudbase_client.query(
-            "polls", where={"reviewStatus": ReviewStatus.PENDING.value}, limit=50
-        )
-        pending_polls = [_poll_row(d) for d in docs]
-    except Exception as exc:  # noqa: BLE001
-        print(f"[admin-web] 待审投票读取失败: {exc}")
-
-    words = []
-    if principal.is_admin:
-        async with SessionLocal() as db:
-            words = (await db.execute(select(SensitiveWord).order_by(desc(SensitiveWord.id)))).scalars().all()
-
-    return templates.TemplateResponse(
-        "review.html",
-        {
-            "request": request,
-            "nav": "review",
-            "polls": pending_polls,
-            "clubs": [],
-            "events": [],
-            "posts": [],
-            "words": words,
-        },
-    )
-
-
-@router.get("/nfc", response_class=HTMLResponse)
-async def nfc(request: Request, _=Depends(require_super_admin)):
-    cards = []
-    try:
-        docs = await cloudbase_client.query("nfc_cards", order_by="cardId", order="asc", limit=200)
-        cards = [_card_row(d) for d in docs]
-    except Exception as exc:  # noqa: BLE001
-        print(f"[admin-web] 卡片列表读取失败: {exc}")
-    return templates.TemplateResponse(
-        "nfc.html", {"request": request, "nav": "nfc", "cards": cards}
-    )
-
-
 @router.get("/export", response_class=HTMLResponse)
 async def export_page(request: Request, _=Depends(require_super_admin)):
     return templates.TemplateResponse("export.html", {"request": request, "nav": "export"})
@@ -363,43 +304,6 @@ async def poll_action(poll_id: str, action: str, principal: AdminPrincipal = Dep
             await cloudbase_client.update("polls", {"_id": poll_id}, patch)
         except Exception as exc:  # noqa: BLE001
             print(f"[admin-web] 投票操作失败: {exc}")
-    return {"ok": True}
-
-
-@router.post("/api/nfc/cards")
-async def register_card(request: Request, _=Depends(require_super_admin)):
-    body = await request.json()
-    card = {
-        "cardId": body.get("card_id", ""),
-        "code": body.get("card_id", ""),
-        "locationType": body.get("location_type", "bulletin"),
-        "locationDesc": body.get("location_desc", ""),
-        "targetType": body.get("target_type", "download"),
-        "targetId": body.get("target_id") or None,
-        "isActive": True,
-        "createdAt": _now().isoformat(),
-    }
-    try:
-        await cloudbase_client.add("nfc_cards", card)
-    except Exception as exc:  # noqa: BLE001
-        print(f"[admin-web] 卡片注册失败: {exc}")
-    return {"ok": True}
-
-
-@router.post("/api/sensitive-words")
-async def add_sensitive_word(request: Request, _=Depends(require_super_admin)):
-    body = await request.json()
-    async with SessionLocal() as db:
-        db.add(
-            SensitiveWord(
-                word=body.get("word", ""),
-                category=body.get("category", "custom"),
-                severity=body.get("severity", "block"),
-                is_active=True,
-                created_at=_now(),
-            )
-        )
-        await db.commit()
     return {"ok": True}
 
 
@@ -458,19 +362,6 @@ async def candidate_draft(item_id: int, request: Request, _=Depends(require_supe
             pushed.append({"ok": False, "message": str(exc)})
 
     return {"ok": True, "drafts": pushed}
-
-
-@router.post("/api/events/{event_id}/{action}")
-async def event_action(event_id: str, action: str, _=Depends(require_reviewer)):
-    if action == "approve":
-        try:
-            # 查询端只认 active/full（如 home_feed），published 永远查不到
-            await cloudbase_client.update(
-                "events", {"_id": event_id}, {"status": "active", "updatedAt": _now().isoformat()}
-            )
-        except Exception as exc:  # noqa: BLE001
-            print(f"[admin-web] 活动审核失败: {exc}")
-    return {"ok": True}
 
 
 @router.post("/api/candidates/{item_id}/{action}")

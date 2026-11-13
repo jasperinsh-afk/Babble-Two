@@ -5,7 +5,7 @@ import { api } from '@/api/endpoints'
 import { ResultChart } from '@/components/ResultChart'
 import { EmptyView, SectionHeader, Skeleton } from '@/components/common'
 import { TopBar } from '@/components/chrome'
-import { pollTagLabel, pollTypeLabel } from '@/utils/config'
+import { pollTypeLabel } from '@/utils/config'
 import { countdownText } from '@/utils/format'
 import { toast } from '@/utils/feedback'
 
@@ -118,7 +118,6 @@ export default function VoteDetail() {
           <div className="vote-detail__header card section fade-up">
             <div className="vote-detail__tags">
               <span className="chip">{pollTypeLabel[poll.pollType] || '投票'}</span>
-              {poll.tag ? <span className="chip">{pollTagLabel[poll.tag] || poll.tag}</span> : null}
               <span className="vote-detail__time">
                 {poll.endAt ? `截止 ${countdownText(poll.endAt)}` : ''}
               </span>

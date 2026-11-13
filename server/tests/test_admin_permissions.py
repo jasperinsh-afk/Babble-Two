@@ -144,14 +144,16 @@ def test_moderator_registration_and_admin_only_routes(auth_client):
 
     for path in (
         "/admin/web/candidates",
-        "/admin/web/nfc",
         "/admin/web/export",
-        "/admin/web/review",
         "/api/v1/admin/export/preview",
         "/admin/web/content/api/layout",
         "/admin/web/content/api/banners",
     ):
         assert auth_client.get(path).status_code == 403, path
+
+    # 内容审核与点位卡片模块已整体下线（路径可能落到前端 SPA 兜底页，但绝不再渲染后台页）
+    assert "待审投票" not in auth_client.get("/admin/web/review").text
+    assert "点位卡片" not in auth_client.get("/admin/web/nfc").text
 
 
 def test_reviewer_registration_and_content_permissions(auth_client):
@@ -159,7 +161,6 @@ def test_reviewer_registration_and_content_permissions(auth_client):
         "/admin/web/register", data=account_form("reviewer", code="2012"), follow_redirects=False
     )
     assert registered.status_code == 303
-    assert auth_client.get("/admin/web/review").status_code == 200
     content = auth_client.get("/admin/web/content")
     assert content.status_code == 200
     assert "审核员" in content.text
@@ -167,5 +168,7 @@ def test_reviewer_registration_and_content_permissions(auth_client):
 
     created = auth_client.post("/admin/web/content/api/banners", json={})
     assert created.status_code == 403
-    for path in ("/admin/web/candidates", "/admin/web/nfc", "/admin/web/export", "/api/v1/admin/export/preview"):
+    for path in ("/admin/web/candidates", "/admin/web/export", "/api/v1/admin/export/preview"):
         assert auth_client.get(path).status_code == 403, path
+    assert "待审投票" not in auth_client.get("/admin/web/review").text
+    assert "点位卡片" not in auth_client.get("/admin/web/nfc").text

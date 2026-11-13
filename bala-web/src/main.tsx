@@ -7,6 +7,7 @@ import './styles/tokens.css'
 import './styles/global.css'
 import './styles/components.css'
 import './styles/pages.css'
+import './styles/days.css'
 
 const queryClient = new QueryClient({
   defaultOptions: {

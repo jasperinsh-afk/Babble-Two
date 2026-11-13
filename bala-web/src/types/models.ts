@@ -111,9 +111,26 @@ export interface Banner {
   title: string
   imageUrl: string
   targetRoute: string
+  /** 运营自定义角标，如「今日」「热门」 */
+  tag?: string
+  desc?: string
 }
 
-export type HomeSectionType = 'banner' | 'todayPoll' | 'quickEntries' | 'hotPolls' | 'events' | 'clubs'
+export interface Announcement {
+  _id: string
+  title: string
+  content?: string
+  level: 'info' | 'important' | 'urgent'
+}
+
+export type HomeSectionType =
+  | 'banner'
+  | 'todayPoll'
+  | 'quickEntries'
+  | 'recentPolls'
+  | 'hotPolls'
+  | 'events'
+  | 'clubs'
 
 export interface QuickEntry {
   key: string
@@ -132,10 +149,17 @@ export interface HomeSection {
 
 export interface HomeFeed {
   sections?: HomeSection[]
+  announcements?: Announcement[]
   banners: Banner[]
   todayPoll: Poll | null
+  recentPolls?: Poll[]
   hotPolls: Poll[]
   events: EventInfo[]
+  /** 校历日程：今天进行（含已结束）+ 未来 7 天 */
+  calendarEvents?: {
+    today: EventInfo[]
+    upcoming: EventInfo[]
+  }
   clubs: Club[]
 }
 
@@ -288,4 +312,38 @@ export interface WebHealth {
   cloudReady: boolean
   cloudEnv: string
   cloudWriteEnabled?: boolean
+}
+
+export interface LeaderboardRow {
+  key: string
+  rank: number
+  nickname: string
+  avatar: string
+  points: number
+  isMe: boolean
+  medal: string
+}
+
+export interface LeaderboardMy {
+  nickname: string
+  nicknameSet: boolean
+  totalPoints: number
+  currentWeekPoints: number
+  rank: number
+  champions: Array<{ weekKey: string; points: number; medalName: string; earnedAt: string | null }>
+}
+
+export interface LeaderboardWeekly {
+  weekKey: string
+  list: LeaderboardRow[]
+  my: LeaderboardMy
+  rules: string[]
+}
+
+export interface CloudDaySchedule {
+  id: string
+  title: string
+  date: string
+  note: string
+  createdAt: number
 }

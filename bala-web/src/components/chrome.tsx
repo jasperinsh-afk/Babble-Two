@@ -3,22 +3,13 @@ import { useLoading, useToasts } from '@/utils/feedback'
 
 const TABS = [
   { path: '/home', icon: 'home', text: '今日' },
-  { path: '/campus', icon: 'campus', text: '校园' },
+  { path: '/days', icon: 'calendar', text: '日子' },
   { path: '/messages', icon: 'message', text: '消息' },
   { path: '/profile', icon: 'profile', text: '我的' },
 ]
 
 function isTabActive(path: string, pathname: string) {
   if (path === '/home') return pathname === '/home' || pathname === '/'
-  if (path === '/campus') {
-    return (
-      pathname.startsWith('/campus') ||
-      pathname.startsWith('/vote') ||
-      pathname.startsWith('/club') ||
-      pathname.startsWith('/calendar') ||
-      pathname.startsWith('/living')
-    )
-  }
   return pathname.startsWith(path)
 }
 

@@ -127,7 +127,7 @@ async function main() {
   assert.equal(POINTS.vote, 10)
   assert.equal(POINTS.schedule, 5)
   assert.equal(POINTS.nickname, 5)
-  assert.equal(MEDAL_NAME, '星耀周冠军')
+  assert.equal(MEDAL_NAME, '榜一大哥')
   assert.equal(weekKey(at('2026-11-07T12:00:00+08:00')), '2026-11-02')
   assert.equal(weekStart(at('2026-11-07T12:00:00+08:00')).getDay(), 1)
   assert.equal(weekKey(previousWeekStart(at('2026-11-07T12:00:00+08:00'))), '2026-10-26')

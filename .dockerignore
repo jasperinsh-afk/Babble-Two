@@ -1,0 +1,25 @@
+# Railway 构建上下文：只保留运行镜像真正需要的文件
+.git
+.gitignore
+.gitmodules
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/.venv
+**/venv
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/*.db
+**/*.db-journal
+**/*.sqlite3
+**/*.log
+**/*.err
+**/*.tsbuildinfo
+server/.env
+server/.env.*
+server/data
+server/logs
+bala-web/logs
+archive
+project.private.config.json
