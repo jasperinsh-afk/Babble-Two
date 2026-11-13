@@ -1,10 +1,14 @@
 const { call } = require('../../utils/api')
-const { priceText } = require('../../utils/format')
 
 Component({
   options: {
     styleIsolation: 'apply-shared',
   },
+  properties: {
+    // 由生活板块按子服务传入：0 生活圈 / 1 失物招领
+    initialTab: { type: Number, value: 0 },
+  },
+
   data: {
     currentTab: 0,
     channels: [],
@@ -12,15 +16,14 @@ Component({
     dormPosts: [],
     lostKind: 'all',
     lostItems: [],
-    secondItems: [],
     loading: false,
   },
 
   lifetimes: {
     attached() {
+      if (this.data.initialTab) this.setData({ currentTab: this.data.initialTab })
       this.loadDormChannels()
       this.loadLostFound()
-      this.loadSecondHand()
     },
   },
 
@@ -73,18 +76,6 @@ Component({
       }
     },
 
-    async loadSecondHand() {
-      this.setData({ loading: true })
-      try {
-        const res = await call('living', 'secondHand')
-        this.setData({ secondItems: res.list || [] })
-      } catch (e) {
-        console.warn('[campus-living] 二手交换加载失败', e)
-      } finally {
-        this.setData({ loading: false })
-      }
-    },
-
     setLostKind(e) {
       const kind = e.currentTarget.dataset.kind
       this.setData({ lostKind: kind }, () => this.loadLostFound())
@@ -93,9 +84,6 @@ Component({
     reload() {
       this.loadDormChannels()
       this.loadLostFound()
-      this.loadSecondHand()
     },
-
-    priceText,
   },
 })

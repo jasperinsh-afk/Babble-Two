@@ -5,7 +5,9 @@ const SEGMENTS = [
   { key: 'service', label: '服务' },
 ]
 
-Page({
+const { withShare } = require('../../../utils/share')
+
+Page(withShare({
   data: {
     current: 'event',
     segments: SEGMENTS,
@@ -17,8 +19,9 @@ Page({
   },
 
   onShow() {
+    // 校园 Tab 已合并为「生活」板块，本页不再是 Tab 页
     const tabBar = this.getTabBar?.()
-    if (tabBar) tabBar.setData({ selected: 1 })
+    if (tabBar) tabBar.setData({ selected: -1 })
   },
 
   switchSegment(e) {
@@ -34,4 +37,4 @@ Page({
       imageUrl: '/assets/brand/share-card.png',
     }
   },
-})
+}))

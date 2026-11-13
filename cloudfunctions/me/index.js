@@ -8,6 +8,8 @@ const db = cloud.database()
 function resolveOpenid(payload) {
   const injected = payload && payload.__openid
   if (typeof injected === 'string' && injected.indexOf('web:') === 0) return injected
+  // 网页端绑定小程序账号后，服务端注入 linked:<openid>，数据归属同一微信账号
+  if (typeof injected === 'string' && injected.indexOf('linked:') === 0) return injected.slice(7)
   return cloud.getWXContext().OPENID
 }
 

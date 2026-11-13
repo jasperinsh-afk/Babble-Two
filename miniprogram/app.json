@@ -9,6 +9,13 @@
     "pages/club/list/list",
     "pages/club/detail/detail",
     "pages/calendar/index/index",
+    "pages/days/index/index",
+    "pages/day-create/index/index",
+    "pages/bind/index/index",
+    "pages/day-detail/index/index",
+    "pages/countdown-detail/index/index",
+    "pages/leaderboard/index/index",
+    "pages/notifications/index/index",
     "pages/living/index/index",
     "pages/scan/index/index",
     "pages/profile/index/index"
@@ -29,8 +36,9 @@
     "borderStyle": "white",
     "list": [
       { "pagePath": "pages/index/index", "text": "今日" },
-      { "pagePath": "pages/campus/index/index", "text": "校园" },
-      { "pagePath": "pages/message/index/index", "text": "消息" },
+      { "pagePath": "pages/days/index/index", "text": "日子" },
+      { "pagePath": "pages/message/index/index", "text": "倒计时" },
+      { "pagePath": "pages/vote/list/list", "text": "投票" },
       { "pagePath": "pages/profile/index/index", "text": "我的" }
     ]
   },

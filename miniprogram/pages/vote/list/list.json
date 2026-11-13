@@ -2,6 +2,7 @@
   "usingComponents": {
     "campus-vote-list": "/components/campus-vote-list/index"
   },
+  "navigationBarTitleText": "投票",
   "enablePullDownRefresh": true,
   "backgroundColor": "#FAF8FF"
 }

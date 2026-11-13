@@ -1,6 +1,28 @@
-<view class="page page--scan">
+<!-- 校区未开通：与首页扫码按钮给到的提示保持一致 -->
+<view wx:if="{{!serviceOpened}}" class="page page--scan">
+  <view class="service-pending card section fade-up">
+    <view class="service-pending__icon qr-icon">
+      <view class="qr-icon__mark qr-icon__mark--tl"></view>
+      <view class="qr-icon__mark qr-icon__mark--tr"></view>
+      <view class="qr-icon__mark qr-icon__mark--bl"></view>
+      <view class="qr-icon__dots">
+        <view class="qr-icon__dot"></view>
+        <view class="qr-icon__dot"></view>
+        <view class="qr-icon__dot"></view>
+        <view class="qr-icon__dot"></view>
+      </view>
+      <view class="qr-icon__line"></view>
+    </view>
+    <view class="service-pending__title">校区尚未开通该服务</view>
+    <view class="service-pending__text">「扫码打卡」需要先在本校区铺设点位码，开通后会第一时间通知你。</view>
+    <view class="btn" bindtap="goVoteList">去看投票</view>
+    <view class="btn btn--ghost" bindtap="goBack">返回</view>
+  </view>
+</view>
+
+<view wx:else class="page page--scan">
   <view class="scan-guide card section">
-    <view class="scan-guide__icon">◎</view>
+    <view class="scan-guide__icon">🔍</view>
     <view class="scan-guide__title">叭啦 扫码打卡</view>
     <view class="scan-guide__desc">扫描活动现场的小程序码，解锁不同点位勋章</view>
     <view class="btn" bindtap="startScan">立即扫码</view>

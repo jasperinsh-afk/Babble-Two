@@ -1,0 +1,70 @@
+button { box-sizing: border-box; margin: 0; padding: 0; border: 0; background: none; color: inherit; line-height: 1.4; }
+button::after { border: 0; }
+.days-page { width: 100%; max-width: 900rpx; min-height: 100vh; margin: 0 auto; padding: 30rpx 28rpx 0; overflow-x: hidden; box-sizing: border-box; }
+.days-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 20rpx; margin-bottom: 30rpx; }
+.days-header__copy { min-width: 0; flex: 1; }
+.days-header__subtitle { margin-bottom: 4rpx; color: var(--text-weak); font-size: 22rpx; white-space: normal; }
+.days-header__title { color: var(--text-strong); font-size: 60rpx; font-weight: 700; line-height: 1.2; letter-spacing: -2rpx; }
+.days-add { display: inline-flex; width: auto; min-width: 0; flex: 0 0 auto; align-items: center; gap: 5rpx; height: 62rpx; padding: 0 20rpx; border-radius: 32rpx; background: var(--text-strong); color: #FFF; font-size: 22rpx; font-weight: 600; line-height: 62rpx; white-space: nowrap; box-shadow: 0 10rpx 24rpx rgba(30,27,46,.16); }
+.days-add__plus { font-size: 24rpx; line-height: 1; }
+.days-add:active { transform: scale(.97); opacity: .88; }
+.school-countdown { position: relative; overflow: hidden; padding: 36rpx 36rpx 26rpx; border-radius: 44rpx; background: linear-gradient(135deg,#7660B9 0%,#9677C9 55%,#D59487 120%); color: #FFF; box-shadow: 0 24rpx 52rpx rgba(106,80,162,.22); }
+.school-countdown--school { background: linear-gradient(135deg,#4E477D 0%,#7666A9 58%,#9D82BD 110%); }
+.school-countdown__ring { position: absolute; right: -100rpx; top: -140rpx; width: 250rpx; height: 250rpx; border: 46rpx solid rgba(255,255,255,.07); border-radius: 50%; }
+.school-countdown__heading { position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8rpx 12rpx; }
+.school-countdown__label { display: flex; align-items: center; gap: 12rpx; font-size: 28rpx; font-weight: 600; }
+.clock-icon { position: relative; width: 30rpx; height: 30rpx; flex-shrink: 0; border: 3rpx solid #FFF; border-radius: 50%; }
+.clock-icon::before { content: ''; position: absolute; left: 12rpx; top: 5rpx; width: 3rpx; height: 10rpx; background: #FFF; }
+.clock-icon::after { content: ''; position: absolute; left: 12rpx; top: 14rpx; width: 8rpx; height: 3rpx; background: #FFF; transform: rotate(35deg); transform-origin: left center; }
+.school-countdown__subtitle { color: rgba(255,255,255,.75); font-size: 20rpx; white-space: nowrap; }
+.school-countdown__time { display: flex; width: 100%; align-items: flex-start; justify-content: center; margin: 30rpx 0 26rpx; font-variant-numeric: tabular-nums; }
+.school-countdown__unit { display: flex; min-width: 0; max-width: 112rpx; flex: 1; flex-direction: column; align-items: center; }
+.school-countdown__number { font-size: 72rpx; font-weight: 500; line-height: 1.15; letter-spacing: -3rpx; }
+.school-countdown__unit-label { margin-top: 8rpx; color: rgba(255,255,255,.65); font-size: 20rpx; }
+.school-countdown__colon { margin: 8rpx -4rpx 0; color: rgba(255,255,255,.45); font-size: 52rpx; line-height: 1; }
+.school-countdown__footer { display: flex; align-items: center; gap: 20rpx; color: rgba(255,255,255,.68); font-size: 20rpx; }
+.school-countdown__line { height: 2rpx; flex: 1; background: rgba(255,255,255,.18); }
+.days-toolbar { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 16rpx; margin: 44rpx 0 22rpx; }
+.days-toolbar__copy { min-width: 0; flex: 1; }
+.days-toolbar__title { color: var(--text-strong); font-size: 34rpx; font-weight: 700; white-space: nowrap; }
+.days-toolbar__count { margin-top: 4rpx; overflow: hidden; color: var(--text-weak); font-size: 21rpx; text-overflow: ellipsis; white-space: nowrap; }
+.days-view-switch { display: flex; flex-shrink: 0; padding: 5rpx; border-radius: 24rpx; background: #EEE9F5; box-sizing: border-box; }
+.days-view-switch__item { width: 88rpx; min-width: 0; height: 58rpx; flex: none; border-radius: 18rpx; color: var(--text-weak); font-size: 22rpx; line-height: 58rpx; text-align: center; box-sizing: border-box; }
+.days-view-switch__item.is-active { background: #FFF; color: var(--primary-violet); font-weight: 600; box-shadow: 0 4rpx 16rpx rgba(30,27,46,.07); }
+.days-calendar { width: 100%; padding: 22rpx 18rpx 18rpx; border: 1rpx solid rgba(139,92,246,.05); border-radius: 40rpx; background: rgba(255,255,255,.94); box-shadow: var(--shadow-s); box-sizing: border-box; }
+.days-calendar__header { display: flex; align-items: center; gap: 4rpx; padding: 0 4rpx 20rpx; }
+.days-calendar__nav { display: flex; width: 58rpx; height: 58rpx; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 50%; color: var(--text-normal); font-size: 26rpx; line-height: 1; text-align: center; box-sizing: border-box; }
+.days-calendar__nav:active { background: var(--bg-tint); }
+.days-calendar__month { min-width: 0; flex: 1; color: var(--text-strong); font-size: 29rpx; font-weight: 600; text-align: center; white-space: nowrap; }
+.days-calendar__today { width: 80rpx; height: 52rpx; flex-shrink: 0; border-radius: 30rpx; background: var(--bg-tint); color: var(--primary-violet); font-size: 22rpx; line-height: 52rpx; text-align: center; box-sizing: border-box; }
+.days-calendar__weekdays { display: flex; width: 100%; padding-bottom: 8rpx; color: var(--text-weak); font-size: 21rpx; text-align: center; }
+.days-calendar__weekday { width: 14.2857%; flex: 0 0 14.2857%; text-align: center; box-sizing: border-box; }
+.days-calendar__grid { display: flex; width: 100%; flex-wrap: wrap; row-gap: 6rpx; }
+.calendar-day { position: relative; display: flex; width: 14.2857%; max-width: 14.2857%; min-width: 0; height: 76rpx; flex: 0 0 14.2857%; flex-direction: column; align-items: center; justify-content: center; border-radius: 24rpx; color: var(--text-normal); font-size: 26rpx; box-sizing: border-box; }
+.calendar-day.is-outside { opacity: .3; }
+.calendar-day.is-today:not(.is-selected) { background: var(--bg-tint); color: var(--primary-violet); font-weight: 700; }
+.calendar-day.is-selected { background: var(--primary); color: #FFF; font-weight: 600; box-shadow: 0 10rpx 24rpx rgba(139,92,246,.25); }
+.calendar-day__dot { width: 8rpx; height: 8rpx; margin-top: 4rpx; border-radius: 50%; background: var(--accent); }
+.calendar-day.is-selected .calendar-day__dot { background: #FFF; }
+.days-schedules { margin-top: 34rpx; }
+.days-schedules__heading { display: flex; align-items: center; justify-content: space-between; margin: 0 6rpx 18rpx; }
+.days-schedules__title { font-size: 28rpx; font-weight: 600; }
+.days-schedules__count { color: var(--text-weak); font-size: 21rpx; }
+.day-schedule { display: flex; width: 100%; align-items: center; gap: 18rpx; margin-bottom: 16rpx; padding: 26rpx 24rpx 26rpx 0; overflow: hidden; border: 1rpx solid rgba(139,92,246,.05); border-radius: 32rpx; background: var(--bg-card); box-shadow: var(--shadow-s); box-sizing: border-box; }
+.day-schedule:active { transform: scale(.985); }
+.day-schedule__marker { width: 8rpx; height: 72rpx; flex-shrink: 0; border-radius: 0 8rpx 8rpx 0; background: var(--gradient-primary); }
+.day-schedule__content { min-width: 0; flex: 1; }
+.day-schedule__title { overflow: hidden; color: var(--text-strong); font-size: 28rpx; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.day-schedule__badge { display: inline-block; margin-top: 6rpx; padding: 2rpx 12rpx; border-radius: 100rpx; background: var(--bg-tint); color: var(--primary); font-size: 18rpx; }
+.day-schedule__date { margin-top: 4rpx; color: var(--text-weak); font-size: 22rpx; }
+.day-schedule__note { overflow: hidden; margin-top: 8rpx; color: var(--text-normal); font-size: 22rpx; text-overflow: ellipsis; white-space: nowrap; }
+.day-schedule__relative { flex-shrink: 0; margin-left: auto; color: var(--primary-violet); font-size: 22rpx; font-weight: 600; white-space: nowrap; }
+.day-schedule__chevron { flex-shrink: 0; color: #C3BDD2; font-size: 36rpx; }
+.days-empty { display: flex; min-height: 340rpx; flex-direction: column; align-items: center; justify-content: center; padding: 40rpx; border: 2rpx dashed #DDD5EB; border-radius: 36rpx; background: rgba(255,255,255,.48); box-sizing: border-box; }
+.days-empty__calendar { display: flex; width: 88rpx; height: 88rpx; align-items: center; justify-content: center; margin-bottom: 20rpx; border-radius: 28rpx; background: var(--bg-tint); }
+.days-empty__calendar text { font-size: 46rpx; line-height: 1; }
+.days-empty__title { font-size: 28rpx; font-weight: 600; }
+.days-empty__text { margin: 10rpx 0 26rpx; color: var(--text-weak); font-size: 22rpx; }
+.days-empty button { color: var(--primary-violet); font-size: 24rpx; font-weight: 600; }
+.days-bottom-space { height: calc(170rpx + var(--safe-bottom)); }
+@media (max-width: 340px) { .days-header__subtitle { display:none; } .day-schedule__relative { display:none; } .days-view-switch__item { width:76rpx; } .calendar-day { height:68rpx; border-radius:20rpx; } }

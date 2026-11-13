@@ -1,0 +1,26 @@
+<view class="bind-page">
+  <view class="bind-hero">
+    <view class="bind-hero__eyebrow">叭啦 · 账号互通</view>
+    <view class="bind-hero__title">绑定网页端</view>
+    <view class="bind-hero__subtitle">把网页端的投票、达人分、日程合并到当前微信账号</view>
+  </view>
+
+  <view class="bind-card">
+    <view class="bind-card__label">在网页端输入这 6 位绑定码</view>
+    <view class="bind-card__code">{{codeText}}</view>
+    <view class="bind-card__expire {{expired ? 'is-expired' : ''}}">{{expireText}}</view>
+    <view class="bind-card__actions">
+      <view class="bind-btn bind-btn--ghost" bindtap="copyCode">复制绑定码</view>
+      <view class="bind-btn bind-btn--primary" bindtap="issueCode">{{loading ? '生成中…' : '重新生成'}}</view>
+    </view>
+    <view wx:if="{{error}}" class="bind-card__error">{{error}}</view>
+  </view>
+
+  <view class="bind-steps">
+    <view class="bind-step"><text class="bind-step__no">1</text><text>在浏览器打开叭啦网页端</text></view>
+    <view class="bind-step"><text class="bind-step__no">2</text><text>进入「本地足迹」页，找到「绑定小程序账号」</text></view>
+    <view class="bind-step"><text class="bind-step__no">3</text><text>输入本页 6 位码，10 分钟内有效</text></view>
+  </view>
+
+  <view class="bind-note">绑定后，网页端产生的投票、打卡、达人分、日程会归入当前微信账号；换浏览器或清除缓存后需重新绑定。</view>
+</view>

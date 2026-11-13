@@ -2,6 +2,51 @@
   padding-bottom: 40rpx;
 }
 
+/* ---------------------------------------------------------------- 未开通占位 */
+.service-pending {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 68rpx 40rpx 52rpx;
+  text-align: center;
+}
+
+.service-pending__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 104rpx;
+  height: 104rpx;
+  margin-bottom: 24rpx;
+  border-radius: 50%;
+  background: var(--bg-tint);
+  color: var(--primary);
+}
+
+.service-pending__icon .qr-icon {
+  width: 52rpx;
+  height: 52rpx;
+}
+
+.service-pending__title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin-bottom: 16rpx;
+}
+
+.service-pending__text {
+  font-size: 26rpx;
+  line-height: 1.7;
+  color: var(--text-normal);
+  margin-bottom: 28rpx;
+}
+
+.service-pending .btn {
+  width: 100%;
+  margin-bottom: 20rpx;
+}
+
 .scan-guide {
   padding: 40rpx 28rpx;
   text-align: center;

@@ -25,13 +25,18 @@ Component({
       const options = (results && results.options) || []
       const total = (results && results.total) || 0
 
-      const rows = options.map((o) => ({
-        optionId: o.optionId,
-        label: o.label,
-        count: o.count || 0,
-        percent: total ? Math.round(((o.count || 0) / total) * 1000) / 10 : 0,
-        percentText: total ? `${Math.round(((o.count || 0) / total) * 100)}%` : '0%',
-      }))
+      const rows = options.map((o) => {
+        const fallback = total ? ((o.count || 0) / total) * 100 : 0
+        const value = Number(o.percent)
+        const percent = Math.max(0, Math.min(100, Number.isFinite(value) ? value : fallback))
+        return {
+          optionId: o.optionId,
+          label: o.label,
+          count: o.count || 0,
+          percent,
+          percentText: `${Math.round(percent)}%`,
+        }
+      })
 
       const isPk = pollType === 'pk' && rows.length === 2
       this.setData({ rows, isPk })

@@ -19,7 +19,7 @@ from fastapi.responses import JSONResponse
 from app.cloudbase_client import CloudbaseError
 from app.config import settings
 from app.repository.base import BalaError
-from app.services import web_service
+from app.services import identity_link, web_service
 from app.services.web_identity import issue_identity, verify_identity
 
 router = APIRouter(prefix="/web", tags=["网页版 bala-web"])
@@ -61,6 +61,37 @@ async def health() -> Dict[str, Any]:
 async def create_session() -> Dict[str, Any]:
     """签发匿名身份（首次访问调用，之后本地复用）。"""
     return _ok(issue_identity())
+
+
+# 这三个路由必须注册在 /{fn}/{action} 之前，否则会被通用转发入口截获
+@router.get("/session/link")
+async def get_link_status(identity: str = Depends(current_identity)) -> Dict[str, Any]:
+    """查询当前网页身份是否已绑定小程序账号。"""
+    try:
+        return _ok(await identity_link.link_status(identity))
+    except BalaError as err:
+        return _fail(err.message, err.code, err.http_status)
+
+
+@router.post("/session/bind")
+async def bind_account(
+    payload: Dict[str, Any] = Body(default={}),
+    identity: str = Depends(current_identity),
+):
+    """用小程序出示的 6 位绑定码，把网页身份关联到微信账号。"""
+    try:
+        return _ok(await identity_link.bind(identity, (payload or {}).get("code", "")))
+    except BalaError as err:
+        return _fail(err.message, err.code, err.http_status)
+
+
+@router.delete("/session/link")
+async def unbind_account(identity: str = Depends(current_identity)):
+    """解除绑定，网页身份回到匿名状态。"""
+    try:
+        return _ok(await identity_link.unbind(identity))
+    except BalaError as err:
+        return _fail(err.message, err.code, err.http_status)
 
 
 @router.post("/{fn}/{action}")

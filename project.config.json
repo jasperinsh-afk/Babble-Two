@@ -16,12 +16,17 @@
     "checkSiteMap": true,
     "uploadWithSourceMap": true,
     "useCompilerPlugins": false,
-    "packNpmRelationList": []
+    "packNpmRelationList": [],
+    "condition": true
   },
   "condition": {
     "miniprogram": {
       "list": []
     }
   },
-  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/"
+  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
+  "projectArchitecture": "multiPlatform",
+  "simulatorPluginLibVersion": {
+    "wxext14566970e7e9f62": "2.27.3"
+  }
 }

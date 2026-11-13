@@ -1,5 +1,6 @@
 const { cloudEnv } = require('./utils/config')
 const { ensureOpenid } = require('./utils/identity')
+const { enableShareMenu } = require('./utils/share')
 
 App({
   globalData: {
@@ -17,6 +18,9 @@ App({
     } else {
       console.error('当前基础库不支持微信云开发，请升级开发者工具与基础库')
     }
+
+    // 全局开启「发送给朋友 / 分享到朋友圈」，各页面 onLoad 还会再兜底一次
+    enableShareMenu()
 
     this.globalData.launchOptions = options
 

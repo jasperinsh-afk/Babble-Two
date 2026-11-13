@@ -1,0 +1,22 @@
+page { background: var(--bg-page); }
+.bind-page { min-height: 100vh; padding: 40rpx 40rpx calc(60rpx + var(--safe-bottom)); box-sizing: border-box; }
+.bind-hero { margin-bottom: 40rpx; }
+.bind-hero__eyebrow { color: var(--primary); font-size: 22rpx; font-weight: 600; letter-spacing: 2rpx; }
+.bind-hero__title { margin-top: 10rpx; color: var(--text-strong); font-size: 48rpx; font-weight: 700; }
+.bind-hero__subtitle { margin-top: 12rpx; color: var(--text-weak); font-size: 25rpx; line-height: 1.6; }
+.bind-card { padding: 40rpx 32rpx; border-radius: 36rpx; background: var(--bg-card); box-shadow: var(--shadow-m); text-align: center; }
+.bind-card__label { color: var(--text-weak); font-size: 24rpx; }
+.bind-card__code { margin: 26rpx 0 12rpx; color: var(--primary); font-size: 76rpx; font-weight: 700; letter-spacing: 8rpx; line-height: 1.2; }
+.bind-card__expire { color: var(--text-weak); font-size: 23rpx; }
+.bind-card__expire.is-expired { color: var(--danger); }
+.bind-card__actions { display: flex; gap: 20rpx; margin-top: 34rpx; }
+.bind-btn { display: flex; flex: 1; height: 84rpx; min-height: 84rpx; align-items: center; justify-content: center; border-radius: 42rpx; font-size: 27rpx; font-weight: 600; box-sizing: border-box; }
+.bind-btn:active { transform: scale(.97); opacity: .9; }
+.bind-btn--ghost { background: #F0EBF7; color: var(--text-strong); }
+.bind-btn--primary { background: #8B5CF6; background: var(--gradient-primary); color: #FFF; }
+.bind-card__error { margin-top: 24rpx; color: var(--danger); font-size: 23rpx; line-height: 1.6; }
+.bind-steps { margin-top: 40rpx; }
+.bind-step { display: flex; align-items: center; gap: 20rpx; margin-bottom: 22rpx; color: var(--text-normal); font-size: 26rpx; line-height: 1.6; }
+.bind-step__no { display: flex; width: 44rpx; height: 44rpx; flex-shrink: 0; align-items: center; justify-content: center; border-radius: 50%; background: #EDE7F8; color: var(--primary); font-size: 24rpx; font-weight: 700; }
+.bind-note { margin-top: 16rpx; color: var(--text-weak); font-size: 22rpx; line-height: 1.8; }
+@media (max-width: 340px) { .bind-card__code { font-size: 64rpx; letter-spacing: 6rpx; } }

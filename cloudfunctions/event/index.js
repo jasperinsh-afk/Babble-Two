@@ -8,6 +8,8 @@ const db = cloud.database()
 function resolveOpenid(payload) {
   const injected = payload && payload.__openid
   if (typeof injected === 'string' && injected.indexOf('web:') === 0) return injected
+  // 网页端绑定小程序账号后，服务端注入 linked:<openid>，数据归属同一微信账号
+  if (typeof injected === 'string' && injected.indexOf('linked:') === 0) return injected.slice(7)
   return cloud.getWXContext().OPENID
 }
 const _ = db.command
@@ -72,7 +74,7 @@ async function calendar(payload = {}) {
     .collection('events')
     .where({
       isDeleted: false,
-      status: _.neq('cancelled'), // 已取消活动不再出现在可报名列表
+      status: _.in(['active', 'full']), // 与活动列表一致：草稿、结束、取消均不向用户展示
       startAt: _.gte(from).and(_.lte(to)),
     })
     .orderBy('startAt', 'asc')

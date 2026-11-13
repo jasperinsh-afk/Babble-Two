@@ -1,5 +1,6 @@
 .page--vote-list {
   padding-top: 8rpx;
+  padding-bottom: calc(180rpx + var(--safe-bottom));
 }
 
 .vote-tabs {

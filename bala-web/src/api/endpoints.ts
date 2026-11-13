@@ -1,5 +1,6 @@
 /** 全量端点：与小程序 call(name, action, payload) 调用点一一对应 */
 import { call, type CallOptions } from './client'
+import { bindAccount, fetchLinkStatus, unbindAccount, type LinkState } from '@/utils/identity'
 import type {
   CalendarData,
   CastResult,
@@ -28,6 +29,10 @@ export const api = {
     const body = await resp.json()
     return body.data as WebHealth
   },
+
+  linkStatus: (): Promise<LinkState> => fetchLinkStatus(),
+  bindAccount: (code: string) => bindAccount(code),
+  unbindAccount: () => unbindAccount(),
 
   homeFeed: (options?: CallOptions) => call<HomeFeed>('home', 'feed', {}, options),
 

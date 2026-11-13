@@ -1,1 +1,63 @@
-<campus-living id="living" />
+<view class="page page--living">
+  <!-- 开通后的子服务视图：生活圈 / 失物招领 -->
+  <view wx:if="{{subViewTab >= 0}}">
+    <campus-living id="living" initial-tab="{{subViewTab}}" />
+  </view>
+
+  <!-- 生活板块聚合墙 -->
+  <block wx:else>
+    <view class="section">
+      <section-header title="校园生活服务" />
+      <view class="living-grid">
+        <view
+          class="service-card {{serviceOpened ? '' : 'service-card--locked'}}"
+          wx:for="{{services}}"
+          wx:key="key"
+          bindtap="onServiceTap"
+          data-key="{{item.key}}"
+        >
+          <view class="service-card__icon service-card__icon--{{item.key}}">
+            <view wx:if="{{item.key === 'scan'}}" class="qr-icon">
+              <view class="qr-icon__mark qr-icon__mark--tl"></view>
+              <view class="qr-icon__mark qr-icon__mark--tr"></view>
+              <view class="qr-icon__mark qr-icon__mark--bl"></view>
+              <view class="qr-icon__dots">
+                <view class="qr-icon__dot"></view>
+                <view class="qr-icon__dot"></view>
+                <view class="qr-icon__dot"></view>
+                <view class="qr-icon__dot"></view>
+              </view>
+              <view class="qr-icon__line"></view>
+            </view>
+            <text wx:else class="service-card__glyph">{{item.glyph}}</text>
+          </view>
+          <view class="service-card__body">
+            <text class="service-card__name">{{item.label}}</text>
+            <text class="service-card__desc">{{item.desc}}</text>
+          </view>
+          <view class="service-card__status">{{serviceOpened ? '已开通' : '未开通'}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="living-vote" bindtap="goVoteList">
+        <text class="living-vote__icon">🗳️</text>
+        <view class="living-vote__body">
+          <text class="living-vote__title">投票广场</text>
+          <text class="living-vote__text">全校热门投票正在进行，去投一票</text>
+        </view>
+        <text class="living-vote__arrow">›</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 校区未开放：磨砂玻璃挡板，遮住页面内全部操作 -->
+  <view class="locked-mask">
+    <view class="locked-mask__panel">
+      <text class="locked-mask__title">校区未开放该服务</text>
+      <text class="locked-mask__sub">敬请期待</text>
+      <text class="locked-mask__hint">预计年底逐步开放</text>
+    </view>
+  </view>
+</view>

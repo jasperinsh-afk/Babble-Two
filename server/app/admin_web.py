@@ -243,11 +243,10 @@ async def dashboard(request: Request, _=Depends(require_super_admin)):
     try:
         polls = await cloudbase_client.count("polls")
         active = await cloudbase_client.count("polls", {"status": "active"})
-        clubs = await cloudbase_client.count("clubs")
         ballots = await cloudbase_client.count("ballots")
     except Exception as exc:  # noqa: BLE001
         print(f"[admin-web] 看板云开发读取失败: {exc}")
-        polls = active = clubs = ballots = 0
+        polls = active = ballots = 0
 
     return templates.TemplateResponse(
         "dashboard.html",
@@ -259,7 +258,6 @@ async def dashboard(request: Request, _=Depends(require_super_admin)):
                 "polls": polls,
                 "active_polls": active,
                 "ballots": ballots,
-                "clubs": clubs,
             },
         },
     )
@@ -460,16 +458,6 @@ async def candidate_draft(item_id: int, request: Request, _=Depends(require_supe
             pushed.append({"ok": False, "message": str(exc)})
 
     return {"ok": True, "drafts": pushed}
-
-
-@router.post("/api/clubs/{club_id}/{action}")
-async def club_action(club_id: str, action: str, _=Depends(require_reviewer)):
-    if action == "approve":
-        try:
-            await cloudbase_client.update("clubs", {"_id": club_id}, {"isVerified": True})
-        except Exception as exc:  # noqa: BLE001
-            print(f"[admin-web] 社团审核失败: {exc}")
-    return {"ok": True}
 
 
 @router.post("/api/events/{event_id}/{action}")

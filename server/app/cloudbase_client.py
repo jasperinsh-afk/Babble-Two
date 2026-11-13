@@ -208,6 +208,27 @@ async def delete(collection: str, where: Dict[str, Any]) -> int:
     return int(data.get("deleted", 0))
 
 
+async def ensure_collection(collection: str) -> bool:
+    """创建集合；已存在时返回 False，不视为错误。"""
+    try:
+        await _post(
+            "databasecollectionadd",
+            {"env": _env(), "collection_name": collection},
+        )
+        return True
+    except CloudbaseError as exc:
+        message = str(exc).lower()
+        if (
+            "already exist" in message
+            or "resource exist" in message
+            or "已存在" in message
+            or "-501000" in message
+            or "-501001" in message
+        ):
+            return False
+        raise
+
+
 # ── 云函数调用 ──
 
 

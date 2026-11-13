@@ -10,6 +10,8 @@
   <div class="cms-toolbar__actions">
     <span class="cms-mode">数据源：{{ '本地 SQLite' if mode == 'local' else '微信云数据库' }}</span>
     <a class="btn ghost" href="/home" target="_blank" rel="noopener">打开网站</a>
+    {% if can_create and schemas.polls %}<button id="cms-quick-poll" class="ghost" type="button">新增投票</button>{% endif %}
+    {% if can_create and schemas.events %}<button id="cms-quick-event" class="ghost" type="button">新增活动</button>{% endif %}
     <button id="cms-add" class="hidden" type="button">新增内容</button>
     <button id="cms-save" class="{{ '' if request.state.principal.is_admin else 'hidden' }}" type="button">保存首页</button>
   </div>

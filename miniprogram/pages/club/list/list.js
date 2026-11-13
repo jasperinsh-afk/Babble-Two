@@ -1,4 +1,6 @@
-Page({
+const { withShare } = require('../../../utils/share')
+
+Page(withShare({
   onShow() {
     const tabBar = this.getTabBar?.()
     if (tabBar) tabBar.setData({ selected: -1 })
@@ -20,4 +22,4 @@ Page({
       imageUrl: '/assets/brand/share-card.png',
     }
   },
-})
+}))

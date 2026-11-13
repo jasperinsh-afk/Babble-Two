@@ -1,0 +1,11 @@
+<view class="notifications-page">
+  <view class="notifications-header"><view><view class="notifications-header__title">消息通知</view><view class="notifications-header__sub">互动和回执都在这里</view></view><view wx:if="{{unread}}" class="notifications-header__read" bindtap="markAllRead">全部已读</view></view>
+  <view wx:if="{{loading}}" class="notifications-state">正在加载…</view>
+  <view wx:elif="{{!list.length}}" class="notifications-state"><view class="notifications-state__icon">📭</view><view class="notifications-state__title">暂无新消息</view><view class="notifications-state__text">投票、扫码和校园互动后会在这里通知你</view></view>
+  <view class="notification-item {{item.readAt ? '' : 'is-unread'}}" wx:for="{{list}}" wx:key="_id" data-id="{{item._id}}" bindtap="goMessage">
+    <view class="notification-item__dot"></view>
+    <view class="notification-item__body"><view class="notification-item__title">{{item.title}}</view><view wx:if="{{item.content || item.body}}" class="notification-item__text">{{item.content || item.body}}</view><view class="notification-item__time">{{item.typeLabel}} · {{item.timeText}}</view></view>
+    <view class="notification-item__arrow">›</view>
+  </view>
+  <view class="notifications-bottom"></view>
+</view>

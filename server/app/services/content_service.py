@@ -37,8 +37,8 @@ COLLECTIONS = {
             {"name": "title", "label": "投票标题", "type": "text", "required": True},
             {"name": "description", "label": "投票说明", "type": "textarea"},
             {"name": "pollType", "label": "投票类型", "type": "select", "required": True, "options": [["single", "单选"], ["multi", "多选"], ["pk", "PK"], ["ranking", "排序"], ["groupbuy", "接龙"]]},
-            {"name": "status", "label": "状态", "type": "select", "required": True, "options": [["draft", "草稿"], ["active", "上线"], ["closed", "结束"], ["archived", "归档"], ["withdrawn", "撤回"]]},
-            {"name": "tag", "label": "分类", "type": "select", "options": [["campus", "校园"], ["life", "生活"], ["club", "社团"], ["other", "其他"]]},
+            {"name": "status", "label": "发布状态（仅上线在用户端显示）", "type": "select", "required": True, "options": [["active", "上线（用户端可见）"], ["draft", "草稿（用户端不可见）"], ["closed", "结束"], ["archived", "归档"], ["withdrawn", "撤回"]]},
+            {"name": "tag", "label": "分类（与小程序、网页页签一致）", "type": "select", "required": True, "options": [["news", "时事"], ["campus", "学习"], ["meme", "热梗"], ["group", "接龙"]]},
             {"name": "category", "label": "栏目", "type": "text"},
             {"name": "coverUrl", "label": "封面地址", "type": "url"},
             {"name": "startAt", "label": "开始时间", "type": "datetime"},
@@ -75,7 +75,7 @@ COLLECTIONS = {
             {"name": "endAt", "label": "结束时间", "type": "datetime", "required": True},
             {"name": "signupDeadline", "label": "报名截止", "type": "datetime"},
             {"name": "maxParticipants", "label": "人数上限", "type": "number"},
-            {"name": "status", "label": "状态", "type": "select", "options": [["draft", "草稿"], ["active", "报名中"], ["full", "已满员"], ["closed", "已结束"], ["cancelled", "已取消"]]},
+            {"name": "status", "label": "发布状态（仅报名中、已满员在用户端显示）", "type": "select", "required": True, "options": [["active", "报名中（用户端可见）"], ["full", "已满员（用户端可见）"], ["draft", "草稿（用户端不可见）"], ["closed", "已结束"], ["cancelled", "已取消"]]},
             {"name": "casType", "label": "CAS 类型", "type": "select", "options": [["C", "Creativity"], ["A", "Activity"], ["S", "Service"]]},
             {"name": "changeSummary", "label": "变更摘要", "type": "string"},
             {"name": "cancelReason", "label": "取消原因", "type": "string"},
@@ -109,18 +109,85 @@ COLLECTIONS = {
             {"name": "publishedAt", "label": "发布时间", "type": "datetime"},
         ],
     },
+    "days": {
+        "label": "日子 · 日程",
+        "titleKey": "title",
+        "fields": [
+            {"name": "title", "label": "日程名称", "type": "text", "required": True},
+            {"name": "date", "label": "日期（YYYY-MM-DD）", "type": "text", "required": True},
+            {"name": "note", "label": "备注", "type": "textarea"},
+            {"name": "_openid", "label": "所属身份", "type": "text"},
+        ],
+    },
+    "user_profiles": {
+        "label": "达人分 · 用户档案",
+        "titleKey": "nickname",
+        "fields": [
+            {"name": "nickname", "label": "榜单昵称", "type": "text"},
+            {"name": "totalPoints", "label": "累计积分（非投票部分）", "type": "number"},
+            {"name": "_openid", "label": "所属身份", "type": "text"},
+        ],
+    },
+    "point_events": {
+        "label": "达人分 · 积分流水",
+        "titleKey": "reason",
+        "fields": [
+            {"name": "eventKey", "label": "幂等键", "type": "text"},
+            {"name": "reason", "label": "积分事由", "type": "text"},
+            {"name": "points", "label": "分值", "type": "number"},
+            {"name": "weekKey", "label": "所属周", "type": "text"},
+            {"name": "_openid", "label": "所属身份", "type": "text"},
+        ],
+    },
+    "weekly_champions": {
+        "label": "达人榜 · 周冠军勋章",
+        "titleKey": "weekKey",
+        "fields": [
+            {"name": "weekKey", "label": "周标识", "type": "text"},
+            {"name": "nickname", "label": "冠军昵称", "type": "text"},
+            {"name": "points", "label": "当周积分", "type": "number"},
+            {"name": "medalName", "label": "勋章名称", "type": "text"},
+            {"name": "_openid", "label": "所属身份", "type": "text"},
+        ],
+    },
+    "remote_countdowns": {
+        "label": "远程倒计时（校车等）",
+        "titleKey": "title",
+        "fields": [
+            {"name": "code", "label": "标识", "type": "text"},
+            {"name": "title", "label": "名称", "type": "text", "required": True},
+            {"name": "description", "label": "说明", "type": "textarea"},
+            {"name": "emoji", "label": "图标 emoji", "type": "text"},
+            {"name": "badge", "label": "列表角标", "type": "text"},
+            {"name": "targetAt", "label": "固定目标时间（ISO，留空则按每日时间）", "type": "text"},
+            {"name": "dailyTime", "label": "每日时间（HH:mm）", "type": "text"},
+            {"name": "weekdays", "label": "生效星期（0=日…6=六，逗号分隔）", "type": "weekdays"},
+            {"name": "isActive", "label": "启用", "type": "boolean"},
+            {"name": "sort", "label": "排序值", "type": "number"},
+        ],
+    },
+    "messages": {
+        "label": "消息中心",
+        "titleKey": "title",
+        "fields": [
+            {"name": "type", "label": "消息类型", "type": "text"},
+            {"name": "title", "label": "标题", "type": "text", "required": True},
+            {"name": "content", "label": "内容", "type": "textarea"},
+            {"name": "readAt", "label": "已读时间", "type": "text"},
+            {"name": "_openid", "label": "所属身份", "type": "text"},
+        ],
+    },
 }
 
 SECTION_TYPES = [
     ["banner", "Banner 轮播"], ["todayPoll", "今日投票"], ["quickEntries", "快捷入口"],
-    ["hotPolls", "热门投票"], ["events", "推荐活动"], ["clubs", "社团精选"],
+    ["hotPolls", "热门投票"], ["events", "推荐活动"],
 ]
 DEFAULT_QUICK_ENTRIES = [
-    {"key": "vote", "label": "投票", "icon": "✓", "to": "/vote"},
-    {"key": "club", "label": "社团", "icon": "⌂", "to": "/club"},
-    {"key": "calendar", "label": "日历", "icon": "▦", "to": "/calendar"},
-    {"key": "living", "label": "住宿", "icon": "⌂", "to": "/living"},
-    {"key": "scan", "label": "扫码", "icon": "◎", "to": "/scan"},
+    {"key": "days", "label": "日子", "icon": "📅", "to": "/days"},
+    {"key": "vote", "label": "投票", "icon": "🗳️", "to": "/vote"},
+    {"key": "calendar", "label": "活动日历", "icon": "🗓️", "to": "/calendar"},
+    {"key": "scan", "label": "扫码", "icon": "🔍", "to": "/scan"},
 ]
 DEFAULT_LAYOUT = {
     "_id": "home",
@@ -130,16 +197,21 @@ DEFAULT_LAYOUT = {
         {"id": "section-quick", "type": "quickEntries", "title": "快捷入口", "enabled": True, "config": {"items": DEFAULT_QUICK_ENTRIES}},
         {"id": "section-hot", "type": "hotPolls", "title": "热门投票", "enabled": True, "config": {"limit": 5}},
         {"id": "section-events", "type": "events", "title": "推荐活动", "enabled": True, "config": {"limit": 3}},
-        {"id": "section-clubs", "type": "clubs", "title": "社团精选", "enabled": True, "config": {"limit": 6}},
     ],
 }
 NEW_DEFAULTS = {
     "banners": {"isActive": True, "sort": 0},
     # isDeleted/totalVotes 等字段必须显式写入：云函数 where({isDeleted:false}) 不会命中缺失字段的文档
-    "polls": {"pollType": "single", "status": "draft", "tag": "campus", "reviewStatus": "approved", "allowChange": False, "anonymous": True, "isDeleted": False, "totalVotes": 0, "participantCount": 0, "options": [{"optionId": "", "label": "", "sortOrder": 0}, {"optionId": "", "label": "", "sortOrder": 1}], "resultStatus": "draft", "resultScope": "campus", "resultRevision": 0, "responseRevision": 0},
-    "events": {"status": "draft", "organizerType": "school", "isDeleted": False, "participantCount": 0, "registeredOpenids": [], "waitlistOpenids": [], "changeRevision": 0},
+    "polls": {"pollType": "single", "status": "active", "tag": "campus", "reviewStatus": "approved", "allowChange": False, "anonymous": True, "isDeleted": False, "totalVotes": 0, "participantCount": 0, "options": [{"optionId": "", "label": "", "sortOrder": 0}, {"optionId": "", "label": "", "sortOrder": 1}], "resultStatus": "draft", "resultScope": "campus", "resultRevision": 0, "responseRevision": 0},
+    "events": {"status": "active", "organizerType": "school", "isDeleted": False, "participantCount": 0, "registeredOpenids": [], "waitlistOpenids": [], "changeRevision": 0},
     "clubs": {"isVerified": False, "isDeleted": False, "heatScore": 0, "memberCount": 0, "memberOpenids": []},
     "club_posts": {"images": [], "isPinned": False, "likeCount": 0},
+    "days": {"title": "", "date": "", "note": ""},
+    "user_profiles": {"nickname": "", "totalPoints": 0},
+    "point_events": {"eventKey": "", "reason": "", "points": 0, "weekKey": ""},
+    "weekly_champions": {"weekKey": "", "nickname": "", "points": 0, "medalName": "星耀周冠军"},
+    "messages": {"type": "", "title": "", "content": "", "readAt": ""},
+    "remote_countdowns": {"code": "", "title": "", "description": "", "emoji": "⏰", "badge": "倒计时", "targetAt": "", "dailyTime": "", "weekdays": [1, 2, 3, 4, 5], "isActive": True, "sort": 0},
 }
 
 
@@ -190,7 +262,8 @@ def accessible_collections(principal: AdminPrincipal) -> dict[str, Any]:
     return {
         key: schema_for(key, principal)
         for key in COLLECTIONS
-        if principal.role != ROLE_CLUB_MODERATOR or key in {"clubs", "club_posts", "events"}
+        if key not in {"clubs", "club_posts"}
+        and (principal.role != ROLE_CLUB_MODERATOR or key == "events")
     }
 
 
@@ -240,6 +313,15 @@ def _clean_field(field: dict[str, Any], value: Any) -> Any:
         except (TypeError, ValueError) as exc:
             raise BalaError(f"{field['label']}必须是数字", "INVALID_FIELD") from exc
         return int(number) if number.is_integer() else number
+    if kind == "weekdays":
+        values = value if isinstance(value, list) else _text(value).split(",")
+        try:
+            weekdays = [int(str(item).strip()) for item in values if str(item).strip()]
+        except (TypeError, ValueError) as exc:
+            raise BalaError(f"{field['label']}格式不正确", "INVALID_FIELD") from exc
+        if any(day < 0 or day > 6 for day in weekdays):
+            raise BalaError(f"{field['label']}需为 0 到 6", "INVALID_FIELD")
+        return sorted(set(weekdays)) or [1, 2, 3, 4, 5]
     if kind == "stringList":
         if not isinstance(value, list):
             raise BalaError(f"{field['label']}格式不正确", "INVALID_FIELD")
@@ -272,6 +354,9 @@ def clean_document(collection: str, payload: dict[str, Any], existing: dict[str,
     schema = _schema(collection)
     doc = dict(existing or NEW_DEFAULTS.get(collection, {}))
     for field in schema["fields"]:
+        # 新增时保留服务端默认字段，不能因调用方未传 status/isDeleted 而写成 null
+        if not existing and field["name"] not in payload and field["name"] in doc:
+            continue
         doc[field["name"]] = _clean_field(field, payload.get(field["name"]))
     doc["updatedAt"] = datetime.now(timezone.utc).isoformat()
     if not existing:
@@ -281,10 +366,14 @@ def clean_document(collection: str, payload: dict[str, Any], existing: dict[str,
         if len(options) < 2:
             raise BalaError("投票至少需要两个选项", "INVALID_FIELD")
         used = set()
+        existing_counts = {
+            option.get("optionId"): option.get("count", 0)
+            for option in (existing or {}).get("options", [])
+        }
         for index, option in enumerate(options):
             option["optionId"] = option.get("optionId") or f"opt-{uuid.uuid4().hex[:10]}"
             option["sortOrder"] = option.get("sortOrder") if option.get("sortOrder") is not None else index
-            option.setdefault("count", 0)
+            option["count"] = existing_counts.get(option["optionId"], 0)
             if option["optionId"] in used:
                 raise BalaError("选项 ID 不能重复", "INVALID_FIELD")
             used.add(option["optionId"])
@@ -516,9 +605,21 @@ async def get_layout() -> dict[str, Any]:
     if settings.web_data_mode == "local":
         repo = get_repository()
         assert isinstance(repo, LocalRepository)
-        return await repo.store.get("site_pages", "home") or default_layout()
-    rows = await cloudbase_client.query("site_pages", where={"_id": "home"}, limit=1)
-    return rows[0] if rows else default_layout()
+        layout = await repo.store.get("site_pages", "home") or default_layout()
+    else:
+        rows = await cloudbase_client.query("site_pages", where={"_id": "home"}, limit=1)
+        layout = rows[0] if rows else default_layout()
+    # 已保存的旧首页配置也要在后台隐藏社团，避免再次保存时被废弃版块阻塞
+    layout["sections"] = [
+        section for section in layout.get("sections", []) if section.get("type") != "clubs"
+    ]
+    for section in layout["sections"]:
+        if section.get("type") == "quickEntries":
+            config = section.setdefault("config", {})
+            config["items"] = [
+                item for item in config.get("items", []) if item.get("to") != "/club"
+            ]
+    return layout
 
 
 async def save_layout(payload: dict[str, Any]) -> dict[str, Any]:

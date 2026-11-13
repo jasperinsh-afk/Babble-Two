@@ -1,4 +1,6 @@
-Page({
+const { withShare } = require('../../../utils/share')
+
+Page(withShare({
   data: {
     eventId: '',
   },
@@ -24,4 +26,4 @@ Page({
       imageUrl: '/assets/brand/share-card.png',
     }
   },
-})
+}))

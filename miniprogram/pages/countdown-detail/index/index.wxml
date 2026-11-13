@@ -1,0 +1,30 @@
+<view class="countdown-full" style="padding-top:{{statusBarHeight}}px">
+  <view class="countdown-full__top">
+    <view class="countdown-full__back" bindtap="goBack" aria-label="返回">‹</view>
+    <view class="countdown-full__brand"><image src="/assets/brand/logo-mark.png" mode="aspectFit" /><text>叭啦·过日子</text></view>
+  </view>
+
+  <view wx:if="{{item}}" class="countdown-full__body">
+    <view class="countdown-full__title">{{item.title}}</view>
+    <view class="countdown-full__date">{{dateText}}</view>
+
+    <view class="countdown-full__count">
+      <view class="countdown-full__days"><text>{{units.days}}</text><view>天</view></view>
+      <view class="countdown-full__time">{{units.hours}} : {{units.minutes}} : {{units.seconds}}</view>
+    </view>
+
+    <view wx:if="{{item.note}}" class="countdown-full__note">{{item.note}}</view>
+  </view>
+
+  <view class="countdown-full__actions">
+    <button class="countdown-full__action" loading="{{saving}}" disabled="{{saving}}" bindtap="saveShareImage">{{saving ? '正在生成' : '保存图片'}}</button>
+    <button class="countdown-full__action countdown-full__action--share" open-type="share">分享给好友</button>
+  </view>
+
+  <view wx:if="{{shareImagePath}}" class="countdown-share-preview">
+    <image src="{{shareImagePath}}" mode="widthFix" show-menu-by-longpress="{{true}}" />
+    <text>若未自动保存，请长按图片保存到相册</text>
+  </view>
+
+  <canvas canvas-id="dayShareCanvas" class="share-canvas"></canvas>
+</view>

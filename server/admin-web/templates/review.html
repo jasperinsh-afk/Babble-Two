@@ -23,26 +23,6 @@
 </div>
 
 <div class="panel">
-  <h2>待审社团</h2>
-  {% if clubs %}
-  <table>
-    <thead><tr><th>ID</th><th>名称</th><th>简介</th><th>操作</th></tr></thead>
-    <tbody>
-    {% for c in clubs %}
-    <tr>
-      <td>{{ c.id }}</td><td>{{ c.name }}</td><td class="ellipsis">{{ c.description or '-' }}</td>
-      <td>
-        <button onclick="clubReview({{ c.id }},1)">通过</button>
-        <button class="danger" onclick="clubReview({{ c.id }},0)">拒绝</button>
-      </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  {% else %}<p class="muted">无待审社团</p>{% endif %}
-</div>
-
-<div class="panel">
   <h2>待审活动</h2>
   {% if events %}
   <table>
@@ -96,10 +76,6 @@
 async function pollReview(id, status){
   await fetch(`/admin/web/api/polls/${id}/${status==='approved'?'approve':'reject'}`,
     {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
-  location.reload();
-}
-async function clubReview(id, ok){
-  await fetch(`/admin/web/api/clubs/${id}/approve`, {method:'POST'});
   location.reload();
 }
 async function eventReview(id, ok){

@@ -1,0 +1,10 @@
+{
+  "name": "leaderboard",
+  "version": "1.0.0",
+  "description": "叭啦达人分、昵称与每周达人榜",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

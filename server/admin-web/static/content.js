@@ -339,12 +339,20 @@
     $('#cms-documents').classList.toggle('hidden', isLayout)
     $('#cms-save').classList.toggle('hidden', !isLayout)
     $('#cms-add').classList.toggle('hidden', isLayout || !config.canCreate || config.schemas[view]?.canCreate === false)
+    if (!isLayout) $('#cms-add').textContent = `新增${config.schemas[view].label}`
     $('#cms-save').textContent = '保存首页'
     if (isLayout) await loadLayout()
     else await loadCollection()
   }
 
+  async function quickCreate(view) {
+    await switchView(view)
+    if (state.schema && state.defaults) openEditor(clone(state.defaults))
+  }
+
   document.querySelectorAll('.cms-tab').forEach((tab) => tab.addEventListener('click', () => switchView(tab.dataset.view)))
+  $('#cms-quick-poll')?.addEventListener('click', () => quickCreate('polls'))
+  $('#cms-quick-event')?.addEventListener('click', () => quickCreate('events'))
   $('#cms-add').addEventListener('click', () => openEditor(clone(state.defaults)))
   $('#cms-add-section').addEventListener('click', () => {
     state.layout.sections.push({ id: `section-${Date.now()}`, type: 'banner', title: 'Banner 轮播', enabled: true, config: { limit: 5 } })

@@ -25,6 +25,33 @@ async def content_repo(tmp_path, monkeypatch):
     await store.close()
 
 
+def test_new_poll_and_event_default_to_visible_and_hide_clubs():
+    poll = content_service.clean_document("polls", {
+        "title": "新增即上线",
+        "options": [{"label": "选项一"}, {"label": "选项二"}],
+    })
+    assert poll["status"] == "active"
+    assert poll["isDeleted"] is False
+    assert poll["tag"] == "campus"
+    assert poll["totalVotes"] == 0
+    assert all(option["count"] == 0 for option in poll["options"])
+
+    event = content_service.clean_document("events", {
+        "title": "新增活动",
+        "startAt": "2099-11-01T08:00:00.000Z",
+        "endAt": "2099-11-01T10:00:00.000Z",
+    })
+    assert event["status"] == "active"
+    assert event["isDeleted"] is False
+    assert event["participantCount"] == 0
+
+    schemas = content_service.accessible_collections(content_service.ADMIN_PRINCIPAL)
+    assert "clubs" not in schemas
+    assert "club_posts" not in schemas
+    assert {"polls", "events"} <= schemas.keys()
+    assert all(section["type"] != "clubs" for section in content_service.default_layout()["sections"])
+
+
 async def test_layout_save_drives_home_feed(content_repo):
     layout = content_service.default_layout()
     layout["sections"] = [layout["sections"][3], layout["sections"][0]]
@@ -93,6 +120,55 @@ async def test_poll_result_fields_roundtrip(content_repo):
     # 重复发布同一状态不重复累计修订号
     again = await content_service.save_document("polls", {**reread}, "p001")
     assert again["resultRevision"] == 1
+
+
+async def test_poll_edit_preserves_option_counts(content_repo):
+    poll = await content_service.get_document("polls", "p001")
+    before = {option["optionId"]: option.get("count", 0) for option in poll["options"]}
+    saved = await content_service.save_document(
+        "polls", {**poll, "title": "仅修改标题"}, "p001"
+    )
+    assert saved["title"] == "仅修改标题"
+    assert saved["totalVotes"] == poll["totalVotes"]
+    assert {option["optionId"]: option["count"] for option in saved["options"]} == before
+
+
+async def test_admin_creates_campus_event_countdown_and_poll(content_repo):
+    event = await content_service.save_document("events", {
+        "title": "校园运动会",
+        "organizerType": "school",
+        "startAt": "2099-11-01T08:00:00.000Z",
+        "endAt": "2099-11-01T10:00:00.000Z",
+        "status": "active",
+    })
+    countdown = await content_service.save_document("remote_countdowns", {
+        "code": "school-bus",
+        "title": "校车到站",
+        "dailyTime": "07:20",
+        "weekdays": "1,3,5",
+        "isActive": True,
+    })
+    poll = await content_service.save_document("polls", {
+        "title": "运动会项目投票",
+        "pollType": "single",
+        "status": "active",
+        "startAt": "2026-01-01T00:00:00.000Z",
+        "endAt": "2099-11-01T10:00:00.000Z",
+        "reviewStatus": "approved",
+        "resultStatus": "published",
+        "resultScope": "campus",
+        "options": [{"optionId": "run", "label": "跑步"}, {"optionId": "swim", "label": "游泳"}],
+    })
+
+    identity = "web:" + "a" * 32
+    remote = await content_repo.call("days", "remote", {}, identity)
+    assert any(item["_id"] == event["_id"] for item in remote["events"])
+    remote_countdown = next(item for item in remote["countdowns"] if item["_id"] == countdown["_id"])
+    assert remote_countdown["weekdays"] == [1, 3, 5]
+    detail = await content_repo.call("vote", "detail", {"pollId": poll["_id"]}, identity)
+    assert detail["title"] == "运动会项目投票"
+    assert detail["status"] == "active"
+    assert [option["optionId"] for option in detail["options"]] == ["run", "swim"]
 
 
 async def test_event_change_revision(content_repo):

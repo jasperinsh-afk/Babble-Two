@@ -13,6 +13,7 @@ from fastapi.templating import Jinja2Templates
 from app.api.v1 import router as api_v1_router
 from app.config import settings
 from app.core.exceptions import AppError, MESSAGES, OK
+from app.repository.base import BalaError
 
 logging.basicConfig(
     level=logging.DEBUG if settings.DEBUG else logging.INFO,
@@ -72,6 +73,15 @@ async def app_error_handler(request: Request, exc: AppError):
     )
 
 
+@app.exception_handler(BalaError)
+async def bala_error_handler(request: Request, exc: BalaError):
+    """依赖注入阶段抛出的身份错误也返回网页端约定的 {ok:false} 信封。"""
+    return JSONResponse(
+        status_code=exc.http_status,
+        content={"ok": False, "data": None, "message": exc.message, "code": exc.code},
+    )
+
+
 @app.exception_handler(Exception)
 async def unhandled_handler(request: Request, exc: Exception):
     logger.exception("未处理异常: %s", exc)
@@ -113,10 +123,12 @@ except Exception as exc:  # noqa: BLE001
 
 
 # ── 同域网页版：构建后由 FastAPI 提供 assets 与 SPA history fallback ──
-# 网页客户端构建产物：优先仓库内 bala-web/dist，兼容旧的同级目录布局
+# 优先 Project Y/bala-web/dist（当前 React/Vite 源码的构建产物）。
+# Railway 镜像只复制 bala-miniapp/ 目录，因此发布时需把新版 dist 同步到
+# bala-miniapp/bala-web/dist，生产环境会自动回落到这份同源副本。
 _WEB_DIST_CANDIDATES = [
-    Path(__file__).resolve().parents[2] / "bala-web" / "dist",
     Path(__file__).resolve().parents[3] / "bala-web" / "dist",
+    Path(__file__).resolve().parents[2] / "bala-web" / "dist",
 ]
 FRONTEND_DIST = next(
     (path for path in _WEB_DIST_CANDIDATES if (path / "index.html").is_file()),
@@ -149,6 +161,15 @@ async def on_startup() -> None:
         await moderation_service.load_word_bank(db)
         await db.commit()
     logger.info("敏感词库已初始化（勋章与业务数据由云开发数据库承载）")
+
+    if settings.web_data_mode == "cloud":
+        from app.services.identity_link import ensure_collections
+
+        try:
+            await ensure_collections()
+            logger.info("网页绑定码云集合已就绪")
+        except Exception as exc:  # noqa: BLE001
+            logger.warning("网页绑定码云集合初始化失败: %s", exc)
 
     if settings.CRAWLER_ENABLED:
         try:

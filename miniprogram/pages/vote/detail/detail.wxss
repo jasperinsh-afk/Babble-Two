@@ -104,7 +104,7 @@
 }
 
 .vote-option--selected .vote-option__square::after {
-  content: '✓';
+  content: '✅';
   position: absolute;
   left: 0;
   right: 0;

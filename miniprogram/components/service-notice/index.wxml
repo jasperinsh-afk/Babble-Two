@@ -1,0 +1,24 @@
+<view class="notice-mask" wx:if="{{show}}" bindtap="onMaskTap" catchtouchmove="noop">
+  <view class="notice-sheet" catchtap="noop">
+    <view class="notice-sheet__handle"></view>
+
+    <view class="notice-sheet__icon">
+      <view class="notice-lock">
+        <view class="notice-lock__shackle"></view>
+        <view class="notice-lock__body"></view>
+      </view>
+    </view>
+
+    <view class="notice-sheet__title">校区尚未开通该服务</view>
+    <view class="notice-sheet__text">
+      <text wx:if="{{label}}">「{{label}}」暂未在你所在的校区开通。</text>
+      <text wx:else>该服务暂未在你所在的校区开通。</text>
+      开通后会第一时间在这里通知你。
+    </view>
+
+    <view class="notice-sheet__actions">
+      <view class="btn btn--ghost notice-sheet__btn" bindtap="onClose">知道了</view>
+      <view class="btn notice-sheet__btn" bindtap="goVote">去看投票</view>
+    </view>
+  </view>
+</view>

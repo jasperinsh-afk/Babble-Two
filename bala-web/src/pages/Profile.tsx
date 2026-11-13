@@ -1,14 +1,17 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/endpoints'
 import { EmptyView, SectionHeader, Skeleton } from '@/components/common'
 import { TabBar } from '@/components/chrome'
 import { badgeRuleLabel } from '@/utils/config'
 import { dateText, fromNowText } from '@/utils/format'
+import { toast } from '@/utils/feedback'
 import { getSession } from '@/utils/identity'
 
 export default function Profile() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { data, isLoading } = useQuery({
     queryKey: ['me', 'overview'],
     queryFn: () => api.meOverview(),
@@ -18,6 +21,47 @@ export default function Profile() {
     queryFn: () => api.health(),
     staleTime: Infinity,
   })
+  const { data: link, refetch: refetchLink } = useQuery({
+    queryKey: ['web', 'link'],
+    queryFn: () => api.linkStatus(),
+    staleTime: 30_000,
+  })
+  const [code, setCode] = useState('')
+  const [binding, setBinding] = useState(false)
+
+  async function handleBind() {
+    const digits = code.replace(/\D/g, '')
+    if (digits.length !== 6) {
+      toast('请输入小程序里显示的 6 位绑定码')
+      return
+    }
+    setBinding(true)
+    try {
+      await api.bindAccount(digits)
+      setCode('')
+      toast('绑定成功，两端数据已互通')
+      await refetchLink()
+      await queryClient.invalidateQueries()
+    } catch (error) {
+      toast(error instanceof Error ? error.message : '绑定失败，请稍后重试')
+    } finally {
+      setBinding(false)
+    }
+  }
+
+  async function handleUnbind() {
+    setBinding(true)
+    try {
+      await api.unbindAccount()
+      toast('已解除绑定')
+      await refetchLink()
+      await queryClient.invalidateQueries()
+    } catch (error) {
+      toast(error instanceof Error ? error.message : '解绑失败，请稍后重试')
+    } finally {
+      setBinding(false)
+    }
+  }
 
   const stats = data?.stats
   const badges = data?.badges ?? []
@@ -130,6 +174,57 @@ export default function Profile() {
           <EmptyView icon="👣" title="暂无足迹" subtitle="去投票或扫码打卡，留下你的兴趣印记" />
         </section>
       ) : null}
+
+      <section className="section">
+        <SectionHeader title="账号互通" />
+        <div className="card link-card">
+          {link?.bound ? (
+            <>
+              <div className="link-card__status link-card__status--on">
+                已绑定小程序账号（{link.openid}）
+              </div>
+              <p className="link-card__desc">
+                网页端的投票、达人分、日程已与小程序共用同一份数据。
+              </p>
+              <button
+                className="link-card__btn link-card__btn--ghost"
+                disabled={binding}
+                onClick={handleUnbind}
+              >
+                解除绑定
+              </button>
+            </>
+          ) : (
+            <>
+              <p className="link-card__desc">
+                在小程序「我的 → 绑定网页端」获取 6 位码，输入后两端数据互通。
+              </p>
+              <div className="link-card__row">
+                <input
+                  className="link-card__input"
+                  value={code}
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="6 位绑定码"
+                  onChange={(event) => setCode(event.target.value.replace(/\D/g, ''))}
+                />
+                <button
+                  className="link-card__btn link-card__btn--primary"
+                  disabled={binding}
+                  onClick={handleBind}
+                >
+                  {binding ? '绑定中…' : '绑定'}
+                </button>
+              </div>
+              {link?.mode === 'local' ? (
+                <p className="link-card__hint">
+                  当前是本地演示库，需配置 AppSecret 切到云数据库后才能绑定。
+                </p>
+              ) : null}
+            </>
+          )}
+        </div>
+      </section>
 
       <div className="profile-meta">
         <span>

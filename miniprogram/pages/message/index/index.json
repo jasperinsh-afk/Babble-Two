@@ -1,9 +1,5 @@
 {
-  "navigationBarTitleText": "消息",
-  "usingComponents": {
-    "empty-view": "/components/empty-view/index",
-    "section-header": "/components/section-header/index"
-  },
+  "navigationBarTitleText": "倒计时",
   "enablePullDownRefresh": true,
   "backgroundColor": "#FAF8FF"
 }

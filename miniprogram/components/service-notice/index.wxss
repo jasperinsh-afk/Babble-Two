@@ -1,0 +1,107 @@
+.notice-mask {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1600;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(30, 27, 46, 0.45);
+}
+
+.notice-sheet {
+  width: 100%;
+  /* 底部预留自定义 TabBar 的高度，避免「知道了 / 去看投票」被挡住 */
+  padding: 24rpx 36rpx calc(168rpx + var(--safe-bottom));
+  border-radius: 44rpx 44rpx 0 0;
+  background: #ffffff;
+  text-align: center;
+  box-shadow: var(--shadow-l);
+  animation: notice-in 0.34s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(52rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notice-sheet__handle {
+  width: 72rpx;
+  height: 8rpx;
+  margin: 0 auto 24rpx;
+  border-radius: var(--radius-pill);
+  background: rgba(30, 27, 46, 0.12);
+}
+
+.notice-sheet__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 108rpx;
+  height: 108rpx;
+  margin: 0 auto 24rpx;
+  border-radius: 50%;
+  background: var(--bg-tint);
+  color: var(--primary);
+}
+
+/* 未开通：锁形图标（纯 CSS 绘制） */
+.notice-lock {
+  position: relative;
+  width: 52rpx;
+  height: 52rpx;
+}
+
+.notice-lock__shackle {
+  position: absolute;
+  left: 10rpx;
+  top: 0;
+  width: 32rpx;
+  height: 26rpx;
+  border: 6rpx solid currentColor;
+  border-bottom: none;
+  border-radius: 26rpx 26rpx 0 0;
+  box-sizing: border-box;
+}
+
+.notice-lock__body {
+  position: absolute;
+  left: 0;
+  top: 22rpx;
+  width: 52rpx;
+  height: 32rpx;
+  border-radius: 12rpx;
+  background: currentColor;
+}
+
+.notice-sheet__title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin-bottom: 16rpx;
+}
+
+.notice-sheet__text {
+  font-size: 26rpx;
+  line-height: 1.75;
+  color: var(--text-normal);
+  margin-bottom: 36rpx;
+}
+
+.notice-sheet__actions {
+  display: flex;
+  gap: 20rpx;
+}
+
+.notice-sheet__btn {
+  flex: 1;
+  height: 84rpx;
+  font-size: 28rpx;
+}

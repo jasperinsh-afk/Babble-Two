@@ -15,8 +15,8 @@
     <!-- 选项区 -->
     <view class="vote-detail__options card section" wx:if="{{!showResults}}">
       <view
-        class="vote-option {{isSelected(item.optionId) ? 'vote-option--selected' : ''}}"
-        wx:for="{{poll.options}}"
+        class="vote-option {{item.selected ? 'vote-option--selected' : ''}}"
+        wx:for="{{optionViews}}"
         wx:key="optionId"
         bindtap="toggleOption"
         data-id="{{item.optionId}}"
@@ -30,12 +30,14 @@
           <text class="vote-option__count" wx:if="{{poll.pollType === 'groupbuy'}}">{{item.count || 0}} 人已接龙</text>
         </view>
       </view>
+      <button wx:if="{{editing}}" class="btn btn--ghost" bindtap="cancelEdit">取消修改</button>
     </view>
 
     <!-- 结果图表 -->
     <view class="section" wx:if="{{showResults}}">
       <section-header title="结果" />
       <result-chart results="{{results}}" poll-type="{{poll.pollType}}" />
+      <button wx:if="{{poll.canChange}}" class="btn btn--ghost" bindtap="startEdit">修改我的投票</button>
     </view>
 
     <!-- 接龙信息 -->

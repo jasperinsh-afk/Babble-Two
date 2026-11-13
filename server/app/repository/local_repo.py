@@ -7,6 +7,8 @@ from __future__ import annotations
 
 import asyncio
 import calendar as _calendar
+import re
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional
 
@@ -15,6 +17,12 @@ from app.repository.dates import iso, parse_dt, utcnow
 from app.repository.local_store import DocumentStore
 
 PAGE_SIZE = 20
+
+# 与 cloudfunctions/leaderboard/score.js 保持一致的积分与周榜规则
+LEADERBOARD_POINTS = {"vote": 10, "schedule": 5, "nickname": 5}
+MEDAL_NAME = "星耀周冠军"
+AVATARS = ("🦊", "🐼", "🐯", "🐨", "🦁", "🐸", "🐙", "🦄", "🐳", "🌻", "🍀", "⚡")
+CHINA_TZ = timezone(timedelta(hours=8))
 
 # 消息偏好默认值（全部开启），与 cloudfunctions/me/index.js DEFAULT_PREFS 对齐
 DEFAULT_MESSAGE_PREFS = {
@@ -75,6 +83,9 @@ class LocalRepository:
         self, fn: str, action: str, payload: Dict[str, Any], identity: str
     ) -> Optional[Any]:
         await self.store.ensure_ready()
+        # 与云函数 resolveOpenid 对齐：绑定后的网页身份统一落到真实 openid
+        if identity.startswith("linked:"):
+            identity = identity[len("linked:"):]
         handler: Optional[Callable] = _ACTIONS.get((fn, action))
         if handler is None:
             raise BalaError(f"未知操作：{fn}.{action}", "UNKNOWN_ACTION", 404)
@@ -269,6 +280,8 @@ class LocalRepository:
             _fail(f"最多可选 {max_choices} 项", "PARAM_INVALID")
 
         options = raw.get("options") or []
+        if len(set(option_ids)) != len(option_ids):
+            _fail("选项不能重复", "PARAM_INVALID")
         valid_ids = {o.get("optionId") for o in options}
         if any(oid not in valid_ids for oid in option_ids):
             _fail("选项不合法", "PARAM_INVALID")
@@ -906,6 +919,351 @@ class LocalRepository:
         )
         return {"ok": True}
 
+    # ── leaderboard（对齐 cloudfunctions/leaderboard）──
+
+    async def _profile_for(self, identity: str) -> Optional[Dict[str, Any]]:
+        for profile in await self.store.docs("user_profiles"):
+            if profile.get("_openid") == identity:
+                return profile
+        return None
+
+    async def _award_point(self, identity: str, event_key: str, points: int, reason: str) -> bool:
+        """按 eventKey 幂等加分，避免重复添加日程或改昵称刷分。"""
+        for event in await self.store.docs("point_events"):
+            if event.get("_openid") == identity and event.get("eventKey") == event_key:
+                return False
+        now = utcnow()
+        await self.store.insert(
+            "point_events",
+            {
+                "_openid": identity,
+                "eventKey": event_key,
+                "points": points,
+                "reason": reason,
+                "weekKey": _week_bounds(now)[2],
+                "createdAt": iso(now),
+            },
+        )
+        profile = await self._profile_for(identity)
+        if profile:
+            profile["totalPoints"] = (profile.get("totalPoints") or 0) + points
+            profile["updatedAt"] = iso(now)
+            await self.store.put("user_profiles", profile)
+        else:
+            await self.store.insert(
+                "user_profiles",
+                {
+                    "_openid": identity,
+                    "nickname": "",
+                    "totalPoints": points,
+                    "createdAt": iso(now),
+                    "updatedAt": iso(now),
+                },
+            )
+        return True
+
+    async def _scoring_records(self, start_ts: float, end_ts: float, week_key: str):
+        records = [
+            {"_openid": ballot["_openid"], "points": LEADERBOARD_POINTS["vote"], "at": _dt_key(ballot.get("createdAt"))}
+            for ballot in await self.store.docs("ballots")
+            if ballot.get("_openid") and start_ts <= _dt_key(ballot.get("createdAt")) < end_ts
+        ]
+        for event in await self.store.docs("point_events"):
+            if event.get("weekKey") == week_key and event.get("_openid"):
+                records.append(
+                    {
+                        "_openid": event["_openid"],
+                        "points": event.get("points") or 0,
+                        "at": _dt_key(event.get("createdAt")),
+                    }
+                )
+        return _aggregate_scores(records)
+
+    async def _settle_previous_week(self) -> None:
+        start_ts, end_ts, key = _week_bounds(utcnow() - timedelta(days=7))
+        if any(c.get("weekKey") == key for c in await self.store.docs("weekly_champions")):
+            return
+        ranked = await self._scoring_records(start_ts, end_ts, key)
+        if not ranked:
+            return
+        winner = ranked[0]
+        profile = await self._profile_for(winner["_openid"])
+        await self.store.put(
+            "weekly_champions",
+            {
+                "_id": key,
+                "_openid": winner["_openid"],
+                "weekKey": key,
+                "nickname": (profile or {}).get("nickname") or "校园同学",
+                "points": winner["points"],
+                "medalCode": "weekly_star",
+                "medalName": MEDAL_NAME,
+                "earnedAt": iso(utcnow()),
+            },
+        )
+
+    async def leaderboard_my(self, payload, identity):
+        profile = await self._profile_for(identity)
+        ballots = [b for b in await self.store.docs("ballots") if b.get("_openid") == identity]
+        ranked = await self._scoring_records(*_week_bounds())
+        current = next((r for r in ranked if r["_openid"] == identity), None)
+        champions = [
+            c for c in await self.store.docs("weekly_champions")
+            if c.get("_openid") == identity
+        ]
+        champions.sort(key=lambda c: _dt_key(c.get("earnedAt")), reverse=True)
+        return {
+            "nickname": (profile or {}).get("nickname") or "校园同学",
+            "nicknameSet": bool((profile or {}).get("nickname")),
+            "totalPoints": ((profile or {}).get("totalPoints") or 0)
+            + len(ballots) * LEADERBOARD_POINTS["vote"],
+            "currentWeekPoints": current["points"] if current else 0,
+            "champions": [
+                {
+                    "weekKey": c.get("weekKey"),
+                    "points": c.get("points") or 0,
+                    "medalName": c.get("medalName") or MEDAL_NAME,
+                    "earnedAt": c.get("earnedAt"),
+                }
+                for c in champions[:20]
+            ],
+        }
+
+    async def leaderboard_weekly(self, payload, identity):
+        await self._settle_previous_week()
+        ranked = await self._scoring_records(*_week_bounds())
+        profiles = {p.get("_openid"): p for p in await self.store.docs("user_profiles")}
+        rows = [
+            {
+                "key": f"{index}-{item['points']}",
+                "rank": index + 1,
+                "nickname": (profiles.get(item["_openid"]) or {}).get("nickname") or "校园同学",
+                "avatar": _avatar_for(item["_openid"]),
+                "points": item["points"],
+                "isMe": item["_openid"] == identity,
+                "medal": MEDAL_NAME if index == 0 else "",
+            }
+            for index, item in enumerate(ranked[:50])
+        ]
+        me = await self.leaderboard_my({}, identity)
+        me["rank"] = next((r["rank"] for r in rows if r["isMe"]), 0)
+        me["currentWeekPoints"] = next(
+            (item["points"] for item in ranked if item["_openid"] == identity), 0
+        )
+        return {
+            "weekKey": _week_bounds()[2],
+            "list": rows,
+            "my": me,
+            "rules": [
+                f"参与投票 +{LEADERBOARD_POINTS['vote']} 分",
+                f"添加日程 +{LEADERBOARD_POINTS['schedule']} 分（每日最多 3 次）",
+                f"首次设置昵称 +{LEADERBOARD_POINTS['nickname']} 分",
+                f"每周第一名获得「{MEDAL_NAME}」勋章",
+            ],
+        }
+
+    async def leaderboard_set_nickname(self, payload, identity):
+        nickname = re.sub(r"[\x00-\x1f\x7f]", "", str(payload.get("nickname") or "")).strip()[:16]
+        if len(nickname) < 2:
+            _fail("昵称至少需要 2 个字符", "PARAM_INVALID")
+        async with self._write_lock:
+            now = iso(utcnow())
+            profile = await self._profile_for(identity)
+            if profile:
+                profile["nickname"] = nickname
+                profile["updatedAt"] = now
+                await self.store.put("user_profiles", profile)
+            else:
+                await self.store.insert(
+                    "user_profiles",
+                    {"_openid": identity, "nickname": nickname, "totalPoints": 0,
+                     "createdAt": now, "updatedAt": now},
+                )
+            await self._award_point(
+                identity, "profile:nickname", LEADERBOARD_POINTS["nickname"], "首次设置昵称"
+            )
+        return {"nickname": nickname}
+
+    async def leaderboard_track(self, payload, identity):
+        if payload.get("type") != "schedule:create":
+            return {"awarded": False, "message": "不支持的积分行为"}
+        schedule_id = str(payload.get("scheduleId") or "")
+        if not re.fullmatch(r"[a-zA-Z0-9-]{6,80}", schedule_id):
+            return {"awarded": False, "message": "日程标识无效"}
+        async with self._write_lock:
+            today = _day_start_ts(utcnow())
+            daily = sum(
+                1
+                for event in await self.store.docs("point_events")
+                if event.get("_openid") == identity
+                and event.get("reason") == "添加日程"
+                and _dt_key(event.get("createdAt")) >= today
+            )
+            if daily >= 3:
+                return {"awarded": False, "points": 0, "message": "今日添加日程积分已达上限"}
+            awarded = await self._award_point(
+                identity, f"schedule:{schedule_id}", LEADERBOARD_POINTS["schedule"], "添加日程"
+            )
+            return {"awarded": awarded, "points": LEADERBOARD_POINTS["schedule"] if awarded else 0}
+
+    # ── days（对齐 cloudfunctions/days 与小程序 utils/days.js 的字段）──
+
+    async def days_list(self, payload, identity):
+        items = [d for d in await self.store.docs("days") if d.get("_openid") == identity]
+        items.sort(key=lambda d: (d.get("date") or "", d.get("createdAt") or 0))
+        return {"list": [_shape_day(d) for d in items]}
+
+    async def days_save(self, payload, identity):
+        title = str(payload.get("title") or "").strip()[:40]
+        date = str(payload.get("date") or "").strip()
+        note = str(payload.get("note") or "").strip()[:120]
+        if not title:
+            _fail("请填写日程名称", "PARAM_INVALID")
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
+            _fail("日期格式不正确", "PARAM_INVALID")
+        try:
+            datetime.strptime(date, "%Y-%m-%d")
+        except ValueError as exc:
+            raise BalaError("日期不存在", "PARAM_INVALID") from exc
+        schedule_id = str(payload.get("id") or "").strip()[:80]
+        existing = None
+        if schedule_id:
+            existing = next(
+                (
+                    d
+                    for d in await self.store.docs("days")
+                    if d.get("_id") == schedule_id and d.get("_openid") == identity
+                ),
+                None,
+            )
+        created_at = (existing or {}).get("createdAt")
+        if not isinstance(created_at, (int, float)):
+            created_at = int(utcnow().timestamp() * 1000)
+        doc = {
+            "_id": schedule_id or uuid.uuid4().hex,
+            "_openid": identity,
+            "title": title,
+            "date": date,
+            "note": note,
+            "createdAt": created_at,
+            "updatedAt": iso(utcnow()),
+        }
+        await self.store.put("days", doc)
+        return {"schedule": _shape_day(doc)}
+
+    async def days_remove(self, payload, identity):
+        schedule_id = str(payload.get("id") or "")
+        if not schedule_id:
+            _fail("缺少日程 ID", "PARAM_MISSING")
+        existing = next(
+            (
+                d
+                for d in await self.store.docs("days")
+                if d.get("_id") == schedule_id and d.get("_openid") == identity
+            ),
+            None,
+        )
+        if existing:
+            await self.store.delete("days", schedule_id)
+        return {"removed": bool(existing)}
+
+    async def days_remote(self, payload, identity):
+        """远程下发：校历活动 + 可配置的倒计时（校车等）。当前不预置任何数据。"""
+        now_ts = utcnow().timestamp()
+        events = [
+            event
+            for event in await self.store.docs("events")
+            if not event.get("isDeleted")
+            and event.get("status") != "cancelled"
+            and (_dt_key(event.get("startAt")) or 0) >= now_ts
+        ]
+        events.sort(key=lambda event: _dt_key(event.get("startAt")))
+        countdowns = [
+            item for item in await self.store.docs("remote_countdowns")
+            if item.get("isActive", True)
+        ]
+
+        def weekdays_of(item):
+            raw = item.get("weekdays")
+            if isinstance(raw, list):
+                values = [int(v) for v in raw if isinstance(v, (int, float))]
+            elif isinstance(raw, str):
+                values = [int(v) for v in re.findall(r"\d", raw)]
+            else:
+                values = []
+            return [v for v in values if 0 <= v <= 6] or [1, 2, 3, 4, 5]
+
+        return {
+            "events": [
+                {
+                    "_id": event.get("_id"),
+                    "title": str(event.get("title") or "")[:40],
+                    "startAt": event.get("startAt"),
+                    "location": str(event.get("location") or "")[:60],
+                    "description": str(event.get("description") or "")[:120],
+                    "status": event.get("status") or "",
+                }
+                for event in events[:100]
+            ],
+            "countdowns": [
+                {
+                    "_id": item.get("_id"),
+                    "code": item.get("code") or "",
+                    "title": str(item.get("title") or "")[:40],
+                    "description": str(item.get("description") or "")[:120],
+                    "emoji": item.get("emoji") or "⏰",
+                    "badge": item.get("badge") or "倒计时",
+                    "targetAt": item.get("targetAt"),
+                    "dailyTime": item.get("dailyTime") or "",
+                    "weekdays": weekdays_of(item),
+                    "isActive": True,
+                }
+                for item in countdowns[:100]
+            ],
+        }
+
+
+def _week_bounds(value: Optional[datetime] = None):
+    """自然周（中国时区周一起算）的起止时间戳与 YYYY-MM-DD 周标识。"""
+    local = (value or utcnow()).astimezone(CHINA_TZ)
+    start = (local - timedelta(days=local.weekday())).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    return start.timestamp(), (start + timedelta(days=7)).timestamp(), start.strftime("%Y-%m-%d")
+
+
+def _day_start_ts(value: datetime) -> float:
+    local = value.astimezone(CHINA_TZ)
+    return local.replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+
+
+def _aggregate_scores(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    users: Dict[str, Dict[str, Any]] = {}
+    for record in records:
+        entry = users.setdefault(
+            record["_openid"], {"_openid": record["_openid"], "points": 0, "last": 0.0}
+        )
+        entry["points"] += record["points"]
+        entry["last"] = max(entry["last"], record["at"])
+    return sorted(users.values(), key=lambda u: (-u["points"], u["last"], u["_openid"]))
+
+
+def _avatar_for(openid: str) -> str:
+    digest = 0
+    for char in str(openid or ""):
+        digest = (digest * 31 + ord(char)) & 0xFFFFFFFF
+    return AVATARS[digest % len(AVATARS)]
+
+
+def _shape_day(doc: Dict[str, Any]) -> Dict[str, Any]:
+    return {
+        "id": doc.get("_id"),
+        "title": doc.get("title") or "",
+        "date": doc.get("date") or "",
+        "note": doc.get("note") or "",
+        "createdAt": doc.get("createdAt") or 0,
+    }
+
 
 # ── 视图裁剪（对齐云函数 slim*）──
 
@@ -1096,6 +1454,14 @@ _ACTIONS = {
     ("me", "markRead"): LocalRepository.me_mark_read,
     ("me", "messagePrefs"): LocalRepository.me_message_prefs,
     ("analytics", "track"): LocalRepository.analytics_track,
+    ("leaderboard", "weekly"): LocalRepository.leaderboard_weekly,
+    ("leaderboard", "my"): LocalRepository.leaderboard_my,
+    ("leaderboard", "setNickname"): LocalRepository.leaderboard_set_nickname,
+    ("leaderboard", "track"): LocalRepository.leaderboard_track,
+    ("days", "list"): LocalRepository.days_list,
+    ("days", "remote"): LocalRepository.days_remote,
+    ("days", "save"): LocalRepository.days_save,
+    ("days", "remove"): LocalRepository.days_remove,
 }
 
 

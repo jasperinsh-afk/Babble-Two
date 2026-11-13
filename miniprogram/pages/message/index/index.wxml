@@ -1,57 +1,43 @@
-<view class="page page--message">
-  <view class="message-summary">
-    <text class="message-summary__unread">{{unread ? unread + ' 条未读' : '全部已读'}}</text>
-    <text class="message-summary__count" wx:if="{{messages.length}}">已加载 {{messages.length}} 条</text>
+<view class="countdown-page">
+  <view class="countdown-header">
+    <view><view class="countdown-header__title">倒计时</view></view>
+    <view class="countdown-header__today">{{countdown.subtitle}}</view>
   </view>
 
-  <view class="message-list" wx:if="{{messages.length}}">
-    <view
-      wx:for="{{messages}}"
-      wx:key="_id"
-      class="message-item {{item.readAt ? '' : 'message-item--unread'}}"
-      bindtap="onMessageTap"
-      data-id="{{item._id}}"
-    >
-      <view class="message-item__head">
-        <text class="message-item__type">{{item.typeLabel}}</text>
-        <text class="message-item__time">{{item.timeText}}</text>
-      </view>
-      <view class="message-item__title">{{item.title}}</view>
-      <view class="message-item__content">{{item.content}}</view>
-      <view class="message-item__dot" wx:if="{{!item.readAt}}"></view>
+  <view class="school-countdown school-countdown--{{countdown.mode}}" bindtap="openFullscreen">
+    <view class="school-countdown__ring"></view>
+    <view class="school-countdown__heading"><text>{{countdown.title}}</text><text>{{countdown.subtitle}}</text></view>
+    <view class="school-countdown__time">
+      <block wx:for="{{countdown.units}}" wx:key="key">
+        <view wx:if="{{index > 0}}" class="school-countdown__colon">:</view>
+        <view class="school-countdown__unit"><text class="school-countdown__number">{{item.value}}</text><text class="school-countdown__label">{{item.label}}</text></view>
+      </block>
+    </view>
+    <view class="school-countdown__footer"><text>上学 08:05</text><view></view><text>放学 15:20 · 点开全屏 ›</text></view>
+  </view>
+
+  <view wx:if="{{nextSchedule}}" class="next-schedule" data-id="{{nextSchedule.id}}" data-source="{{nextSchedule.source}}" bindtap="goDetail">
+    <view class="next-schedule__eyebrow">下一个特别的日子</view>
+    <view class="next-schedule__title">{{nextSchedule.title}}</view>
+    <view class="next-schedule__date">{{nextSchedule.dateText}}</view>
+    <view class="next-schedule__count"><text>{{nextSchedule.dayCount}}</text><view>天后</view></view>
+    <view class="next-schedule__share">点击查看分享页 ›</view>
+  </view>
+
+  <view class="upcoming-heading"><text>未来日程</text><text>{{upcoming.length}} 项</text></view>
+  <view class="upcoming-list">
+    <view class="upcoming-item" wx:for="{{upcoming}}" wx:key="id" data-id="{{item.id}}" data-source="{{item.source}}" bindtap="goDetail">
+      <view class="upcoming-item__date"><text>{{item.dayCount}}</text><view>天</view></view>
+      <view class="upcoming-item__content"><view>{{item.title}}</view><text wx:if="{{item.badge}}" class="upcoming-item__badge">{{item.emoji}} {{item.badge}}</text><text>{{item.dateText}}</text></view>
+      <view class="upcoming-item__arrow">›</view>
     </view>
   </view>
 
-  <view class="message-loading" wx:elif="{{loading}}">
-    <view class="message-loading__bar"></view>
-    <view class="message-loading__bar"></view>
+  <view wx:if="{{empty}}" class="countdown-empty">
+    <view class="countdown-empty__icon">📅</view>
+    <view class="countdown-empty__title">还没有未来日程</view>
+    <view class="countdown-empty__text">点击添加日程</view>
+    <button bindtap="goCreate">去添加日程</button>
   </view>
-
-  <empty-view
-    wx:elif="{{loaded}}"
-    icon="✉️"
-    title="暂无消息"
-    subtitle="{{apiReady ? '暂时没有新消息' : '消息 API 接入后会展示真实消息'}}"
-  />
-
-  <view class="message-more" wx:if="{{hasMore && !loading}}" bindtap="loadMore">
-    <text class="message-more__text">加载更多</text>
-  </view>
-
-  <view class="section">
-    <section-header title="消息偏好" />
-    <view class="message-prefs">
-      <view class="message-pref" wx:for="{{prefItems}}" wx:key="key">
-        <text class="message-pref__label">{{item.label}}</text>
-        <switch
-          class="message-pref__switch"
-          checked="{{prefs && prefs[item.key]}}"
-          disabled="{{!prefs || savingPref === item.key}}"
-          color="#8B5CF6"
-          data-key="{{item.key}}"
-          bindchange="onPrefToggle"
-        />
-      </view>
-    </view>
-  </view>
+  <view class="countdown-bottom"></view>
 </view>

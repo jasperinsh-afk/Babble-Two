@@ -1,0 +1,10 @@
+{
+  "name": "days",
+  "version": "1.0.0",
+  "description": "叭啦日子：日程云端同步（小程序 / 网页端共用）",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

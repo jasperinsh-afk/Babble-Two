@@ -1,0 +1,33 @@
+<view class="day-create">
+  <view class="day-create__intro">
+    <view class="day-create__eyebrow">叭啦 · 日子</view>
+    <view class="day-create__title">添加日子</view>
+  </view>
+
+  <view class="day-create__fields">
+    <view class="day-field">
+      <view class="day-field__label">日程名称</view>
+      <input value="{{formTitle}}" maxlength="40" placeholder="例如：期末考试、一起旅行" bindinput="onTitleInput" bindconfirm="saveSchedule" />
+    </view>
+
+    <view class="day-field">
+      <view class="day-field__label">日期</view>
+      <picker mode="date" value="{{formDate}}" bindchange="onDateChange">
+        <view class="day-field__picker">{{formDate}}<text>选择日期 ›</text></view>
+      </picker>
+    </view>
+
+    <view class="day-field">
+      <view class="day-field__label">备注 <text>选填</text></view>
+      <textarea value="{{formNote}}" maxlength="120" auto-height placeholder="写下一句想记住的话" bindinput="onNoteInput"></textarea>
+      <view class="day-field__count">{{formNote.length}}/120</view>
+    </view>
+  </view>
+
+  <view wx:if="{{formError}}" class="day-create__error">{{formError}}</view>
+
+  <view class="day-create__footer">
+    <view class="day-create__submit" bindtap="saveSchedule">保存日子</view>
+    <view class="day-create__hint">也可以直接按输入法的「完成」保存</view>
+  </view>
+</view>

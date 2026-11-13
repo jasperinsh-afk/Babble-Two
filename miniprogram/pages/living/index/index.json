@@ -1,7 +1,9 @@
 {
   "usingComponents": {
-    "campus-living": "/components/campus-living/index"
+    "campus-living": "/components/campus-living/index",
+    "section-header": "/components/section-header/index"
   },
+  "navigationBarTitleText": "生活",
   "enablePullDownRefresh": true,
   "backgroundColor": "#FAF8FF"
 }

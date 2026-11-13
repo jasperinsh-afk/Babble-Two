@@ -1,8 +1,8 @@
 <view class="page page--calendar">
   <view class="calendar-header">
-    <view class="calendar-header__btn" bindtap="prevMonth">‹</view>
+    <view class="calendar-header__btn" bindtap="prevMonth">⬅️</view>
     <view class="calendar-header__title">{{year}} 年 {{month}} 月</view>
-    <view class="calendar-header__btn" bindtap="nextMonth">›</view>
+    <view class="calendar-header__btn" bindtap="nextMonth">➡️</view>
   </view>
 
   <view class="calendar-weekdays">

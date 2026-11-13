@@ -64,3 +64,43 @@ export function clearSession() {
     /* ignore */
   }
 }
+
+/** 网页端与小程序账号的绑定状态（openid 已由服务端脱敏） */
+export interface LinkState {
+  bound: boolean
+  openid: string
+  mode: 'cloud' | 'local'
+}
+
+/** 绑定接口走独立路由 /session/*，不是 /{fn}/{action} 通用转发，因此单独封装 */
+async function sessionRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const session = await ensureSession()
+  const resp = await fetch(`/api/v1/web${path}`, {
+    ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Bala-Identity': session.identity,
+      'X-Bala-Token': session.token,
+    },
+  })
+  const body = await resp.json()
+  if (!body || body.ok === false) {
+    throw new Error(body?.message || '请求失败，请稍后重试')
+  }
+  return body.data as T
+}
+
+export function fetchLinkStatus(): Promise<LinkState> {
+  return sessionRequest<LinkState>('/session/link')
+}
+
+export function bindAccount(code: string): Promise<{ bound: boolean; openid: string }> {
+  return sessionRequest('/session/bind', {
+    method: 'POST',
+    body: JSON.stringify({ code }),
+  })
+}
+
+export function unbindAccount(): Promise<{ bound: boolean }> {
+  return sessionRequest('/session/link', { method: 'DELETE' })
+}

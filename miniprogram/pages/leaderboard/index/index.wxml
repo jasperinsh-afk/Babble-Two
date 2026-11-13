@@ -1,0 +1,40 @@
+<view class="leaderboard-page">
+  <view class="leaderboard-header"><view><view class="leaderboard-header__title">本周达人榜</view></view><view class="leaderboard-header__week">{{weekKey}} 起</view></view>
+
+  <view class="my-score">
+    <view class="my-score__top"><view><view class="my-score__label">我的达人分</view><view class="my-score__nickname">{{my.nickname}}</view></view><button bindtap="openNickname">{{my.nicknameSet ? '修改昵称' : '设置昵称'}}</button></view>
+    <view class="my-score__numbers"><view><text>{{my.totalPoints}}</text><text class="small">累计积分</text></view><view><text>{{my.currentWeekPoints}}</text><text class="small">本周积分</text></view><view><text>{{my.rank || '—'}}</text><text class="small">本周排名</text></view></view>
+    <view wx:if="{{my.champions.length}}" class="my-score__medal"><text>🏅</text>已获得 {{my.champions.length}} 枚「星耀周冠军」勋章</view>
+  </view>
+
+  <view wx:if="{{list.length}}" class="weekly-champion">
+    <view class="weekly-champion__medal"><text>🏅</text><view></view></view>
+    <view class="weekly-champion__content"><view>本周领跑 · 星耀周冠军</view><text>{{list[0].nickname}}</text></view>
+    <view class="weekly-champion__points">{{list[0].points}} 分</view>
+  </view>
+
+  <view class="ranking-heading"><text>达人排名</text><text>每周一重新计分</text></view>
+  <view wx:if="{{loading && !list.length}}" class="ranking-state">正在加载榜单…</view>
+  <view wx:if="{{!loading && !list.length}}" class="ranking-state"><view class="ranking-state__icon">🏆</view><text>本周还没有积分记录</text><view>完成一次投票或添加日程，就能登上榜单</view></view>
+  <view class="ranking-list">
+    <view class="ranking-item {{item.rank === 1 ? 'is-first' : ''}} {{item.isMe ? 'is-me' : ''}}" wx:for="{{list}}" wx:key="key">
+      <view class="ranking-item__rank">{{item.rank}}</view>
+      <view class="ranking-item__avatar">{{item.avatar}}</view>
+      <view class="ranking-item__content"><view>{{item.nickname}}<text wx:if="{{item.isMe}}">我</text></view><text wx:if="{{item.medal}}" class="ranking-item__medal">🏅 星耀周冠军</text></view>
+      <view class="ranking-item__points"><text>{{item.points}}</text>分</view>
+    </view>
+  </view>
+
+  <view class="score-rules"><view class="score-rules__title">达人分规则</view><view wx:for="{{rules}}" wx:key="*this"><text></text>{{item}}</view><view class="score-rules__note">同分时按达到分数的先后排序；上周冠军将在新一周结算并永久保留勋章。</view></view>
+  <view class="leaderboard-bottom"></view>
+
+  <view wx:if="{{editing}}" class="nickname-mask" bindtap="closeNickname">
+    <view class="nickname-dialog" catchtap="noop">
+      <view class="nickname-dialog__title">设置我的昵称</view>
+      <view class="nickname-dialog__text">昵称将用于达人榜展示，无需授权头像或手机号</view>
+      <input value="{{nickname}}" maxlength="16" focus placeholder="输入 2–16 个字符" bindinput="onNicknameInput" bindconfirm="saveNickname" />
+      <view wx:if="{{error}}" class="nickname-dialog__error">{{error}}</view>
+      <view class="nickname-dialog__actions"><button bindtap="closeNickname">取消</button><button loading="{{saving}}" disabled="{{saving}}" bindtap="saveNickname">保存昵称</button></view>
+    </view>
+  </view>
+</view>

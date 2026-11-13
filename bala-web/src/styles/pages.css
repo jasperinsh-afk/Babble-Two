@@ -1739,3 +1739,82 @@
 .profile-meta__id {
   opacity: 0.75;
 }
+
+/* ── 账号互通：网页端 ↔ 小程序绑定卡片 ── */
+.link-card {
+  padding: 16px;
+}
+
+.link-card__desc {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-weak);
+}
+
+.link-card__row {
+  display: flex;
+  gap: 8px;
+}
+
+.link-card__input {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-m);
+  background: var(--bg-page);
+  color: var(--text-strong);
+  font-size: 16px;
+  letter-spacing: 2px;
+  box-sizing: border-box;
+}
+
+.link-card__input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.link-card__btn {
+  height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: var(--radius-m);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.link-card__btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.link-card__btn--primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.link-card__btn--ghost {
+  background: var(--bg-page);
+  color: var(--text-normal);
+}
+
+.link-card__status {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.link-card__status--on {
+  color: var(--success);
+}
+
+.link-card__hint {
+  margin: 10px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--warning);
+}

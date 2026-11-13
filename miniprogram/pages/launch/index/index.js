@@ -6,7 +6,9 @@
 
 const SPLASH_MS = 1800
 
-Page({
+const { withShare } = require('../../../utils/share')
+
+Page(withShare({
   data: {},
 
   onLoad() {
@@ -33,4 +35,4 @@ Page({
   onTap() {
     this.enter()
   },
-})
+}))

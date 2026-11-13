@@ -10,11 +10,6 @@
       bindtap="switchTab"
       data-idx="1"
     >失物招领</view>
-    <view
-      class="living-tabs__item {{currentTab === 2 ? 'living-tabs__item--active' : ''}}"
-      bindtap="switchTab"
-      data-idx="2"
-    >二手交换</view>
   </view>
 
   <view wx:if="{{currentTab === 0}}">
@@ -98,20 +93,4 @@
     </view>
   </view>
 
-  <view wx:if="{{currentTab === 2}}">
-    <view class="living-second">
-      <view class="living-second__item" wx:for="{{secondItems}}" wx:key="_id">
-        <view class="living-second__title">{{item.title}}</view>
-        <view class="living-second__price">{{priceText(item.price)}}</view>
-        <view class="living-second__desc" wx:if="{{item.description}}">{{item.description}}</view>
-        <view class="living-second__contact" wx:if="{{item.contact}}">联系：{{item.contact}}</view>
-      </view>
-      <empty-view
-        wx:if="{{!loading && !secondItems.length}}"
-        icon="🛍️"
-        title="暂无商品"
-        subtitle="暂时没有二手物品"
-      />
-    </view>
-  </view>
 </view>

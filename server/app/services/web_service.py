@@ -12,6 +12,7 @@ from typing import Any, Dict, Tuple
 from app.config import settings
 from app.repository import get_repository
 from app.repository.base import BalaError
+from app.services import identity_link
 
 ALLOWED_ACTIONS: Dict[str, frozenset] = {
     "identity": frozenset({"get"}),
@@ -23,6 +24,8 @@ ALLOWED_ACTIONS: Dict[str, frozenset] = {
     "scan": frozenset({"cardByCode", "checkin"}),
     "me": frozenset({"overview", "messages", "markRead", "messagePrefs"}),
     "analytics": frozenset({"track"}),
+    "leaderboard": frozenset({"weekly", "my", "setNickname", "track"}),
+    "days": frozenset({"list", "save", "remove", "remote"}),
 }
 
 # 只缓存与身份无关的读操作，云开发 HTTP API 有日配额，缓存可显著省调用
@@ -36,9 +39,13 @@ READ_TTL: Dict[Tuple[str, str], int] = {
     ("living", "channelPosts"): 60,
     ("living", "lostFound"): 60,
     ("living", "secondHand"): 60,
+    ("leaderboard", "weekly"): 15,
+    ("days", "remote"): 60,
 }
 
-WRITE_ACTIONS = frozenset(
+# 历史写闸门：这些旧云函数未部署 resolveOpenid 版本前会产生 _openid 为空的脏数据。
+# 新增的 leaderboard / days 云函数不存在该历史包袱，不纳入闸门。
+CLOUD_GATED_WRITES = frozenset(
     {
         ("vote", "cast"),
         ("vote", "joinChain"),
@@ -50,6 +57,15 @@ WRITE_ACTIONS = frozenset(
         ("me", "markRead"),
         ("me", "messagePrefs"),
         ("analytics", "track"),
+    }
+)
+
+WRITE_ACTIONS = CLOUD_GATED_WRITES | frozenset(
+    {
+        ("leaderboard", "setNickname"),
+        ("leaderboard", "track"),
+        ("days", "save"),
+        ("days", "remove"),
     }
 )
 
@@ -67,12 +83,12 @@ async def call(fn: str, action: str, payload: Dict[str, Any], identity: str) -> 
     repo = get_repository()
     if (
         repo.mode == "cloud"
-        and (fn, action) in WRITE_ACTIONS
+        and (fn, action) in CLOUD_GATED_WRITES
         and not settings.WEB_CLOUD_WRITE_ENABLED
     ):
         raise BalaError(
-            "网页写入暂未开启：请先在微信开发者工具部署更新后的 "
-            "vote/club/event/scan/me/analytics 云函数，再把 WEB_CLOUD_WRITE_ENABLED 设为 true",
+            "该写入暂未开启：请先部署更新后的 vote/club/event/scan/me/analytics "
+            "云函数，再把 WEB_CLOUD_WRITE_ENABLED 设为 true",
             "WRITE_DISABLED",
             409,
         )
@@ -88,7 +104,9 @@ async def call(fn: str, action: str, payload: Dict[str, Any], identity: str) -> 
         if hit and hit[0] > time.monotonic():
             return hit[1]
 
-    data = await repo.call(fn, action, payload, identity)
+    # 已绑定小程序账号的网页身份，注入 linked:<openid>，让云函数把数据写到同一微信账号
+    resolved_identity = await identity_link.resolve(identity)
+    data = await repo.call(fn, action, payload, resolved_identity)
 
     if ttl and key:
         _cache[key] = (time.monotonic() + ttl, data)

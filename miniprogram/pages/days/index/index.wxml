@@ -1,0 +1,68 @@
+<view class="days-page">
+  <view class="days-header">
+    <view class="days-header__copy"><view class="days-header__title">日子</view></view>
+    <view class="days-add" bindtap="openAdd"><text class="days-add__plus">➕</text>添加日程</view>
+  </view>
+
+  <view class="days-toolbar">
+    <view class="days-toolbar__copy">
+      <view class="days-toolbar__title">我的日程</view>
+      <view class="days-toolbar__count">{{schedules.length}} 个被记住的日子</view>
+    </view>
+    <view class="days-view-switch">
+      <view class="days-view-switch__item {{view === 'calendar' ? 'is-active' : ''}}" data-view="calendar" bindtap="switchView">日历</view>
+      <view class="days-view-switch__item {{view === 'list' ? 'is-active' : ''}}" data-view="list" bindtap="switchView">列表</view>
+    </view>
+  </view>
+
+  <view wx:if="{{view === 'calendar'}}" class="days-calendar">
+    <view class="days-calendar__header">
+      <view class="days-calendar__nav" aria-label="上一月" data-offset="-1" bindtap="shiftMonth">⬅️</view>
+      <view class="days-calendar__month">{{year}}年 {{month}}月</view>
+      <view class="days-calendar__nav" aria-label="下一月" data-offset="1" bindtap="shiftMonth">➡️</view>
+      <view class="days-calendar__today" bindtap="goToday">今天</view>
+    </view>
+    <view class="days-calendar__weekdays">
+      <view class="days-calendar__weekday" wx:for="{{weekdays}}" wx:key="*this">{{item}}</view>
+    </view>
+    <view class="days-calendar__grid">
+      <view
+        wx:for="{{calendarDays}}"
+        wx:key="date"
+        class="calendar-day {{item.outside ? 'is-outside' : ''}} {{item.isToday ? 'is-today' : ''}} {{item.isSelected ? 'is-selected' : ''}}"
+        data-date="{{item.date}}"
+        bindtap="selectDate"
+      >
+        <text>{{item.day}}</text>
+        <view wx:if="{{item.hasEvent}}" class="calendar-day__dot"></view>
+      </view>
+    </view>
+  </view>
+
+  <view class="days-schedules">
+    <view class="days-schedules__heading">
+      <view class="days-schedules__title">{{view === 'list' ? '全部日程' : selectedDate === today ? '今天的日子' : '这一天'}}</view>
+      <view class="days-schedules__count">{{visibleSchedules.length}} 项</view>
+    </view>
+    <view class="day-schedule" wx:for="{{visibleSchedules}}" wx:key="id" data-id="{{item.id}}" data-source="{{item.source}}" bindtap="goDetail">
+      <view class="day-schedule__marker"></view>
+      <view class="day-schedule__content">
+        <view class="day-schedule__title">{{item.title}}</view>
+        <text wx:if="{{item.badge}}" class="day-schedule__badge">{{item.emoji}} {{item.badge}}</text>
+        <view class="day-schedule__date">{{item.shortDate}}</view>
+        <view wx:if="{{item.note}}" class="day-schedule__note">{{item.note}}</view>
+      </view>
+      <view class="day-schedule__relative">{{item.relativeText}}</view>
+      <view class="day-schedule__chevron">›</view>
+    </view>
+    <view wx:if="{{visibleEmpty}}" class="days-empty">
+      <view class="days-empty__calendar"><text>📅</text></view>
+      <view class="days-empty__title">{{view === 'list' ? '还没有日程' : '这一天还没有安排'}}</view>
+      <view class="days-empty__text">点击添加日程</view>
+      <button bindtap="openAdd">➕ 添加日程</button>
+    </view>
+  </view>
+
+  <view class="days-bottom-space"></view>
+
+</view>

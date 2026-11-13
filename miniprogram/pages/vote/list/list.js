@@ -1,7 +1,9 @@
-Page({
+const { withShare } = require('../../../utils/share')
+
+Page(withShare({
   onShow() {
     const tabBar = this.getTabBar?.()
-    if (tabBar) tabBar.setData({ selected: -1 })
+    if (tabBar) tabBar.setData({ selected: 3 })
   },
 
   onPullDownRefresh() {
@@ -15,9 +17,9 @@ Page({
 
   onShareAppMessage() {
     return {
-      title: '来投票，用选择表达态度',
+      title: '叭啦·投票',
       path: '/pages/vote/list/list',
       imageUrl: '/assets/brand/share-card.png',
     }
   },
-})
+}))

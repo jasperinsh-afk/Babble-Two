@@ -10,6 +10,8 @@ const db = cloud.database()
 function resolveOpenid(payload) {
   const injected = payload && payload.__openid
   if (typeof injected === 'string' && injected.indexOf('web:') === 0) return injected
+  // 网页端绑定小程序账号后，服务端注入 linked:<openid>，数据归属同一微信账号
+  if (typeof injected === 'string' && injected.indexOf('linked:') === 0) return injected.slice(7)
   return cloud.getWXContext().OPENID
 }
 const _ = db.command
@@ -289,6 +291,7 @@ async function cast(payload = {}) {
     fail(`最多可选 ${poll.maxChoices} 项`)
   }
 
+  if (new Set(optionIds).size !== optionIds.length) fail('选项不能重复', 'PARAM_INVALID')
   const validIds = new Set((poll.options || []).map((o) => o.optionId))
   if (optionIds.some((id) => !validIds.has(id))) fail('选项不合法')
 

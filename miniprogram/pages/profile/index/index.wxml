@@ -1,7 +1,6 @@
 <view class="page page--profile">
   <view class="profile-header">
     <view class="profile-header__title">本地足迹</view>
-    <view class="profile-header__subtitle">你的兴趣数字足迹</view>
   </view>
 
   <view class="profile-stats card section">
@@ -21,6 +20,15 @@
     </view>
   </view>
 
+  <view wx:if="{{talent}}" class="talent-card section" bindtap="goLeaderboard">
+    <view class="talent-card__header"><view><text>我的达人分</text><text class="small">{{talent.nickname}}</text></view><view>查看达人榜 ›</view></view>
+    <view class="talent-card__numbers"><view><text>{{talent.totalPoints}}</text><text class="small">累计积分</text></view><view><text>{{talent.currentWeekPoints}}</text><text class="small">本周积分</text></view><view><text>{{talent.champions.length}}</text><text class="small">周冠军勋章</text></view></view>
+  </view>
+
+  <view class="profile-menu section" bindtap="goNotifications"><view><text>消息通知</text><text class="small">投票、扫码和互动回执</text></view><view>›</view></view>
+
+  <view class="profile-menu section" bindtap="goBind"><view><text>绑定网页端</text><text class="small">让网页端与小程序共用同一份账号数据</text></view><view>›</view></view>
+
   <view class="section">
     <section-header title="勋章墙" />
     <view class="profile-badges">
@@ -30,7 +38,7 @@
         wx:key="code"
       >
         <view class="profile-badge__icon">
-          <text wx:if="{{item.unlocked}}">{{item.code === 'scan_explorer' ? '◎' : item.code === 'club_pioneer' ? '⌂' : '★'}}</text>
+          <text wx:if="{{item.unlocked}}">{{item.code === 'scan_explorer' ? '🔍' : item.code === 'club_pioneer' ? '🏠' : '⭐'}}</text>
           <text wx:else>🔒</text>
         </view>
         <view class="profile-badge__name">{{item.name}}</view>

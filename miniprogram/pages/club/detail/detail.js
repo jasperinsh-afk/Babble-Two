@@ -1,7 +1,9 @@
 const { call } = require('../../../utils/api')
 const { clubCategoryLabel } = require('../../../utils/config')
 
-Page({
+const { withShare } = require('../../../utils/share')
+
+Page(withShare({
   data: {
     clubId: '',
     club: null,
@@ -65,4 +67,4 @@ Page({
       imageUrl: '/assets/brand/share-card.png',
     }
   },
-})
+}))

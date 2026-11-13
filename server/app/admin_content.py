@@ -19,8 +19,23 @@ templates = Jinja2Templates(directory=str(SERVER_ROOT / "admin-web" / "templates
 
 
 def same_origin(request: Request) -> None:
+    """写操作同源校验：Vite 代理会改写 Host 却保留浏览器 Origin，需一并放行已登记的前端来源。"""
     origin = request.headers.get("origin")
-    if origin and urlparse(origin).netloc != request.url.netloc:
+    if not origin:
+        return
+    parsed = urlparse(origin)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        raise HTTPException(status_code=403, detail="仅允许同源后台操作")
+    allowed = {request.url.netloc.lower()}
+    host = request.headers.get("host")
+    if host:
+        allowed.add(host.lower())
+    forwarded = request.headers.get("x-forwarded-host")
+    if forwarded:
+        allowed.add(forwarded.split(",")[0].strip().lower())
+    for item in settings.cors_origin_list:
+        allowed.add((urlparse(item).netloc or item).lower())
+    if parsed.netloc.lower() not in allowed:
         raise HTTPException(status_code=403, detail="仅允许同源后台操作")
 
 
@@ -45,11 +60,11 @@ async def content_page(request: Request, principal: AdminPrincipal = Depends(cur
             "schemas": schemas,
             "section_types": content_service.SECTION_TYPES,
             "can_create": principal.role != "reviewer",
-            # 版主默认进入「我的社团」，避免落在暂无归属数据的活动列表
+            # 社团入口已下线；版主默认管理自己社团主办的活动
             "initial_view": (
                 "layout"
                 if principal.is_admin
-                else ("clubs" if principal.role == "club_moderator" else next(iter(schemas)))
+                else ("events" if principal.role == "club_moderator" else next(iter(schemas)))
             ),
         },
     )

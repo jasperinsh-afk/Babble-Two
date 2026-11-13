@@ -88,6 +88,19 @@ async def test_vote_rejects_bad_option_count(repo):
         await repo.call("vote", "cast", {"pollId": "p004", "optionIds": ["nope"]}, IDENTITY)
 
 
+async def test_vote_rejects_duplicate_options_without_changing_counts(repo):
+    before = await repo.call("vote", "results", {"pollId": "p004"}, IDENTITY)
+    with pytest.raises(BalaError, match="选项不能重复"):
+        await repo.call(
+            "vote", "cast", {"pollId": "p004", "optionIds": ["p004o1", "p004o1"]}, IDENTITY
+        )
+    after = await repo.call("vote", "results", {"pollId": "p004"}, IDENTITY)
+    assert after["total"] == before["total"]
+    assert [option["count"] for option in after["options"]] == [
+        option["count"] for option in before["options"]
+    ]
+
+
 async def test_groupbuy_join_and_leave(repo):
     joined = await repo.call(
         "vote", "joinChain", {"pollId": "p005", "optionId": "p005o1"}, IDENTITY

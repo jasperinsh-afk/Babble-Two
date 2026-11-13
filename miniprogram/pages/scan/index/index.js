@@ -1,5 +1,6 @@
 const { call } = require('../../../utils/api')
 const { rarityLabel } = require('../../../utils/config')
+const { serviceOpened } = require('../../../utils/services')
 
 // 与 badges 集合中 scan_explorer 的 rule.count 保持一致
 const BADGE_SCAN_THRESHOLD = 3
@@ -15,7 +16,9 @@ const LOCATION_RULES = [
   { type: 'gateway', name: '校门', desc: '校门口迎新海报，扫码领取新手勋章' },
 ]
 
-Page({
+const { withShare } = require('../../../utils/share')
+
+Page(withShare({
   data: {
     key: '',
     card: null,
@@ -23,6 +26,8 @@ Page({
     rules: LOCATION_RULES,
     nextBadgeNeed: BADGE_SCAN_THRESHOLD,
     newBadges: [],
+    // 未在本校区开通时展示「校区尚未开通该服务」占位
+    serviceOpened,
   },
 
   onLoad(options) {
@@ -111,6 +116,18 @@ Page({
     return rarityLabel[r] || r
   },
 
+  goVoteList() {
+    wx.switchTab({ url: '/pages/vote/list/list' })
+  },
+
+  goBack() {
+    if (getCurrentPages().length > 1) {
+      wx.navigateBack()
+    } else {
+      wx.switchTab({ url: '/pages/index/index' })
+    }
+  },
+
   onShareAppMessage() {
     return {
       title: '扫码打卡，解锁勋章',
@@ -118,4 +135,4 @@ Page({
       imageUrl: '/assets/brand/share-card.png',
     }
   },
-})
+}))
