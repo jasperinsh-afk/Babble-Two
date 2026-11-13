@@ -11,6 +11,8 @@ const {
   readSchedules,
   writeSchedules,
   getSchoolCountdown,
+  readSchoolMode,
+  writeSchoolMode,
 } = require(path.join(root, 'utils/days'))
 const {
   buildShareQuery,
@@ -81,8 +83,8 @@ function at(value) {
   return new Date(value)
 }
 
-function checkCountdown(value, title, units) {
-  const countdown = getSchoolCountdown(at(value))
+function checkCountdown(value, title, units, mode = 'normal') {
+  const countdown = getSchoolCountdown(at(value), mode)
   assert.equal(countdown.title, title)
   assert.deepEqual(countdown.units.map(unit => unit.value), units)
 }
@@ -116,13 +118,32 @@ async function main() {
   assert.equal(isDateKey('2028-02-29'), true)
   assert.equal(dayDifference('2026-12-01', at('2026-11-06T10:00:00+08:00')), 25)
 
-  checkCountdown('2026-11-06T07:00:00+08:00', '距离上学', ['01', '05', '00'])
-  checkCountdown('2026-11-06T08:05:00+08:00', '距离放学', ['07', '15', '00'])
-  checkCountdown('2026-11-06T15:19:59+08:00', '距离放学', ['00', '00', '01'])
+  // 周四：正常放学 15:20，覆盖上学前 / 上课中 / 放学边界
+  checkCountdown('2026-11-05T07:00:00+08:00', '距离上学', ['01', '05', '00'])
+  checkCountdown('2026-11-05T08:05:00+08:00', '距离放学', ['07', '15', '00'])
+  checkCountdown('2026-11-05T15:19:59+08:00', '距离放学', ['00', '00', '01'])
   checkCountdown('2026-11-06T15:20:00+08:00', '距离周一上学', ['2', '16', '45', '00'])
   checkCountdown('2026-11-07T12:00:00+08:00', '距离周一上学', ['1', '20', '05', '00'])
   checkCountdown('2026-11-08T12:00:00+08:00', '距离周一上学', ['20', '05', '00'])
-  console.log('上下学、放学边界与周末倒计时：通过')
+  // 延时校车 18:10 / 晚自习 18:15：放学后仍在上学时段的倒计时
+  checkCountdown('2026-11-05T16:00:00+08:00', '距离放学', ['02', '10', '00'], 'bus')
+  checkCountdown('2026-11-05T16:00:00+08:00', '距离放学', ['02', '15', '00'], 'study')
+  checkCountdown('2026-11-05T19:00:00+08:00', '距离上学', ['13', '05', '00'], 'bus')
+  // 周五强制单一模式：14:40 放学，过点后直接倒计时到周一上学
+  checkCountdown('2026-11-13T10:00:00+08:00', '距离放学', ['04', '40', '00'], 'study')
+  checkCountdown('2026-11-13T15:00:00+08:00', '距离周一上学', ['2', '17', '05', '00'], 'bus')
+  const friday = getSchoolCountdown(at('2026-11-13T10:00:00+08:00'), 'study')
+  assert.equal(friday.variant, 'friday')
+  assert.equal(friday.selectable, false)
+  assert.equal(friday.endText, '14:40')
+  assert.equal(getSchoolCountdown(at('2026-11-05T16:00:00+08:00'), 'study').endText, '18:15')
+  writeSchoolMode('study')
+  assert.equal(readSchoolMode(), 'study')
+  writeSchoolMode('unknown')
+  assert.equal(readSchoolMode(), 'study')
+  writeSchoolMode('normal')
+  assert.equal(readSchoolMode(), 'normal')
+  console.log('上下学、三种放学模式、周五单一模式与周末倒计时：通过')
 
   assert.equal(POINTS.vote, 10)
   assert.equal(POINTS.schedule, 5)
@@ -495,6 +516,45 @@ async function main() {
   bindDefinition.clearTimer.call(bindPage)
   cloudResponses = {}
   console.log('网页端 ↔ 小程序绑定码互通：签发、校验、身份注入与两端入口：通过')
+
+  // 校历日程并入首页日程 banner，且与个人日程按时间共用一条日程流
+  const homeDefinition = capturePage(path.join(root, 'pages/index/index.js'))
+  const homePage = createPageInstance(homeDefinition)
+  homePage.setData({
+    localUpcoming: [{ id: 's1', title: '期末考试', difference: 20, timestamp: 20, createdAt: 1, kind: 'local', eyebrow: '下一个特别的日子' }],
+    calendarEvents: [{ id: 'e1', title: '校园运动会', difference: 0, timestamp: 1, createdAt: 0, kind: 'calendar', badge: '校历', eyebrow: '今日校历' }],
+  })
+  homeDefinition.mergeSchedules.call(homePage)
+  assert.equal(homePage.data.nextSchedule.kind, 'calendar')
+  assert.equal(homePage.data.nextSchedule.eyebrow, '今日校历')
+  assert.equal(homePage.data.upcoming.length, 2)
+  assert.match(read('pages/index/index.wxml'), /bindtap="goSchedule"/)
+  assert.ok(read('pages/index/index.wxml').includes('{{nextSchedule.eyebrow}}'))
+  let scheduleUrl = ''
+  global.wx.navigateTo = options => { scheduleUrl = options.url }
+  homeDefinition.goSchedule.call(homePage, { currentTarget: { dataset: { id: 'e1', kind: 'calendar' } } })
+  assert.match(scheduleUrl, /pages\/calendar\/index\/index\?eventId=e1/)
+  console.log('校历日程并入首页日程 banner：通过')
+
+  // 倒计时下拉选择会持久化，周五不可选
+  const messageDefinition = capturePage(path.join(root, 'pages/message/index/index.js'))
+  const messagePage = createPageInstance(messageDefinition)
+  messageDefinition.syncMode.call(messagePage)
+  assert.deepEqual(messagePage.data.modeOptions.map(item => item.mode), ['normal', 'bus', 'study'])
+  messageDefinition.chooseMode.call(messagePage, { currentTarget: { dataset: { mode: 'bus' } } })
+  assert.equal(readSchoolMode(), 'bus')
+  assert.equal(messagePage.data.schoolMode, 'bus')
+  assert.equal(messagePage.data.showModePicker, false)
+  assert.ok(messagePage.data.countdown.units.length >= 3)
+  // 不依赖运行当天是否周五：显式置为可选再验证弹窗开关
+  messagePage.setData({ countdown: { ...messagePage.data.countdown, selectable: true } })
+  messageDefinition.openModePicker.call(messagePage)
+  assert.equal(messagePage.data.showModePicker, true)
+  messageDefinition.closeModePicker.call(messagePage)
+  assert.equal(messagePage.data.showModePicker, false)
+  assert.ok(read('pages/message/index/index.wxml').includes('bindtap="chooseMode"'))
+  writeSchoolMode('normal')
+  console.log('倒计时放学模式下拉、持久化与弹窗开关：通过')
 
   console.log('全部需求相关自动检查通过')
 }

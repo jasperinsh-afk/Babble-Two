@@ -1,5 +1,5 @@
 const { withShare } = require('../../../utils/share')
-const { getSchoolCountdown, toDateKey, formatDayDate } = require('../../../utils/days')
+const { getSchoolCountdown, toDateKey, formatDayDate, readSchoolMode } = require('../../../utils/days')
 const {
   buildCountdownQuery,
   createCountdownImage,
@@ -19,7 +19,7 @@ function safeText(value, max) {
 }
 
 function schoolItem(now) {
-  const countdown = getSchoolCountdown(now)
+  const countdown = getSchoolCountdown(now, readSchoolMode())
   return {
     title: countdown.title,
     date: toDateKey(now),

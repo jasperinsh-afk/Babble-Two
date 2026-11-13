@@ -6,14 +6,19 @@
 
   <view class="school-countdown school-countdown--{{countdown.mode}}" bindtap="openFullscreen">
     <view class="school-countdown__ring"></view>
-    <view class="school-countdown__heading"><text>{{countdown.title}}</text><text>{{countdown.subtitle}}</text></view>
+    <view class="school-countdown__heading">
+      <text>{{countdown.title}}</text>
+      <view class="school-countdown__mode" catchtap="openModePicker">{{countdown.label}}<text wx:if="{{countdown.selectable}}" class="school-countdown__caret">⌄</text></view>
+    </view>
+    <view class="school-countdown__subtitle">{{countdown.subtitle}}</view>
     <view class="school-countdown__time">
       <block wx:for="{{countdown.units}}" wx:key="key">
         <view wx:if="{{index > 0}}" class="school-countdown__colon">:</view>
         <view class="school-countdown__unit"><text class="school-countdown__number">{{item.value}}</text><text class="school-countdown__label">{{item.label}}</text></view>
       </block>
     </view>
-    <view class="school-countdown__footer"><text>上学 08:05</text><view></view><text>放学 15:20 · 点开全屏 ›</text></view>
+    <view class="school-countdown__footer"><text>上学 08:05</text><view></view><text>放学 {{countdown.endText}} · 点开全屏 ›</text></view>
+    <view wx:if="{{!countdown.selectable}}" class="school-countdown__notice">周五自动切换单一模式：14:40 放学，过点后倒计时到周一上学</view>
   </view>
 
   <view wx:if="{{nextSchedule}}" class="next-schedule" data-id="{{nextSchedule.id}}" data-source="{{nextSchedule.source}}" bindtap="goDetail">
@@ -40,4 +45,17 @@
     <button bindtap="goCreate">去添加日程</button>
   </view>
   <view class="countdown-bottom"></view>
+
+  <view wx:if="{{showModePicker}}" class="mode-mask" bindtap="closeModePicker"></view>
+  <view wx:if="{{showModePicker}}" class="mode-sheet" catchtap="noop">
+    <view class="mode-sheet__handle"></view>
+    <view class="mode-sheet__title">选择放学模式</view>
+    <view class="mode-sheet__hint">切换后倒计时立即按对应时间计算</view>
+    <view class="mode-option {{item.selected ? 'mode-option--active' : ''}}" wx:for="{{modeOptions}}" wx:key="mode" data-mode="{{item.mode}}" bindtap="chooseMode">
+      <view class="mode-option__body"><view class="mode-option__label">{{item.label}}</view><text class="mode-option__desc">{{item.desc}}</text></view>
+      <view class="mode-option__time">{{item.time}}</view>
+      <view wx:if="{{item.selected}}" class="mode-option__check">✓</view>
+    </view>
+    <view class="mode-sheet__cancel" bindtap="closeModePicker">取消</view>
+  </view>
 </view>

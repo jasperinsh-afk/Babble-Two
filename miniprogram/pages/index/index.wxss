@@ -27,3 +27,5 @@ button{margin:0;padding:0;border:0;background:none;min-width:0;line-height:1.4}b
 .home-poll__body>view{overflow:hidden;font-size:26rpx;font-weight:600;text-overflow:ellipsis;white-space:nowrap}
 .home-poll__body>text{display:block;margin-top:5rpx;color:var(--text-weak);font-size:20rpx}
 .home-poll__go{flex-shrink:0;color:var(--primary-violet);font-size:21rpx;font-weight:600}
+.home-schedule__badge{display:inline-block;margin-left:10rpx;padding:2rpx 12rpx;border-radius:100rpx;background:var(--bg-tint);color:var(--primary);font-size:18rpx}
+.home-focus__count .home-focus__countword{font-size:38rpx;letter-spacing:0}

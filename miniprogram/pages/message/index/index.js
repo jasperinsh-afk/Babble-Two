@@ -4,24 +4,36 @@ const {
   shortDayDate,
   readSchedules,
   getSchoolCountdown,
+  readSchoolMode,
+  writeSchoolMode,
 } = require('../../../utils/days')
 const { readCachedRemoteDays, loadRemoteDays } = require('../../../utils/remoteDays')
 const { buildCountdownQuery } = require('../../../utils/dayShare')
+
+const MODE_OPTIONS = [
+  { mode: 'normal', label: '正常放学', time: '15:20', desc: '按常规作息放学' },
+  { mode: 'bus', label: '延时校车', time: '18:10', desc: '等延时校车时使用' },
+  { mode: 'study', label: '晚自习', time: '18:15', desc: '上晚自习时使用' },
+]
 
 Page(withShare({
   _timer: null,
 
   data: {
-    countdown: { title: '', subtitle: '', mode: 'school', units: [] },
+    countdown: { title: '', subtitle: '', mode: 'school', units: [], label: '正常放学', endText: '15:20', selectable: true },
     upcoming: [],
     nextSchedule: null,
     empty: true,
     remoteItems: [],
+    showModePicker: false,
+    schoolMode: 'normal',
+    modeOptions: [],
   },
 
   onShow() {
     const tabBar = this.getTabBar?.()
     if (tabBar) tabBar.setData({ selected: 2 })
+    this.syncMode()
     this.syncRemote()
     this.refresh()
     this.startTimer()
@@ -76,12 +88,43 @@ Page(withShare({
         dayCount: item.difference,
       }))
     this.setData({
-      countdown: getSchoolCountdown(now),
+      countdown: getSchoolCountdown(now, readSchoolMode()),
       upcoming,
       nextSchedule: upcoming[0] || null,
       empty: upcoming.length === 0,
     })
   },
+
+  syncMode() {
+    const schoolMode = readSchoolMode()
+    this.setData({
+      schoolMode,
+      modeOptions: MODE_OPTIONS.map(item => ({ ...item, selected: item.mode === schoolMode })),
+    })
+  },
+
+  openModePicker() {
+    if (!this.data.countdown.selectable) {
+      wx.showToast({ title: '周五固定 14:40 放学', icon: 'none' })
+      return
+    }
+    this.setData({ showModePicker: true })
+  },
+
+  closeModePicker() {
+    this.setData({ showModePicker: false })
+  },
+
+  chooseMode(event) {
+    const mode = event.currentTarget.dataset.mode
+    if (!MODE_OPTIONS.some(item => item.mode === mode)) return
+    writeSchoolMode(mode)
+    this.syncMode()
+    this.setData({ showModePicker: false })
+    this.refresh()
+  },
+
+  noop() {},
 
   goDetail(event) {
     const { id, source } = event.currentTarget.dataset

@@ -15,12 +15,12 @@
     </view>
   </view>
 
-  <view wx:if="{{nextSchedule}}" class="home-focus" data-id="{{nextSchedule.id}}" bindtap="goDetail">
-    <view class="home-focus__eyebrow">下一个特别的日子</view>
+  <view wx:if="{{nextSchedule}}" class="home-focus" data-id="{{nextSchedule.id}}" data-kind="{{nextSchedule.kind}}" bindtap="goSchedule">
+    <view class="home-focus__eyebrow">{{nextSchedule.eyebrow}}</view>
     <view class="home-focus__title">{{nextSchedule.title}}</view>
     <view class="home-focus__date">{{nextSchedule.dateText}}</view>
-    <view class="home-focus__count"><text>{{nextSchedule.difference}}</text><view>天后</view></view>
-    <view class="home-focus__link">点击查看分享页 ›</view>
+    <view class="home-focus__count"><text wx:if="{{nextSchedule.difference > 0}}">{{nextSchedule.countText}}</text><text wx:else class="home-focus__countword">{{nextSchedule.countText}}</text><view wx:if="{{nextSchedule.difference > 0}}">天后</view></view>
+    <view class="home-focus__link">{{nextSchedule.link}}</view>
   </view>
   <view wx:else class="home-focus home-focus--empty" bindtap="goCreate">
     <view class="home-focus__title">还没有日程</view>
@@ -33,37 +33,12 @@
   </view>
 
   <view wx:if="{{upcoming.length}}" class="home-section">
-    <view class="home-section__heading"><text>近期日程</text><button bindtap="goDays">全部日程 ›</button></view>
-    <view class="home-schedule" wx:for="{{upcoming}}" wx:key="id" data-id="{{item.id}}" bindtap="goDetail">
-      <view class="home-schedule__days"><text>{{item.difference}}</text><text class="small">天</text></view>
-      <view class="home-schedule__content"><view>{{item.title}}</view><text>{{item.dateText}}</text></view>      <view class="home-schedule__arrow">›</view>
+    <view class="home-section__heading"><text>近期日程</text><button bindtap="goCalendar">活动日历 ›</button></view>
+    <view class="home-schedule" wx:for="{{upcoming}}" wx:key="id" data-id="{{item.id}}" data-kind="{{item.kind}}" bindtap="goSchedule">
+      <view class="home-schedule__days"><text>{{item.countText}}</text><text class="small">{{item.countUnit}}</text></view>
+      <view class="home-schedule__content"><view>{{item.title}}</view><text>{{item.dateText}}<text wx:if="{{item.badge}}" class="home-schedule__badge">{{item.badge}}</text></text></view>
+      <view class="home-schedule__arrow">›</view>
     </view>
-  </view>
-
-  <view wx:if="{{calendarToday.length || calendarUpcoming.length}}" class="home-section">
-    <view class="home-section__heading"><text>校历日程</text><button bindtap="goCalendar">活动日历 ›</button></view>
-    <block wx:if="{{calendarToday.length}}">
-      <view class="home-subhead">今日安排</view>
-      <view class="home-calendar" wx:for="{{calendarToday}}" wx:key="_id" data-id="{{item._id}}" bindtap="goEvent">
-        <view class="home-calendar__dot"></view>
-        <view class="home-calendar__content">
-          <view>{{item.title}}</view>
-          <text>{{item.dateText}}<text wx:if="{{item.location}}"> · {{item.location}}</text></text>
-        </view>
-        <text class="home-calendar__arrow">›</text>
-      </view>
-    </block>
-    <block wx:if="{{calendarUpcoming.length}}">
-      <view class="home-subhead">近期校历</view>
-      <view class="home-calendar" wx:for="{{calendarUpcoming}}" wx:key="_id" data-id="{{item._id}}" bindtap="goEvent">
-        <view class="home-calendar__dot home-calendar__dot--upcoming"></view>
-        <view class="home-calendar__content">
-          <view>{{item.title}}</view>
-          <text>{{item.dateText}}<text wx:if="{{item.location}}"> · {{item.location}}</text></text>
-        </view>
-        <text class="home-calendar__arrow">›</text>
-      </view>
-    </block>
   </view>
 
   <view wx:if="{{recentPolls.length}}" class="home-section">

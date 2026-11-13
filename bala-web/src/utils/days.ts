@@ -6,8 +6,14 @@ export interface DaySchedule {
   createdAt: number
 }
 
+export type SchoolMode = 'normal' | 'bus' | 'study'
+
 export interface SchoolCountdown {
   mode: 'dismissal' | 'school'
+  variant: SchoolMode | 'friday'
+  label: string
+  endText: string
+  selectable: boolean
   target: Date
   title: string
   subtitle: string
@@ -19,8 +25,35 @@ export interface SchoolCountdown {
 }
 
 const STORAGE_KEY = 'bala.days.schedules.v1'
+const SCHOOL_MODE_KEY = 'bala.days.schoolMode.v1'
 const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六']
 const DAY_MS = 86_400_000
+
+export const SCHOOL_MODES: Record<SchoolMode, { label: string; time: string; hour: number; minute: number }> = {
+  normal: { label: '正常放学', time: '15:20', hour: 15, minute: 20 },
+  bus: { label: '延时校车', time: '18:10', hour: 18, minute: 10 },
+  study: { label: '晚自习', time: '18:15', hour: 18, minute: 15 },
+}
+const FRIDAY_MODE = { label: '周五放学', time: '14:40', hour: 14, minute: 40 }
+
+export function readSchoolMode(): SchoolMode {
+  if (typeof window === 'undefined') return 'normal'
+  try {
+    const value = window.localStorage.getItem(SCHOOL_MODE_KEY)
+    return value && Object.prototype.hasOwnProperty.call(SCHOOL_MODES, value) ? (value as SchoolMode) : 'normal'
+  } catch {
+    return 'normal'
+  }
+}
+
+export function writeSchoolMode(mode: SchoolMode): void {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.setItem(SCHOOL_MODE_KEY, mode)
+  } catch {
+    // 隐私模式下存储不可用时保持当前选择即可
+  }
+}
 
 export function toDateKey(date: Date): string {
   const year = date.getFullYear()
@@ -137,10 +170,14 @@ export function nextSchoolStart(now: Date): Date {
   return atTime(now, 8, 5)
 }
 
-export function getSchoolCountdown(now = new Date()): SchoolCountdown {
+export function getSchoolCountdown(now = new Date(), requestedMode: SchoolMode = 'normal'): SchoolCountdown {
+  const friday = now.getDay() === 5
+  const variant: SchoolMode | 'friday' = friday ? 'friday' : (SCHOOL_MODES[requestedMode] ? requestedMode : 'normal')
+  const config = friday ? FRIDAY_MODE : SCHOOL_MODES[variant === 'friday' ? 'normal' : variant]
   const schoolStart = atTime(now, 8, 5)
-  const schoolEnd = atTime(now, 15, 20)
-  const duringSchool = isWeekday(now) && now >= schoolStart && now < schoolEnd
+  const schoolEnd = atTime(now, config.hour, config.minute)
+  // 周五不区分模式：14:40 前统一倒计时到放学，过点后由 nextSchoolStart 顺延到周一 08:05
+  const duringSchool = isWeekday(now) && (friday || now >= schoolStart) && now < schoolEnd
   const target = duringSchool ? schoolEnd : nextSchoolStart(now)
   const totalSeconds = Math.max(0, Math.ceil((target.getTime() - now.getTime()) / 1000))
   const days = Math.floor(totalSeconds / 86_400)
@@ -148,13 +185,18 @@ export function getSchoolCountdown(now = new Date()): SchoolCountdown {
   const minutes = Math.floor((totalSeconds % 3_600) / 60)
   const seconds = totalSeconds % 60
   const isMonday = target.getDay() === 1 && toDateKey(target) !== toDateKey(now)
+  const endText = `${String(config.hour).padStart(2, '0')}:${String(config.minute).padStart(2, '0')}`
 
   return {
     mode: duringSchool ? 'dismissal' : 'school',
+    variant,
+    label: config.label,
+    endText,
+    selectable: !friday,
     target,
     title: duringSchool ? '距离放学' : isMonday ? '距离周一上学' : '距离上学',
     subtitle: duringSchool
-      ? '今天 15:20 放学'
+      ? `今天 ${endText} 放学`
       : `${target.getMonth() + 1}月${target.getDate()}日 周${WEEKDAYS[target.getDay()]} 08:05 上学`,
     totalSeconds,
     days,
